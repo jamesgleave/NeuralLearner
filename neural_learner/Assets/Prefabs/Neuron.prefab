@@ -11,6 +11,9 @@ GameObject:
   - component: {fileID: 3499960677042890600}
   - component: {fileID: 6727956037410177116}
   - component: {fileID: 588504211764313724}
+  - component: {fileID: 8893425687293820673}
+  - component: {fileID: 1678972782144136479}
+  - component: {fileID: 5642845808820658150}
   m_Layer: 0
   m_Name: Neuron
   m_TagString: Untagged
@@ -39,7 +42,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3772734473918104972}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!23 &588504211764313724
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -81,3 +84,60 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &8893425687293820673
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3772734473918104972}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d216da85cd61c41b38d65a8a871f93e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  children: []
+  rb: {fileID: 0}
+  weights: []
+  value: 0
+  bias: 0
+  layer: 0
+  position: 4.66
+  scale_rate: 1.5
+  max_size: 1
+  line_scaler: 1
+  artists: []
+  artist: {fileID: -7057261122737326771, guid: 2e56b0a8bc0524f7ca2433cb5d9811cc, type: 3}
+  desired_position: {x: 0, y: 0, z: 0}
+  moving: 0
+  neuron_mat: {fileID: 2100000, guid: a16d95fe3884a43cc87aba9f8d9edf58, type: 2}
+  selected_mat: {fileID: 2100000, guid: d86e90224d7844cb4b7f6d9f52af9b20, type: 2}
+--- !u!54 &1678972782144136479
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3772734473918104972}
+  serializedVersion: 2
+  m_Mass: 30
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!65 &5642845808820658150
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3772734473918104972}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}

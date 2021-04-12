@@ -1,17 +1,17 @@
 ﻿<Properties StartupConfiguration="{B3AF31EC-A24B-61DB-F2F2-AC2579EB55ED}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Models/NeuralNetwork/NeuralNet.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Models/NeuralNetwork/Activations.cs">
     <Files>
-      <File FileName="Assets/Scripts/Models/NeuralNetwork/Layer.cs" Line="33" Column="9" />
-      <File FileName="Assets/Scripts/Models/NeuralNetwork/Activations.cs" Line="69" Column="27" />
-      <File FileName="Assets/Scripts/Models/NeuralNetwork/NeuralNet.cs" Line="35" Column="35" />
-      <File FileName="Assets/Scripts/Brains/EvolutionaryNeuralLearner.cs" Line="44" Column="1" />
-      <File FileName="Assets/Scripts/DisplayModel/DisplayEvoNN.cs" Line="93" Column="43" />
-      <File FileName="Assets/Scripts/Util/Parser.cs" Line="103" Column="14" />
+      <File FileName="Assets/Scripts/Models/NeuralNetwork/Layer.cs" Line="159" Column="10" />
+      <File FileName="Assets/Scripts/DisplayModel/NeuralNetwork/DisplayEvoNN.cs" Line="251" Column="1" />
+      <File FileName="Assets/Scripts/Models/NeuralNetwork/Activations.cs" Line="65" Column="6" />
+      <File FileName="Assets/Scripts/Util/LineDrawer.cs" Line="39" Column="33" />
+      <File FileName="Assets/Scripts/Util/CamFly.cs" Line="115" Column="52" />
+      <File FileName="Assets/Scripts/DisplayModel/NeuralNetwork/Neuron.cs" Line="111" Column="6" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="bff08abe-cbb5-45f8-bbed-f731baae42b0" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="5d96ae90-d58f-456e-bc0d-9328b3d83860" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

@@ -55,15 +55,19 @@
     <Analyzer Include="/Applications/Visual Studio.app/Contents/Resources/lib/monodevelop/AddIns/MonoDevelop.Unity/Analyzers/Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets/Scripts/Models/NeuralNetwork/NeuralNet.cs" />
-    <Compile Include="Assets/Scripts/Models/NeuralNetwork/Layer.cs" />
-    <Compile Include="Assets/Scripts/testing.cs" />
-    <Compile Include="Assets/Scripts/Models/NeuralNetwork/Activations.cs" />
-    <Compile Include="Assets/Scripts/Callback.cs" />
-    <Compile Include="Assets/Scripts/Brains/EvolutionaryNeuralLearner.cs" />
-    <Compile Include="Assets/Scripts/Util/Parser.cs" />
+    <Compile Include="Assets/Scripts/Util/LineDrawer.cs" />
+    <Compile Include="Assets/Scripts/UserControl/UserControllerEvoNN.cs" />
     <Compile Include="Assets/Scripts/Models/BaseModel.cs" />
-    <Compile Include="Assets/Scripts/DisplayModel/DisplayEvoNN.cs" />
+    <Compile Include="Assets/Scripts/DisplayModel/NeuralNetwork/Neuron.cs" />
+    <Compile Include="Assets/Scripts/DisplayModel/NeuralNetwork/DisplayEvoNN.cs" />
+    <Compile Include="Assets/Scripts/Models/NeuralNetwork/NeuralNet.cs" />
+    <Compile Include="Assets/Scripts/Models/NeuralNetwork/NeatNet.cs" />
+    <Compile Include="Assets/Scripts/Util/Parser.cs" />
+    <Compile Include="Assets/Scripts/Models/NeuralNetwork/Layer.cs" />
+    <Compile Include="Assets/Scripts/Brains/EvolutionaryNeuralLearner.cs" />
+    <Compile Include="Assets/Scripts/Models/Callback.cs" />
+    <Compile Include="Assets/Scripts/Util/testing.cs" />
+    <Compile Include="Assets/Scripts/Models/NeuralNetwork/Activations.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

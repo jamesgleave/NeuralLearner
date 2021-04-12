@@ -1,4 +1,6 @@
-﻿using System;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System;
 
 namespace Activations
 {
@@ -6,7 +8,7 @@ namespace Activations
     {
         public string name;
         public abstract float activate(float value);
-        public abstract float[] activate(float[] values);
+        public abstract List<float> activate(List<float> values);
     }
 
     public class Relu : Activation
@@ -29,9 +31,9 @@ namespace Activations
             }
         }
 
-        public override float[] activate(float[] values)
+        public override List<float> activate(List<float> values)
         {
-            for (int i = 0; i < values.Length; i++)
+            for (int i = 0; i < values.Count; i++)
             {
                 values[i] = activate(values[i]);
             }
@@ -52,11 +54,10 @@ namespace Activations
             return value;
         }
 
-        public override float[] activate(float[] values)
+        public override List<float> activate(List<float> values)
         {
             return values;
         }
-
     }
 
 
@@ -82,9 +83,9 @@ namespace Activations
             }
         }
 
-        public override float[] activate(float[] values)
+        public override List<float> activate(List<float> values)
         {
-            for (int i = 0; i < values.Length; i++)
+            for (int i = 0; i < values.Count; i++)
             {
                 values[i] = activate(values[i]);
             }
@@ -104,9 +105,9 @@ namespace Activations
             return (float)Math.Tanh(value);
         }
 
-        public override float[] activate(float[] values)
+        public override List<float> activate(List<float> values)
         {
-            for (int i = 0; i < values.Length; i++)
+            for (int i = 0; i < values.Count; i++)
             {
                 values[i] = activate(values[i]);
             }

@@ -35,6 +35,7 @@ namespace Parse
                     int num_units = Int32.Parse(info[1]);
                     int output_size = Int32.Parse(info[2]);
                     string activation_function = info[3];
+
                     // Check if layer is the input layer
                     if (name.Contains("in"))
                     {

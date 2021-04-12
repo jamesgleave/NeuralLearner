@@ -8,7 +8,7 @@ public class EvolutionaryNeuralLearner : MonoBehaviour
 {
 
     // The model
-    NeuralNet model;
+    public NeuralNet model;
 
     // The model code
     public string model_code = "EvoNN:in-2-44-LeakyRelu.3>fc-44-43-LeakyRelu.3>fc-43-10-LeakyRelu.3>ot-10-3-Linear";

@@ -37,10 +37,12 @@ public class Neuron : MonoBehaviour
 
     // Store whether or not the neuron is moving
     public bool moving;
+    public bool grabbed;
 
     // The materials
     public Material neuron_mat;
     public Material selected_mat;
+
 
     // Start is called before the first frame update
     void Start()

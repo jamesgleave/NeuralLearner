@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1087486347146841413
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1087486347146841412}
+  - component: {fileID: 1087486347146841411}
+  m_Layer: 0
+  m_Name: NeuroDisplay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1087486347146841412
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1087486347146841413}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.08260727, y: 1, z: 0.47740912}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1087486347146841411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1087486347146841413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed330327e648042f78c660b8388eeebc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  learner: {fileID: 0}
+  neuron: {fileID: 3772734473918104972, guid: 55b4bce7051f14d089a9e076fbb430d2, type: 3}
+  update_rate: 0
+  x:
+  - 2.14
+  - 0.31
+  - 0.04
+  - 2.09
+  - 0.24
+  cooldown: 0
+  alpha: 8
+  lambda: 20
+  beta: 0.76
+  theta: 3
+  sigma: 0.31
+  gamma: 30
+  activated: 0

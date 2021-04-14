@@ -152,10 +152,9 @@ namespace Layers
                 }
 
                 weights.Add(new List<float>(temp_weights[w]));
-
-                // Set the activation function
-                this.activation = activation;
             }
+            // Set the activation function
+            this.activation = activation;
         }
 
         public List<float> GetOutput(List<float> inputs)

@@ -225,66 +225,18 @@ MonoBehaviour:
   dragSpeed: 107.4
   nn: {fileID: 1594081852}
   mouse: {x: 0, y: 0, z: 0}
---- !u!1 &1594081850
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1594081851}
-  - component: {fileID: 1594081852}
-  m_Layer: 0
-  m_Name: NeuroDisplay
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1594081851
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1594081850}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.08260727, y: 1, z: 0.47740912}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1594081852
+  selected: {fileID: 0}
+--- !u!114 &1594081852 stripped
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 1087486347146841411, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+  m_PrefabInstance: {fileID: 1087486348371529599}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1594081850}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ed330327e648042f78c660b8388eeebc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  learner: {fileID: 6507896068478276362}
-  neuron: {fileID: 3772734473918104972, guid: 55b4bce7051f14d089a9e076fbb430d2, type: 3}
-  update_rate: 0
-  x:
-  - 2.14
-  - 0.31
-  - 0.04
-  - 2.09
-  - 0.24
-  cooldown: 0
-  alpha: 8
-  lambda: 20
-  beta: 0.76
-  theta: 3
-  sigma: 0.31
-  gamma: 30
-  activated: 0
 --- !u!1 &1995122285
 GameObject:
   m_ObjectHideFlags: 0
@@ -377,6 +329,67 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: 86.6, z: 0}
+--- !u!1001 &1087486348371529599
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1087486347146841411, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: learner
+      value: 
+      objectReference: {fileID: 6507896068478276362}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.08260727
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.47740912
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841412, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1087486347146841413, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
+      propertyPath: m_Name
+      value: NeuroDisplay
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b299c793261ab4a8c82f0046f4b66ef1, type: 3}
 --- !u!1001 &3505305125134230057
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -386,7 +399,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7707322034035126563, guid: d1238bd5d54d6426bae1d8f7b451a278, type: 3}
       propertyPath: model_code
-      value: EvoNN:in-5-20-Tanh>fc-20-20-Tanh>fc-20-20-Tanh>fc-20-20-Tanh>fc-20-10-Tanh>fc-10-10-Tanh>fc-10-10-Tanh>fc-10-10-Tanh>fc-10-10-Tanh>fc-10-2-Tanh>ot-2-2-Tanh
+      value: EvoNN:in-3-5-Tanh>fc-5-10-Tanh>ot-10-0-Tanh
       objectReference: {fileID: 0}
     - target: {fileID: 8206937352096877174, guid: d1238bd5d54d6426bae1d8f7b451a278, type: 3}
       propertyPath: m_Name

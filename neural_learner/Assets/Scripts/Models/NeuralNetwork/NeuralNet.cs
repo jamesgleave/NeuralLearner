@@ -96,14 +96,94 @@ namespace Model
             return n;
         }
 
-        public void AddLayer(int layer_position, string code, Activation activ, int num_units)
+        public void AddLayer(int layer_position, string code, Activation activ)
         {
-            // Maybe I will add this
+            // This method adds a new empty layer to the model.
+            // The add neuron method should be used with this method to populate the new layer.
+
+            // Create list of layers from the current layers
+            List<Layer> new_layers = new List<Layer>(layers);
+
+            // The previous layer
+            Layer prev_layer;
+            if (layers.Length == 0 || layer_position == 0)
+            {
+                prev_layer = input;
+            }
+            else
+            {
+                prev_layer = layers[layer_position - 1];
+            }
+
+            // The layer at layer_position will be the output layer for the newly added layer
+            Layer next_layer;
+            if (layers.Length > 0 && layer_position < layers.Length)
+            {
+                next_layer = layers[layer_position];
+            }
+            else
+            {
+                // If there are no hidden layers, then the output layer is the output layer
+                next_layer = output;
+            }
+
+            // The output size for the new and previous layer
+            int new_layer_out_size = next_layer.GetUnits();
+            int prev_layer_out_size = 0;
+            for (int i = 0; i < prev_layer.weights.Count; i++)
+            {
+                prev_layer.weights[i].Clear();
+            }
+
+            // Insert new layer with no neurons with an output size that matches the next layer's number of neurons
+            new_layers.Insert(layer_position, BaseLayer.FromCode(code, activ, 0, new_layer_out_size));
+
+
+            // Turn the layers list back into an array 
+            layers = new_layers.ToArray();
         }
 
-        public void RemoveLayer(int layer)
+        public void RemoveLayer(int layer_position)
         {
-            // Maybe I will add this
+
+            // Create list of layers from the current layers
+            List<Layer> new_layers = new List<Layer>(layers);
+            Layer old_layer = new_layers[layer_position];
+            new_layers.RemoveAt(layer_position);
+            layers = new_layers.ToArray();
+
+            // Find the output size
+            int out_size;
+            if (layers.Length == 1 || layer_position + 1 >= layers.Length)
+            {
+                out_size = output.GetUnits();
+            }
+            else
+            {
+                out_size = layers[layer_position + 1].GetUnits();
+            }
+
+            out_size = 5;
+            // Set the previous weights to a new to the next layer
+            if (layer_position <= 0 || layers.Length <= 1)
+            {
+                for (int i = 0; i < input.weights.Count; i++)
+                {
+                    input.weights[i].Clear();
+                    for (int j = 0; j < out_size; j++)
+                    {
+                        input.weights[i].Add(Random.Range(-1f, 1f));
+                    }
+                }
+            }
+            else
+            {
+                layers[layer_position].weights = old_layer.weights;
+
+                for (int i = 0; i < layers[layer_position].weights.Count; i++)
+                {
+                }
+            }
         }
 
         public void AddNeuron(int layer, int position)
@@ -243,6 +323,18 @@ namespace Model
             // Apply the final activation to the ouput layer
             output.Activate();
             return output.neurons;
+        }
+
+        public string GetCode()
+        {
+            string code = "EvoNN:in-" + input.GetUnits() + "-" + input.GetOutputSize() + "-" + input.activation.name;
+            foreach (var l in layers)
+            {
+                code += ">" + l.code + "-" + l.GetUnits() + "-" + l.GetOutputSize() + "-" + l.activation.name;
+            }
+            code += ">ot-" + output.GetUnits() + "-" + output.GetOutputSize() + "-" + output.activation.name;
+            //EvoNN:in-5-5-Tanh>fc-5-5-Tanh>ot-5-0-Tanh
+            return code;
         }
     }
 }

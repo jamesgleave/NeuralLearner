@@ -68,6 +68,7 @@
     <Compile Include="Assets/Scripts/Models/Callback.cs" />
     <Compile Include="Assets/Scripts/Util/testing.cs" />
     <Compile Include="Assets/Scripts/Models/NeuralNetwork/Activations.cs" />
+    <Compile Include="Assets/Scripts/UI/ButtonController.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

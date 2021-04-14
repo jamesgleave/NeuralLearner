@@ -43,4 +43,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88b02eed9adbc43b7b44d9fc04f97453, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  model_code: EvoNN:in-2-44-LeakyRelu.3>fc-44-43-LeakyRelu.3>fc-43-10-LeakyRelu.3>ot-10-3-Linear
+  model_code: EvoNN:in-5-20-Tanh>fc-20-20-Tanh>fc-20-20-Tanh>fc-20-20-Tanh>fc-20-10-Tanh>fc-10-10-Tanh>fc-10-10-Tanh>fc-10-10-Tanh>fc-10-10-Tanh>fc-10-2-Tanh>ot-2-2-Tanh

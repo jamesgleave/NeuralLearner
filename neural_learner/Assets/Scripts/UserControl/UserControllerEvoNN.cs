@@ -27,7 +27,7 @@ public class UserControllerEvoNN : MonoBehaviour
     private Vector3 mouse;
 
     // The neuron we have currently selected
-    private GameObject selected;
+    public GameObject selected;
 
     void Start()
     {
@@ -113,6 +113,44 @@ public class UserControllerEvoNN : MonoBehaviour
         // Controll the camera position
         MouseController();
 
+        // Check for hotkey
+        WatchHotKeys();
+    }
+
+
+    void WatchHotKeys()
+    {
+        if (Input.GetKeyDown(KeyCode.Return) && selected != null)
+        {
+            // Insert a neuron 
+            nn.AddNeuron((int)selected.GetComponent<Neuron>().GetInfo()["layer"] - 1, (int)selected.GetComponent<Neuron>().GetInfo()["position"]);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Backspace) && selected != null && nn.neurons[(int)selected.GetComponent<Neuron>().GetInfo()["layer"]].Count > 1)
+        {
+            // Delete and select new neuron
+            int pos = (int)selected.GetComponent<Neuron>().GetInfo()["position"];
+            int layer = (int)selected.GetComponent<Neuron>().GetInfo()["layer"];
+            nn.RemoveNeuron(layer - 1, pos);
+
+            // Seleect a new neuron
+            selected = nn.neurons[layer][(int)nn.neurons[layer].Count / 2];
+            selected.GetComponent<Neuron>().Select();
+        }
+        else if (selected != null && nn.neurons[(int)selected.GetComponent<Neuron>().GetInfo()["layer"]].Count == 1 && Input.GetKeyDown(KeyCode.Backspace))
+        {
+            // If we have selected a layer/neuron, and we try to delete the last one, delete the layer!
+            int layer = (int)selected.GetComponent<Neuron>().GetInfo()["layer"];
+            nn.RemoveLayer(layer);
+            print(nn.model.GetCode());
+        }
+
+        if (Input.GetKeyDown(KeyCode.L) && selected != null)
+        {
+            // Delete and select new neuron
+            int layer = (int)selected.GetComponent<Neuron>().GetInfo()["layer"];
+            nn.AddLayer(layer);
+        }
     }
 
     void CalculateCamera()

@@ -148,7 +148,14 @@ public class DisplayEvoNN : MonoBehaviour
         else
         {
             model = learner.GetModel();
+
             List<float> model_out = model.FeedForward(x);
+            string output = "(";
+            foreach (var x in model_out)
+            {
+                output += x + ", ";
+            }
+            print(output + ")");
 
             if (Input.GetKeyDown("space"))
             {
@@ -162,6 +169,35 @@ public class DisplayEvoNN : MonoBehaviour
 
             UpdateNeurons();
         }
+    }
+
+    public void AddLayer(int layer_pos)
+    {
+
+        List<int> s = new List<int>();
+
+        print("Before: " + model.GetCode());
+        List<GameObject> new_layer = new List<GameObject>();
+        model.AddLayer(layer_pos - 1, "fc", new Tanh());
+        neurons.Insert(layer_pos, new_layer);
+        AddNeuron(layer_pos - 1, 0);
+        print("After: " + model.GetCode());
+    }
+
+    public void RemoveLayer(int layer_pos)
+    {
+        // Destroy each neuron
+        for (int i = 0; i < neurons[layer_pos].Count; i++)
+        {
+            RemoveNeuron(layer_pos - 1, 0);
+        }
+
+        // Remove the layer from the display
+        neurons.RemoveAt(layer_pos);
+
+        // Remove the layer from the model
+        model.RemoveLayer(layer_pos - 1);
+        AddChildren();
     }
 
     public void AddNeuron(int layer, int position)
@@ -195,16 +231,6 @@ public class DisplayEvoNN : MonoBehaviour
         neurons[layer][position].GetComponent<Neuron>().SetupInsertedNode();
     }
 
-    void AddLayer(int layer_position, string code, Activation activ, int num_units)
-    {
-        // Adding a layer at layer 0 that is fully connected activated with Tanh with 10 units
-        // AddLayer(0, "fc", new Tanh(), 10);
-    }
-
-    void RemoveLayer()
-    {
-
-    }
 
     public void RemoveNeuron(int layer, int position)
     {
@@ -233,7 +259,6 @@ public class DisplayEvoNN : MonoBehaviour
             {
                 // Get the neuron
                 n = neurons[layer_index][i].GetComponent<Neuron>();
-
                 // Update the weights, bias, value, etc
                 n.SetWeights(w: layer.GetWeights()[i]);
                 n.SetValue(layer.GetNeurons()[i]);

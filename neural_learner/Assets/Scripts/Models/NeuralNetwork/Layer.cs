@@ -88,7 +88,9 @@ namespace Layers
             return neurons[i];
         }
 
-        public override void SetWeights(List<float> new_weights) { }
+        public override void SetWeights(List<float> new_weights)
+        {
+        }
 
         public override void SetNeurons(List<float> new_neurons)
         {
@@ -136,19 +138,19 @@ namespace Layers
             var temp_weights = new float[units][];
             for (int w = 0; w < units; w++)
             {
-                // Initialize the weights randomly
+                // Initialize the weights
                 temp_weights[w] = new float[output_size];
 
                 // Add to the neurons
                 neurons.Add(0);
 
                 // Add a bias for each neuron
-                biases.Add(Random.Range(-0.5f, 0.5f));
+                biases.Add(0);
 
                 for (int i = 0; i < output_size; i++)
                 {
-                    // Set weight to random value
-                    temp_weights[w][i] = Random.Range(-0.5f, 0.5f);
+                    // Set weight
+                    temp_weights[w][i] = 0;
                 }
 
                 weights.Add(new List<float>(temp_weights[w]));
@@ -172,8 +174,6 @@ namespace Layers
             {
 
             }
-
-
             return outputs;
         }
     }

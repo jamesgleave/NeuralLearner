@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 using System;
 
 namespace Activations
@@ -111,6 +112,36 @@ namespace Activations
             {
                 values[i] = activate(values[i]);
             }
+            return values;
+        }
+    }
+
+    public class Softmax : Activation
+    {
+        public Softmax()
+        {
+            name = "Softmax";
+        }
+
+        public override float activate(float value)
+        {
+            return 0.0f;
+        }
+
+        public override List<float> activate(List<float> values)
+        {
+            float sum = 0;
+
+            for (int i = 0; i < values.Count; i++)
+            {
+                sum += Mathf.Exp(values[i]);
+            }
+
+            for (int i = 0; i < values.Count; i++)
+            {
+                values[i] = Mathf.Exp(values[i]) / sum;
+            }
+
             return values;
         }
     }

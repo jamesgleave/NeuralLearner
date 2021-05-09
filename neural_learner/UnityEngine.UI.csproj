@@ -55,6 +55,7 @@
     <Analyzer Include="/Applications/Visual Studio.app/Contents/Resources/lib/monodevelop/AddIns/MonoDevelop.Unity/Analyzers/Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Layout/CanvasScaler.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/IMaskable.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Utility/VertexHelper.cs" />
@@ -100,7 +101,6 @@
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/MaskUtilities.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/ScrollRect.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/StencilMaterial.cs" />
-    <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Layout/LayoutRebuilder.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/RawImage.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/SpriteState.cs" />

@@ -4,26 +4,38 @@ using UnityEngine;
 using Model;
 using Parse;
 
-public class EvolutionaryNeuralLearner : MonoBehaviour
+public class EvolutionaryNeuralLearner : Brain
 {
 
     // The model
     public NeuralNet model;
 
     // The model code
-    public string model_code = "EvoNN:in-2-44-LeakyRelu.3>fc-44-43-LeakyRelu.3>fc-43-10-LeakyRelu.3>ot-10-3-Linear";
+    public string model_code = "EvoNN:in-4-4-Tanh>ot-4-0-Tanh";
 
     // Start is called before the first frame update
     void Start()
+    {
+        if (model == null)
+        {
+            // Parse the model code and set the model 
+            model = (NeuralNet)Parser.CodeToModel(model_code);
+            //Model.NeuralNet.RandomizeWeights(model);
+            Mutate();
+        }
+    }
+
+    public override void Setup()
     {
         // Parse the model code and set the model 
         model = (NeuralNet)Parser.CodeToModel(model_code);
     }
 
-    // Update is called once per frame
-    void Update()
+    public override void Setup(BaseModel nn)
     {
-
+        // Setup and mutate the model
+        model = (NeuralNet)nn;
+        Mutate();
     }
 
     public void SetCode(string code)
@@ -31,13 +43,31 @@ public class EvolutionaryNeuralLearner : MonoBehaviour
         model_code = code;
     }
 
-    public NeuralNet GetModel()
+    public override BaseModel GetModel()
     {
         return model;
+    }
+
+    public override List<float> GetAction(List<float> obs)
+    {
+        return model.FeedForward(obs);
     }
 
     public int GetTotalNeurons()
     {
         return model.total_neurons;
+    }
+
+    public void Mutate()
+    {
+        if (TryGetComponent<BaseAgent>(out BaseAgent a))
+        {
+            Model.NeuralNet.MutateWeights(model, GetComponent<BaseAgent>().genes.weight_mutation_prob, GetComponent<BaseAgent>().genes.dropout_prob);
+        }
+        else
+        {
+            Model.NeuralNet.MutateWeights(model, 0.01f, 0.001f);
+        }
+        model_code = model.GetCode();
     }
 }

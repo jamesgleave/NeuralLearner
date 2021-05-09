@@ -10,6 +10,10 @@ public class UserControllerEvoNN : MonoBehaviour
     public float zoomSpeed = 2f;
     public float dragSpeed = 6f;
 
+    // The controller used to control the HUD
+    public TextController text;
+
+
     // The true values used to control the camera
     private float look_speed_H;
     private float look_speed_V;
@@ -115,6 +119,21 @@ public class UserControllerEvoNN : MonoBehaviour
 
         // Check for hotkey
         WatchHotKeys();
+
+        if (selected != null)
+        {
+            // Set the text
+            Neuron n = selected.GetComponent<Neuron>();
+            text.UpdateText((int)n.layer, (int)n.position, n.value, n.bias);
+
+            // Turn on the text
+            text.Activate();
+        }
+        else
+        {
+            // Turn off the text
+            text.Deactivate();
+        }
     }
 
 
@@ -149,7 +168,31 @@ public class UserControllerEvoNN : MonoBehaviour
         {
             // Delete and select new neuron
             int layer = (int)selected.GetComponent<Neuron>().GetInfo()["layer"];
-            nn.AddLayer(layer);
+            nn.AddLayer(layer, 3);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+
+            Model.NeuralNet.MutateWeights(nn.model, 0.1f, 0.01f);
+            nn.ForceDrawLines();
+
+            if (Random.value < 0.3f)
+            {
+                int where = Random.Range(0, nn.model.GetLayers().Length);
+                int pos = Random.Range(0, nn.model.GetLayers()[where].neurons.Count);
+                nn.AddNeuron(where, pos);
+            }
+
+            if (Random.value < 0.03f)
+            {
+                int where = Random.Range(0, nn.model.GetLayers().Length);
+                int pos = Random.Range(0, nn.model.GetLayers()[where].neurons.Count);
+                if (nn.model.GetLayers()[where].neurons.Count > 1)
+                {
+                    nn.RemoveNeuron(where, pos);
+                }
+            }
         }
     }
 

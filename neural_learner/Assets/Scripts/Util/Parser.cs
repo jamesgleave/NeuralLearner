@@ -103,6 +103,12 @@ namespace Parse
                 return new Activations.Tanh();
             }
 
+            // Return a LeakyRelu activation
+            if (activ.Contains("Softmax"))
+            {
+                return new Activations.Softmax();
+            }
+
             // If invalid return linear
             return new Activations.Linear();
 

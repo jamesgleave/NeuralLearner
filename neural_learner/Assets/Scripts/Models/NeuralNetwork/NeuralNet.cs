@@ -129,7 +129,6 @@ namespace Model
 
             // The output size for the new and previous layer
             int new_layer_out_size = next_layer.GetUnits();
-            int prev_layer_out_size = 0;
             for (int i = 0; i < prev_layer.weights.Count; i++)
             {
                 prev_layer.weights[i].Clear();
@@ -145,45 +144,44 @@ namespace Model
 
         public void RemoveLayer(int layer_position)
         {
-
             // Create list of layers from the current layers
             List<Layer> new_layers = new List<Layer>(layers);
-            Layer old_layer = new_layers[layer_position];
+
+            // Set the new previous layer
+            Layer prev;
+            if (layer_position == 0)
+            {
+                prev = input;
+            }
+            else
+            {
+                prev = new_layers[layer_position - 1];
+            }
+
+            // set the next layer
+            Layer next;
+            if (layer_position + 1 >= new_layers.Count)
+            {
+                next = output;
+            }
+            else
+            {
+                next = new_layers[layer_position + 1];
+            }
+
+            // Clear the previous weights
+            for (int i = 0; i < prev.GetUnits(); i++)
+            {
+                prev.weights[i].Clear();
+                for (int j = 0; j < next.GetUnits(); j++)
+                {
+                    prev.weights[i].Add(0);
+                }
+            }
+
+            // Now we remove the layer
             new_layers.RemoveAt(layer_position);
             layers = new_layers.ToArray();
-
-            // Find the output size
-            int out_size;
-            if (layers.Length == 1 || layer_position + 1 >= layers.Length)
-            {
-                out_size = output.GetUnits();
-            }
-            else
-            {
-                out_size = layers[layer_position + 1].GetUnits();
-            }
-
-            out_size = 5;
-            // Set the previous weights to a new to the next layer
-            if (layer_position <= 0 || layers.Length <= 1)
-            {
-                for (int i = 0; i < input.weights.Count; i++)
-                {
-                    input.weights[i].Clear();
-                    for (int j = 0; j < out_size; j++)
-                    {
-                        input.weights[i].Add(Random.Range(-1f, 1f));
-                    }
-                }
-            }
-            else
-            {
-                layers[layer_position].weights = old_layer.weights;
-
-                for (int i = 0; i < layers[layer_position].weights.Count; i++)
-                {
-                }
-            }
         }
 
         public void AddNeuron(int layer, int position)
@@ -195,7 +193,7 @@ namespace Model
             layers[layer].neurons.Insert(position, 0);
 
             // Add the bias
-            layers[layer].biases.Insert(position, Random.value - 0.5f);
+            layers[layer].biases.Insert(position, 0);
 
             // Adjust the number of units in the layer
             layers[layer].IncrementUnitCount(1);
@@ -205,7 +203,7 @@ namespace Model
 
             // Add new weights
             List<float> new_weights = new List<float>();
-            for (int i = 0; i < num_weights; i++) { new_weights.Add(Random.Range(-1f, 1f)); }
+            for (int i = 0; i < num_weights; i++) { new_weights.Add(0); }
             layers[layer].weights.Insert(position, new_weights);
 
             // If the layer is the first layer we must add weights to the input
@@ -213,7 +211,7 @@ namespace Model
             {
                 for (int i = 0; i < input.GetUnits(); i++)
                 {
-                    input.weights[i].Insert(position, Random.Range(-1f, 1f));
+                    input.weights[i].Insert(position, 0);
                 }
             }
             else
@@ -221,7 +219,7 @@ namespace Model
                 // We must add weights to the previous layer
                 for (int i = 0; i < layers[layer - 1].neurons.Count; i++)
                 {
-                    layers[layer - 1].weights[i].Insert(position, Random.Range(-1f, 1f));
+                    layers[layer - 1].weights[i].Insert(position, 0);
                 }
             }
         }
@@ -325,6 +323,102 @@ namespace Model
             return output.neurons;
         }
 
+        // Returns a copy of a model
+        public override BaseModel Copy()
+        {
+            return NeuralNet.Copy(this);
+        }
+
+
+        public static NeuralNet Copy(NeuralNet nn)
+        {
+            // Returns a deep copy of a NeuralNet Object
+
+            // Create a new network with the exact same architecture
+            NeuralNet new_model = (NeuralNet)Parse.Parser.CodeToModel(nn.GetCode());
+
+            // Get all of the layers
+            Layer[] new_layers = new_model.GetAllLayers();
+            Layer[] old_layers = nn.GetAllLayers();
+
+            // Memberwise clone
+            for (int i = 0; i < new_layers.Length; i++)
+            {
+                // Set each weight
+                for (int j = 0; j < new_layers[i].weights.Count; j++)
+                {
+                    new_layers[i].weights[j].Clear();
+                    new_layers[i].weights[j].AddRange(old_layers[i].weights[j]);
+                }
+
+                // Set the neuron and bias values 
+                for (int j = 0; j < new_layers[i].neurons.Count; j++)
+                {
+                    new_layers[i].neurons[j] = old_layers[i].neurons[j];
+                    new_layers[i].biases[j] = old_layers[i].biases[j];
+                }
+
+            }
+
+            return new_model;
+        }
+
+
+        public static void MutateWeights(NeuralNet nn, float mutation_rate, float dropout_rate)
+        {
+            // Look at each layer...
+            foreach (Layer layer in nn.GetAllLayers())
+            {
+                // For each unit in the layer...
+                for (int i = 0; i < layer.GetUnits(); i++)
+                {
+                    // Look at each weight
+                    for (int j = 0; j < layer.weights[i].Count; j++)
+                    {
+                        // If the mutation is triggered, change the weight (the chances are proportional to the layers size)
+                        if (Random.value < (mutation_rate / layer.GetUnits()))
+                        {
+                            layer.weights[i][j] += 2 * (Random.value - 0.5f);
+                        }
+                        // If the dropout is triggered and the mutation is not, drop the connection
+                        else if (Random.value < (dropout_rate / layer.GetUnits()))
+                        {
+                            layer.weights[i][j] = 0;
+                        }
+                    }
+
+                    // Adjust the bias if triggered
+                    if (Random.value < mutation_rate)
+                    {
+                        layer.biases[i] = Random.value - 0.5f;
+                    }
+                    else if (Random.value < dropout_rate)
+                    {
+                        layer.biases[i] = 0;
+                    }
+                }
+            }
+        }
+
+
+        public static void RandomizeWeights(NeuralNet nn)
+        {
+            // Look at each layer...
+            foreach (Layer layer in nn.GetAllLayers())
+            {
+                // For each unit in the layer...
+                for (int i = 0; i < layer.GetUnits(); i++)
+                {
+                    // Look at each weight
+                    for (int j = 0; j < layer.weights[i].Count; j++)
+                    {
+                        layer.weights[i][j] += Random.value - 0.5f;
+                    }
+                }
+            }
+        }
+
+
         public string GetCode()
         {
             string code = "EvoNN:in-" + input.GetUnits() + "-" + input.GetOutputSize() + "-" + input.activation.name;
@@ -333,7 +427,6 @@ namespace Model
                 code += ">" + l.code + "-" + l.GetUnits() + "-" + l.GetOutputSize() + "-" + l.activation.name;
             }
             code += ">ot-" + output.GetUnits() + "-" + output.GetOutputSize() + "-" + output.activation.name;
-            //EvoNN:in-5-5-Tanh>fc-5-5-Tanh>ot-5-0-Tanh
             return code;
         }
     }
@@ -342,5 +435,5 @@ namespace Model
 
 // EvoNN:in-3-1-Tanh>fc-1-1-Tanh>fc-1-1-Tanh>fc-1-3-Tanh>ot-3-0-Tanh
 
-// EvoNN:in-5-200-Tanh>fc-200-200-Tanh>fc-200-3-Tanh>ot-3-0-Tanh
+// EvoNN:in-5-3-Tanh>fc-3-3-Tanh>fc-3-3-Tanh>ot-5-0-Tanh
 

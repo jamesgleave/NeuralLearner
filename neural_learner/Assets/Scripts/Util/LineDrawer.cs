@@ -17,14 +17,29 @@ public class LineDrawer : MonoBehaviour
         Start();
     }
 
-    public void Draw(Vector3 point0, Vector3 point1)
+    public void Clear()
     {
-        Vector3 mid;
+        if (line != null)
+        {
+            line.positionCount = 0;
+        }
+    }
 
-        // Find the mid point
-        mid = 3 * Vector3.Normalize(point1 - point0) + point0;
-        mid.Set(mid.x, point0.y, mid.z);
-        DrawQuadraticBezierCurve(point0, mid, point1);
+    public void Draw(Vector3 point0, Vector3 point1, string type = "mid")
+    {
+        if (type.Equals("mid"))
+        {
+            Vector3 mid;
+            // Find the mid point
+            mid = 3 * Vector3.Normalize(point1 - point0) + point0;
+            mid.Set(mid.x, point0.y, mid.z);
+            DrawQuadraticBezierCurve(point0, mid, point1);
+        }
+        else if (type.Equals("tree"))
+        {
+            Vector3 branch_point = new Vector3(point0.x, point0.y + point1.y / 4, point0.z);
+            DrawQuadraticBezierCurve(point0, branch_point, point1);
+        }
     }
 
     public void SetFeatures(float start, float end)
@@ -33,10 +48,15 @@ public class LineDrawer : MonoBehaviour
         line.endWidth = end;
     }
 
+    public void SetEndWidth(float end)
+    {
+        line.endWidth = end;
+    }
+
     void DrawQuadraticBezierCurve(Vector3 point0, Vector3 point1, Vector3 point2)
     {
         line = GetComponent<LineRenderer>();
-        line.positionCount = 50;
+        line.positionCount = 200;
         float t = 0f;
         Vector3 B = new Vector3(0, 0, 0);
         for (int i = 0; i < line.positionCount; i++)

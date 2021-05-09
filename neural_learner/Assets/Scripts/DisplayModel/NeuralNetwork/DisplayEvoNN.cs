@@ -53,7 +53,7 @@ public class DisplayEvoNN : MonoBehaviour
         }
 
         // Get the model from the learner
-        model = learner.GetModel();
+        model = (NeuralNet)learner.GetModel();
 
         // Set the cooldown
         cooldown = update_rate;
@@ -147,40 +147,49 @@ public class DisplayEvoNN : MonoBehaviour
         }
         else
         {
-            model = learner.GetModel();
+            model = (NeuralNet)learner.GetModel();
 
+            //for (int i = 0; i < x.Count; i++)
+            //{
+            //    x[i] = Mathf.PerlinNoise(i, Time.realtimeSinceStartup);
+            //}
             List<float> model_out = model.FeedForward(x);
-            string output = "(";
-            foreach (var x in model_out)
-            {
-                output += x + ", ";
-            }
-            print(output + ")");
-
-            if (Input.GetKeyDown("space"))
-            {
-                AddNeuron(0, 0);
-            }
-
-            if (Input.GetKeyDown("x"))
-            {
-                RemoveNeuron(0, 0);
-            }
-
             UpdateNeurons();
         }
     }
 
-    public void AddLayer(int layer_pos)
+    public void ForceDrawLines()
     {
+        // Forces all lines to be redrawn
+        Neuron n;
+        int layer_index = 0;
+        foreach (Layer layer in model.GetAllLayers())
+        {
+            // Look at each neuron in the layer
+            for (int i = 0; i < layer.GetUnits(); i++)
+            {
+                // Get the neuron
+                n = neurons[layer_index][i].GetComponent<Neuron>();
+                // Redraw the lines
+                n.DrawLine(true);
+            }
+            // Increment the layer
+            layer_index++;
+        }
+    }
 
-        List<int> s = new List<int>();
+    public void AddLayer(int layer_pos, int size)
+    {
 
         print("Before: " + model.GetCode());
         List<GameObject> new_layer = new List<GameObject>();
         model.AddLayer(layer_pos - 1, "fc", new Tanh());
         neurons.Insert(layer_pos, new_layer);
-        AddNeuron(layer_pos - 1, 0);
+        for (int i = 0; i < size; i++)
+        {
+            AddNeuron(layer_pos - 1, 0);
+        }
+
         print("After: " + model.GetCode());
     }
 
@@ -196,6 +205,7 @@ public class DisplayEvoNN : MonoBehaviour
         neurons.RemoveAt(layer_pos);
 
         // Remove the layer from the model
+        print("Removing hidden layer " + (layer_pos - 1).ToString());
         model.RemoveLayer(layer_pos - 1);
         AddChildren();
     }
@@ -259,6 +269,7 @@ public class DisplayEvoNN : MonoBehaviour
             {
                 // Get the neuron
                 n = neurons[layer_index][i].GetComponent<Neuron>();
+
                 // Update the weights, bias, value, etc
                 n.SetWeights(w: layer.GetWeights()[i]);
                 n.SetValue(layer.GetNeurons()[i]);
@@ -275,7 +286,7 @@ public class DisplayEvoNN : MonoBehaviour
 
 
                 // Redraw the lines if the neuron has moved
-                n.DrawLine();
+                n.DrawLine(false);
 
                 // Update the size of the neuron
                 n.UpdateSize();

@@ -7,17 +7,45 @@ using Parse;
 
 public class testing : MonoBehaviour
 {
-    NeuralNet model;
+    public float cooldown = 0;
 
-    // Start is called before the first frame update
-    void Start()
+
+    public void Start()
     {
-        string code = "EvoNN:in-2-44-LeakyRelu.3>fc-44-43-LeakyRelu.3>fc-43-10-LeakyRelu.3>ot-10-3-Linear";
-        model = (NeuralNet)Parser.CodeToModel(code);
+        transform.position = new Vector3(Random.Range(-35, 35), 1, Random.Range(-35, 35));
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
     }
-    // Update is called once per frame
-    void Update()
-    {
 
+    public void Update()
+    {
+        cooldown -= Time.deltaTime;
+        if (cooldown > 0)
+        {
+            GetComponent<MeshRenderer>().enabled = false;
+            GetComponent<BoxCollider>().enabled = false;
+            GetComponent<Rigidbody>().useGravity = false;
+        }
+        else
+        {
+            GetComponent<MeshRenderer>().enabled = true;
+            GetComponent<BoxCollider>().enabled = true;
+            GetComponent<Rigidbody>().useGravity = true;
+        }
+
+        if (transform.position.y < -5)
+        {
+            GetComponent<Rigidbody>().velocity = Vector3.zero;
+            transform.position = new Vector3(Random.Range(-35, 35), 1f, Random.Range(-35, 35));
+        }
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.tag.Equals("agent") && cooldown < 0)
+        {
+            GetComponent<Rigidbody>().velocity = Vector3.zero;
+            transform.position = new Vector3(Random.Range(-35, 35), 1f, Random.Range(-35, 35));
+            collision.gameObject.GetComponent<BasicAgentController>().Birth();
+            cooldown = Random.value * 350;
+        }
     }
 }

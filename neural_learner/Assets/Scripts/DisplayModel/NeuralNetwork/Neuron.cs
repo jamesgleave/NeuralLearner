@@ -75,11 +75,11 @@ public class Neuron : MonoBehaviour
     public void UpdateSize()
     {
         // Set new scale
-        float new_size = 1 / (1 + Mathf.Pow(scale_rate, -value)) * max_size / 2 + max_size * 0.5f;
+        float new_size = Mathf.Min(scale_rate * Mathf.Exp(Mathf.Abs(value)) + max_size / 10, max_size);
         transform.localScale = new Vector3(new_size, new_size, new_size);
     }
 
-    public void DrawLine()
+    public void DrawLine(bool forced)
     {
         // If this is moving
         moving = rb.velocity.magnitude > 0;
@@ -104,7 +104,7 @@ public class Neuron : MonoBehaviour
         for (int i = 0; i < children.Count; i++)
         {
             // Draw only when moving or when child is moving
-            if (moving || children[i].moving)
+            if (moving || children[i].moving || forced)
             {
                 // Set the thickness of the line
                 if (weights.Count > 0)

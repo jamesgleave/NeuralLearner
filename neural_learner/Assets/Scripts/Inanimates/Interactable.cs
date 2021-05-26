@@ -8,12 +8,14 @@ using UnityEngine;
 /// </summary>
 public enum ID
 {
-    FoodPellet = 1000,
-    Meat = 999,
-    Wall = 0,
     Wobbit = 1,
     WobbitEgg = 2,
+    FoodPellet = 3,
+    Meat = 4,
+    MaxID = 10,
 
+    // For neuron display (Anything outside of the simulation has a negative ID because I said so)
+    Neuron = -1
 }
 
 /// <summary>
@@ -65,6 +67,15 @@ public class Interactable : MonoBehaviour
     public Rigidbody2D GetRB()
     {
         return rb;
+    }
+
+    public void GenerateCollider()
+    {
+        // Only generate if it is of the type composite collider
+        if (col.GetType() == typeof(CompositeCollider2D))
+        {
+            ((CompositeCollider2D)col).GenerateGeometry();
+        }
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Layers;
 using Model;
+using System.Collections.Generic;
 
 namespace Parse
 {
@@ -97,21 +98,38 @@ namespace Parse
                 return new Activations.LeakyRelu(alpha);
             }
 
-            // Return a LeakyRelu activation
+            // Return a Tahnh activation
             if (activ.Contains("Tanh"))
             {
                 return new Activations.Tanh();
             }
 
-            // Return a LeakyRelu activation
+            // Return a absolute value activation
+            if (activ.Contains("Abs"))
+            {
+                return new Activations.Abs();
+            }
+
+            // Return a Softmax activation
             if (activ.Contains("Softmax"))
             {
                 return new Activations.Softmax();
             }
 
+            // Return a Sigmoid activation
+            if (activ.Contains("Sigmoid"))
+            {
+                return new Activations.Sigmoid();
+            }
+
             // If invalid return linear
             return new Activations.Linear();
 
+        }
+
+        public static List<string> ParseMutationInstructions(string instr)
+        {
+            return null;
         }
 
     }

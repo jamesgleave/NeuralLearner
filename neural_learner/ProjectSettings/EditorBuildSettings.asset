@@ -6,9 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/TestInteractables.unity
-    guid: 873de597616604df3837a0a7e5bdbd66
+    path: Assets/Scenes/TestInteractables + UI.unity
+    guid: 73b63dd98b5c84992b41a7b3e9478b5a
   - enabled: 1
     path: Assets/Scenes/TestAncestory.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/TestVisualization + UI.unity
+    guid: 9f27cb7bbcc9143328c608aa48eacd0b
   m_configObjects: {}

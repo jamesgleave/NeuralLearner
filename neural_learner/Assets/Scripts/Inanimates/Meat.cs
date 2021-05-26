@@ -8,6 +8,7 @@ public class Meat : Interactable
     ///   <para>The energy containted in the meat</para>
     /// </summary>
     public float energy;
+    public float initial_energy;
 
     /// <summary>
     ///   <para>The rate this meat piece rots</para>
@@ -32,7 +33,8 @@ public class Meat : Interactable
         rot_rate = rr * Random.value;
         manager = m;
         energy = e;
-        size = s + Random.value;
+        initial_energy = e;
+        size = s / 10 + Random.value;
         transform.localScale = new Vector3(size, size, size);
         base.Setup(id);
 
@@ -44,7 +46,7 @@ public class Meat : Interactable
     public void Update()
     {
         // If the energy has run out, get rid of the meat
-        if (energy <= 1)
+        if (energy <= initial_energy * 0.1f)
         {
             // Remove this agent from the manager's list
             manager.agents.Remove(this);
@@ -55,7 +57,7 @@ public class Meat : Interactable
         }
 
         // Reduce the size and energy of the meat
-        float cost = Time.deltaTime * rot_rate;
+        float cost = Time.deltaTime * rot_rate * initial_energy;
         if (energy - cost < 0)
         {
             cost = energy;
@@ -69,7 +71,7 @@ public class Meat : Interactable
         manager.RecycleEnergy(cost);
         // Find the new size
         size -= 0.01f * Time.deltaTime;
-        float new_size = Mathf.Max(0.3f, size);
+        float new_size = Mathf.Max(0.1f, size);
         transform.localScale = new Vector3(new_size, new_size, new_size);
 
     }

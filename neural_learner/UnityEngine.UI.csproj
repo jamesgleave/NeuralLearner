@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs" />
+    <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Image.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Layout/CanvasScaler.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/IMaskable.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Utility/VertexHelper.cs" />
@@ -68,7 +69,6 @@
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/ExecuteEvents.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/VertexModifiers/PositionAsUV1.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/InputModules/TouchInputModule.cs" />
-    <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Image.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Layout/GridLayoutGroup.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Utility/ObjectPool.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Layout/ContentSizeFitter.cs" />

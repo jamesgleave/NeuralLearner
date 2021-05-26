@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7126468020632023552}
   - component: {fileID: -7057261122737326771}
   - component: {fileID: 2681724369759667435}
+  - component: {fileID: 6580144874970958434}
   m_Layer: 0
   m_Name: LineDrawer
   m_TagString: Untagged
@@ -26,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4928792019339797951}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.2703298, y: 13.583809, z: 5.662634}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -44,6 +45,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f512900fa44143a4b2c0eb2ec30993a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  max_verts: 200
+  num_verts: 0
+  chigh:
+    serializedVersion: 2
+    rgba: 4289779104
+  clow:
+    serializedVersion: 2
+    rgba: 4281085108
+  on: 1
+  fade_time: 1
+  col: {fileID: 6580144874970958434}
 --- !u!120 &2681724369759667435
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -55,7 +67,7 @@ LineRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
-  m_MotionVectors: 0
+  m_MotionVectors: 1
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
@@ -63,7 +75,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c941fb263151e4d2ab3184bd84bec1fc, type: 2}
+  - {fileID: 2100000, guid: a031acfe09e9644ae84fb120d68d90e6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -81,10 +93,12 @@ LineRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -1206485497
+  m_SortingLayer: -1
   m_SortingOrder: 0
-  m_Positions: []
+  m_Positions:
+  - {x: 0, y: 0, z: 0}
+  - {x: 5.99, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 1
@@ -93,7 +107,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.09677419
+        value: 0.4374962
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -102,7 +116,7 @@ LineRenderer:
         outWeight: 0
       - serializedVersion: 3
         time: 1
-        value: 0.10128706
+        value: 0.28125
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -142,10 +156,38 @@ LineRenderer:
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
-    numCapVertices: 1
+    numCapVertices: 0
     alignment: 0
     textureMode: 0
     shadowBias: 0.5
     generateLightingData: 1
   m_UseWorldSpace: 1
   m_Loop: 0
+--- !u!60 &6580144874970958434
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4928792019339797951}
+  m_Enabled: 0
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: 0, y: 0}
+      - {x: 0, y: 0}
+      - {x: 0, y: 0}

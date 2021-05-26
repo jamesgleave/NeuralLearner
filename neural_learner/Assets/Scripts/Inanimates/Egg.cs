@@ -15,6 +15,9 @@ public class Egg : Interactable
     public float size;
 
     public float gestation_time;
+    public float total_gestation_time;
+    public float parent_maturity_age;
+    public float parent_lifespan;
 
     /// <summary>
     ///   <para>The manager associated with this meat</para>
@@ -61,9 +64,14 @@ public class Egg : Interactable
         // Set the values
         manager = m;
         energy = e;
-        size = genes.size * 3;
+        size = parent.genes.size;
         transform.localScale = new Vector3(size, size, size);
+
+        // Calculate the gestation time
         gestation_time = Mathf.Max(Mathf.Log(genes.gestation_time * size * e) * parent.base_gestation_time, parent.base_gestation_time);
+        total_gestation_time = gestation_time;
+        parent_maturity_age = parent.maturity_age;
+        parent_lifespan = parent.lifespan;
 
         // Setup the parent node & generation
         parent_node = parent.node;
@@ -103,14 +111,8 @@ public class Egg : Interactable
             // TODO This is a temporary step to create new agents in new species to test its funcitonality!
             if (genes.genetic_drift > 1f && parent_node != null)
             {
-                print(manager.anc_manager.IsNewSpecies(genes));
-                string new_name = NameGenerator.GenerateFullName();
-                if (manager.anc_manager.population.ContainsKey(new_name) || manager.anc_manager.IsSpecies(a.node.genus, new_name.Split(' ')[1]))
-                {
-                    print("No! Bad! Name Taken! XD Appending random number for now...");
-                    new_name += Random.Range(0, 100).ToString();
-                }
-
+                string t = "<" + Random.Range(1000, 10000).ToString() + ">";
+                string new_name = NameGenerator.GenerateFullName() + t;
                 genes.species = new_name.Split(' ')[1];
                 genes.genetic_drift = 0;
                 a.generation = 0;

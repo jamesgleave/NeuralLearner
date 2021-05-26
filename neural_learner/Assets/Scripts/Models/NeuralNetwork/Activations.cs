@@ -42,7 +42,6 @@ namespace Activations
         }
     }
 
-
     public class Linear : Activation
     {
         public Linear()
@@ -60,7 +59,6 @@ namespace Activations
             return values;
         }
     }
-
 
     public class LeakyRelu : Activation
     {
@@ -145,5 +143,75 @@ namespace Activations
             return values;
         }
     }
+
+    public class Abs : Activation
+    {
+        public Abs()
+        {
+            name = "Abs";
+        }
+
+        public override float activate(float value)
+        {
+            return Mathf.Abs(value);
+        }
+
+        public override List<float> activate(List<float> values)
+        {
+            for (int i = 0; i < values.Count; i++)
+            {
+                values[i] = activate(values[i]);
+            }
+            return values;
+        }
+    }
+
+    public class Sigmoid : Activation
+    {
+        public Sigmoid()
+        {
+            name = "Sigmoid";
+        }
+
+        public override float activate(float value)
+        {
+            return 1 / (Mathf.Exp(-value) + 1);
+        }
+
+        public override List<float> activate(List<float> values)
+        {
+            for (int i = 0; i < values.Count; i++)
+            {
+                values[i] = activate(values[i]);
+            }
+            return values;
+        }
+    }
+
+    public static class ActivationHelper
+    {
+        public static string GetRandomActivation()
+        {
+            // Create a list of names
+            List<string> names = new List<string>();
+
+            // Add all of the codes
+            //names.Add("Softmax");
+            names.Add("Sigmoid");
+            names.Add("Tanh");
+            names.Add("Linear");
+            names.Add("Relu");
+            names.Add("Abs");
+
+            // Return a random name
+            return names[UnityEngine.Random.Range(0, names.Count)];
+        }
+
+        public static void FromCode()
+        {
+
+        }
+    }
+
 }
 

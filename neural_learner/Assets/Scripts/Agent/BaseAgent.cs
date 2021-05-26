@@ -5,6 +5,10 @@ using System.Linq;
 
 public class BaseAgent : Interactable
 {
+    [Header("Agent Components")]
+    public GameObject body;
+    public GameObject head;
+
     [Header("Initial Agent Settings")]
     /// <summary>
     ///   <para>The base health of all agents</para>
@@ -33,7 +37,7 @@ public class BaseAgent : Interactable
     /// <summary>
     ///   <para>The base speed of all agents</para>
     /// </summary>
-    [Range(0.0f, 10)]
+    [Range(0.0f, 100f)]
     public float base_rotation_speed = 3;
 
     /// <summary>
@@ -82,6 +86,11 @@ public class BaseAgent : Interactable
     ///   <para>Whether the agent wants to grab something or not</para>
     /// </summary>
     public bool wants_to_grab;
+
+    /// <summary>
+    ///   <para>Whether the agent wants to attack something or not</para>
+    /// </summary>
+    public bool wants_to_attack;
 
     // testing
     public List<float> inf = new List<float>();
@@ -142,7 +151,13 @@ public class BaseAgent : Interactable
     /// </summary>
     public Interactable grabbed;
 
+    /// <summary>
+    ///   <para>The value that control the speed at which the agent can move</para>
+    /// </summary>
+    public float internal_clock;
+
     [Space()]
+    [Header("Movement:")]
     /// <summary>
     ///   <para>The value that control the speed at which the agent can move</para>
     /// </summary>
@@ -156,7 +171,13 @@ public class BaseAgent : Interactable
     /// </summary>
     public float speed;
 
+    /// <summary>
+    ///   <para>The kenetic energy of the agent</para>
+    /// </summary>
+    public float kenetic_energy;
+
     [Space()]
+    [Header("Health:")]
     /// <summary>
     ///   <para>The health of the agent</para>
     /// </summary>
@@ -164,6 +185,7 @@ public class BaseAgent : Interactable
     public float max_health;
 
     [Space()]
+    [Header("Energy:")]
     /// <summary>
     ///   <para>The total energy stored in the agent. If this dips too low, the agent looses health.</para>
     /// </summary>
@@ -174,6 +196,7 @@ public class BaseAgent : Interactable
     public Vector3 max_size;
 
     [Space()]
+    [Header("Combat:")]
     /// <summary>
     ///   <para>The attack of the agent</para>
     /// </summary>
@@ -185,6 +208,7 @@ public class BaseAgent : Interactable
     public float defense;
 
     [Space()]
+    [Header("Food:")]
     /// <summary>
     ///   <para>How hungry the agent is. This will slowly increace. If at 0, health will start depleating.</para>
     /// </summary>
@@ -196,6 +220,7 @@ public class BaseAgent : Interactable
     public float consumption_rate;
 
     [Space()]
+    [Header("Age:")]
     /// <summary>
     ///   <para>How long the agent has been alive for.</para>
     /// </summary>
@@ -205,7 +230,6 @@ public class BaseAgent : Interactable
     ///   <para>The age the agent must be to be capable of reproduction</para>
     /// </summary>
     public float maturity_age;
-    public int eggs_layed;
 
     /// <summary>
     ///   <para>The max age of the agent.</para>
@@ -219,11 +243,40 @@ public class BaseAgent : Interactable
     public bool is_mature;
 
     [Space()]
+    [Header("Eggs:")]
+    /// <summary>
+    ///   <para>How long an egg takes to be produced</para>
+    /// </summary>
+    public float egg_formation_time;
+    /// <summary>
+    ///   <para>The number of eggs ready to be laid</para>
+    /// </summary>
+    public int num_eggs_ready;
+    /// <summary>
+    ///   <para>The number of eggs have been laid</para>
+    /// </summary>
+    public int eggs_layed;
+    /// <summary>
+    ///   <para>The time needed between egg laying (same as gestation time)</para>
+    /// </summary>
+    public float egg_formation_cooldown = 0;
+    /// <summary>
+    ///   <para>The gestation time (time spent in egg before hatch)</para>
+    /// </summary>
+    public float egg_gestation_time;
+
+    [Space()]
+    [Header("Metabolism:")]
     /// <summary>
     ///   <para>This is a result of their genetic traits. It is how quickly they consume energy. Their energy depletes metabolism points per second.</para>
     /// </summary>
     public float metabolism;
+    /// <summary>
+    ///   <para>The actual cost with all factors included.</para>
+    /// </summary>
+    public float true_metabolic_cost;
 
+    [Space()]
     /// <summary>
     ///   <para>The time until the agent dies given it eats nothing</para>
     /// </summary>
@@ -237,7 +290,8 @@ public class BaseAgent : Interactable
         Heuristic,
         Hard,
         Learning,
-        None
+        None,
+        Static
     }
     public Control control = Control.Heuristic;
 
@@ -258,6 +312,8 @@ public class BaseAgent : Interactable
     [Space]
     [Header("For Debugging Purposes")]
     public bool god;
+    public float grabbed_force;
+    public float strength;
 
     public List<float> obs;
 
@@ -292,25 +348,34 @@ public class BaseAgent : Interactable
         movement_speed = base_speed * genes.speed;
         rotation_speed = base_rotation_speed * genes.speed;
 
+
         // Setup the agents base stuff
         this.genes = genes;
+
         // Set the genetic code (3 floating point numbers)
         this.genes.SetGeneticCode();
+
+        // Setup the base interactable
         base.Setup(id);
+
 
         // Give the rigid body the mass
         rb.mass = (genes.size * genes.size) * base_mass + base_mass;
 
-        // Set the colour of the agent
-        sprite.color = new Color(genes.colour_r, genes.colour_g, genes.colour_b);
+        // Setup the sprite for the agent
+        manager.SetSprite(this, genes.colour_r, genes.colour_g, genes.colour_b);
 
         // Set the senses up
         senses = GetComponent<Senses>();
         senses.Setup(genes.perception * base_perception, id, this.transform);
 
         // Setup the age stuff
-        lifespan = (genes.vitality + 1) * base_lifespan * (genes.size / genes.speed);
-        maturity_age = (lifespan * (genes.maturity_time) / 2) / Mathf.Max((genes.gestation_time * base_gestation_time), 1);
+        lifespan = (genes.vitality + 1) * base_lifespan * genes.size;
+        //maturity_age = (lifespan * (genes.maturity_time) / 2) / Mathf.Max((genes.gestation_time * base_gestation_time), 1);
+        maturity_age = lifespan * Mathf.Clamp((genes.maturity_time + 1) / (genes.gestation_time + 1) - 0.5f, 0.1f, 0.8f);
+
+        // The time the agent needs to make an egg and hatch (reproductive cycle is twice this amount of time plus the maturity age)
+        egg_gestation_time = Mathf.Max(Mathf.Log(genes.gestation_time * genes.size * energy / 2) * base_gestation_time, base_gestation_time);
 
         // Set up the max size
         max_size = transform.localScale * genes.size;
@@ -329,7 +394,10 @@ public class BaseAgent : Interactable
         // Finally, set up the brain!!
         brain = GetComponent<Brain>();
         brain.Setup();
-        Model.NeuralNet.RandomizeWeights((Model.NeuralNet)brain.GetModel());
+
+        // Setup the joint for grabbing!
+        GetComponent<RelativeJoint2D>().maxForce = (1 + genes.vitality) * 5;
+        GetComponent<RelativeJoint2D>().maxTorque = (1 + genes.vitality) * 5;
     }
 
     public virtual void Setup(int id, Genes g, Manager m)
@@ -340,6 +408,13 @@ public class BaseAgent : Interactable
 
     protected virtual void Update()
     {
+
+        // Update the internal clock
+        internal_clock -= genes.clockrate;
+
+        // Reset the true metabolism cost
+        true_metabolic_cost = 0;
+
         if (control == Control.Heuristic)
         {
             HeuristicControl();
@@ -350,62 +425,89 @@ public class BaseAgent : Interactable
         }
         else if (control == Control.Learning)
         {
-            obs = senses.GetObservations(this);
-            inf = brain.GetModel().Infer(obs);
-
-            Move(inf[0] * movement_speed, inf[1] * movement_speed, inf[2] * rotation_speed, inf[3] * rotation_speed);
-            wants_to_breed = is_mature && inf[4] > 0;
-            wants_to_eat = inf[5] > 0 || energy < max_energy / 2;
-            wants_to_grab = inf[6] > 0;
-
-            if (wants_to_breed)
-            {
-                LayEgg();
-            }
-
-            if (wants_to_eat && grabbed != null)
-            {
-                Eat(grabbed);
-            }
-
-            if (grabbed != null && grabbed.GetID() == (int)ID.Wobbit && inf[7] > 0)
-            {
-                Attack((BaseAgent)grabbed);
-            }
+            LearningControl();
         }
 
-        // Reduces energy over the agent's life 
-        ExistentialCost();
-
-        // Heal the agent if they have enough energy
-        TryHealing();
-
-        // Sense stuff!
-        SenseEnv();
-
-        // Update the age of the agent
-        UpdateAge();
-
-        // Update the speed of the agent
-        speed = rb.velocity.magnitude;
-
-        if (Input.GetKey(KeyCode.K))
+        if (control != Control.Static)
         {
-            Die();
-        }
+            // Reduces energy over the agent's life 
+            ExistentialCost();
 
-        // If we do not want to grab, we should get rid of anything we are trying to grab
-        if (wants_to_grab == false || grabbed != null && Vector2.Distance(grabbed.transform.position, transform.position) > 3)
-        {
-            ReleaseGrab();
+            // Heal the agent if they have enough energy
+            TryHealing();
+
+            // Sense stuff!
+            SenseEnv();
+
+            // Update the age of the agent
+            UpdateAge();
+
+            // Update the speed of the agent
+            speed = rb.velocity.magnitude;
+
+            // Calculate the KE
+            kenetic_energy = 0.5f * Mathf.Pow(speed, 2f) * rb.mass;
+
+            if (Input.GetKey(KeyCode.K))
+            {
+                Die();
+            }
+
+            // If we do not want to grab, we should get rid of anything we are trying to grab
+            // If something is too far we drop it 
+            if (wants_to_grab == true && grabbed != null)
+            {
+                Vector2 c1 = grabbed.GetCol().ClosestPoint(transform.position);
+                Vector2 c2 = col.ClosestPoint(c1);
+                grabbed_force = Vector2.Distance(c1, c2);
+
+                // This value is like the agent's strength, it is how well they can hold onto things TODO Make the max force and torque equal to the strength!
+                strength = ((1 + genes.vitality) * transform.localScale.sqrMagnitude) / 100;
+
+                if (grabbed_force > strength)
+                {
+                    ReleaseGrab();
+                }
+            }
+
+            // Or if we want to just drop it
+            if (wants_to_grab == false)
+            {
+                ReleaseGrab();
+            }
+
+            // Debugging
+            if (Input.GetKey(KeyCode.P))
+            {
+                ((EvolutionaryNeuralLearner)brain).Mutate();
+            }
         }
     }
 
     protected void UpdateAge()
     {
         // Here we increment the time the agent has been alive! As well as update the maturity status
-        is_mature = age > maturity_age;
+        // Once we are of maturity age, regenerate the collider
+        if (age > maturity_age && is_mature == false)
+        {
+            is_mature = true;
+            GenerateCollider();
+        }
+        else
+        {
+            // Since there is a signifianct overhead while calculating the collider geometry, we want to only do this when absolutely needed...
+            // To determine when to update the geometry, we need to figure out how much the geometry has changed.
+            // I do this by updating the collider in increments determined by the ratio of the transform scale and the max size scale.
+            bool regenerate = (int)(transform.localScale.x / max_size.x * 100) % 5f == 0;
+
+            // Here, we regenerate the geometry if we want to regenerate it with the bool we defined above or if there is no shape (has not been created yet)
+            if (regenerate && is_mature == false || col.shapeCount == 0)
+                GenerateCollider();
+        }
+
+        // Increment age
         age += Time.deltaTime;
+        egg_formation_cooldown += Time.deltaTime;
 
         // The creatures only reach full size when they are mature
         if (!is_mature && maturity_age > 0)
@@ -414,17 +516,34 @@ public class BaseAgent : Interactable
             transform.localScale = Vector3.Lerp(max_size * 0.1f, max_size, (age / maturity_age));
 
             // Lerp the consumption rate
-            consumption_rate = Mathf.Lerp(base_consumption_rate / Mathf.Exp(-genes.size) * 0.5f, base_consumption_rate / Mathf.Exp(-genes.size), age / maturity_age);
+            consumption_rate = Mathf.Lerp(base_consumption_rate / Mathf.Exp(-genes.size) * 0.3f, base_consumption_rate / Mathf.Exp(-genes.size), age / maturity_age);
 
             // Lerp the metabolism (babies dont need as much food as the adults)
             metabolism = Mathf.Lerp((Mathf.Pow(genes.size, 2) * genes.speed + genes.perception) * 0.3f, (Mathf.Pow(genes.size, 2) * genes.speed + genes.perception), age / maturity_age);
 
             // Lerp the health
-            health = Mathf.Lerp(max_health * 0.1f, max_health, age / maturity_age);
+            //health = Mathf.Lerp(max_health * 0.1f, max_health, age / maturity_age);
+            max_health = Mathf.Lerp(base_health * Mathf.Pow(genes.size, 2) * 0.1f, base_health * Mathf.Pow(genes.size, 2), age / maturity_age);
+            health = Mathf.Clamp(health, 0, max_health);
 
             // Lerp the attack and defense
             defense = Mathf.Lerp(genes.defense * base_defense * 0.1f, genes.defense * base_defense, age / maturity_age);
             attack = Mathf.Lerp(genes.attack * base_attack * 0.1f, genes.attack * base_attack, age / maturity_age);
+
+            // They consume a bit more energy when growing up!
+            if (energy > metabolism * Time.deltaTime)
+            {
+                //energy -= metabolism * Time.deltaTime;
+                //manager.RecycleEnergy(metabolism * Time.deltaTime);
+
+                //// update the true metabolism cost
+                //true_metabolic_cost += metabolism * Time.deltaTime;
+            }
+            else
+            {
+                manager.RecycleEnergy(energy);
+                energy = 0;
+            }
         }
 
         // If the creature is too old they die!
@@ -441,8 +560,9 @@ public class BaseAgent : Interactable
 
     protected virtual void ExistentialCost()
     {
-        // The cost of existing
-        float cost = (metabolism * Time.deltaTime / 2) / manager.metabolism_scale_rate;
+        // The cost of existing with the cost of moving
+        //float cost = ((metabolism * Time.deltaTime / 2) / manager.metabolism_scale_rate) * (1 + kenetic_energy);
+        float cost = (metabolism * Time.deltaTime) / manager.metabolism_scale_rate;
         energy -= cost;
         manager.RecycleEnergy(cost);
 
@@ -452,14 +572,29 @@ public class BaseAgent : Interactable
         {
             Die();
         }
+
+        // Update the true cost
+        true_metabolic_cost += cost;
+        time_to_die = Mathf.Min(lifespan - age, energy / true_metabolic_cost);
     }
 
     protected virtual void TryHealing()
     {
-        // Heal the agent over time if they have more than enough energy
+        // Heal the agent over time if they have more than enough energy (healing takes energy)
         if (energy > max_energy && max_health >= health)
         {
-            health += Time.deltaTime;
+            // Heal one point per second
+            float cost = Time.deltaTime;
+
+            // Use energy to heal
+            health += cost;
+            energy -= cost;
+
+            // Recycle the energy
+            manager.RecycleEnergy(cost);
+
+            // Clamp the health
+            health = Mathf.Clamp(health, 0, max_health);
         }
     }
 
@@ -497,6 +632,8 @@ public class BaseAgent : Interactable
         {
             Eat(grabbed);
         }
+
+
     }
 
     public void HardControl()
@@ -585,19 +722,66 @@ public class BaseAgent : Interactable
     public void LearningControl()
     {
         // We first need to create the list of observations
+        obs = senses.GetObservations(this);
+        inf = brain.GetModel().Infer(obs);
 
+        // Allow the agent to move 
+        Move(inf[0] * movement_speed, inf[1] * movement_speed, inf[2] * rotation_speed, inf[3] * rotation_speed);
+
+        // Set the decisions
+        wants_to_breed = is_mature && inf[4] > 0.5f;
+        wants_to_eat = inf[5] > 0.5f || energy < max_energy / 2;
+        wants_to_grab = inf[6] > 0.5f;
+        wants_to_attack = inf[7] > 0.5f;
+
+        // Check to see if it wants to breed
+        if (wants_to_breed && energy > max_energy)
+        {
+            LayEgg();
+        }
+        // TODO Give the agent the ability to decide whether it wants to just lay an egg or breed (sexual vs asexual reproduction)
+        // If the agent wants to breed and has grabbed another agent, check if that agent is close enough genetically or if it has the same name (meaning it is the same species)
+        else if (wants_to_breed && grabbed != null && grabbed.TryGetComponent<BaseAgent>(out BaseAgent a) && (genes.CalculateGeneticDrift(a.genes) < 1 || a.GetRawName().Equals(GetRawName())))
+        {
+            Breed(a);
+        }
+
+        // If we have something grabbed and are hungry then eat it!
+        if (wants_to_eat && grabbed != null)
+        {
+            Eat(grabbed);
+        }
+
+        // If we have an agent grabbed and we want to attack then attack it!
+        if (grabbed != null && grabbed.GetID() == (int)ID.Wobbit && wants_to_attack)
+        {
+            Attack((BaseAgent)grabbed);
+        }
     }
 
     protected virtual void Move(float forward, float backward, float left, float right)
     {
-        rb.AddForce(transform.up * forward);
-        rb.AddForce(transform.up * -backward);
-        rb.AddTorque(right);
-        rb.AddTorque(-left);
+        // TODO handle this is update age
+        float scaler = Mathf.Clamp(age / maturity_age, 0.25f, 1);
+
+        // Find force to add for moving forward
+        Vector3 forward_force = transform.up * (forward + (genes.vitality * forward));
+        Vector3 backward_force = transform.up * -(backward + (genes.vitality * backward));
+
+        // Add the force
+        rb.AddForce(forward_force);
+        rb.AddForce(backward_force);
+
+        // Calculate torque to add
+        float torque_right = (right + genes.vitality * right) * scaler;
+        float torque_left = -(left + genes.vitality * left) * scaler;
+
+        rb.AddTorque(torque_right);
+        rb.AddTorque(torque_left);
 
         // Clamp the velocity
-        rb.velocity = Vector3.ClampMagnitude(rb.velocity, movement_speed);
-        rb.angularVelocity = Mathf.Clamp(rb.angularVelocity, -rotation_speed, rotation_speed);
+        rb.velocity = Vector3.ClampMagnitude(rb.velocity, movement_speed * scaler);
+        rb.angularVelocity = Mathf.Clamp(rb.angularVelocity, -rotation_speed, rotation_speed * scaler);
 
     }
 
@@ -607,8 +791,14 @@ public class BaseAgent : Interactable
     /// </summary>
     public void Breed(BaseAgent partner)
     {
+        // If we have not had enough time to form an egg, we return without doing anything
+        if (egg_formation_cooldown < egg_gestation_time)
+        {
+            return;
+        }
+
         // If the partner wants to breed, then shoot your shot it
-        if (partner.wants_to_breed && energy > max_energy)
+        if (partner.wants_to_breed && energy > max_energy * 0.5f)
         {
             // Spawn in the egg object
             Vector2 pos = egg_location.position;
@@ -619,19 +809,22 @@ public class BaseAgent : Interactable
 
             // Every agent will have its eggs id be the agents id + 1
             // Create a perfect clone of the genes and pass it on to the egg
-            x.Setup(this.id + 1, max_energy, genes.Cross(partner.genes), manager, manager.GetAgent(id));
+            x.Setup(this.id + 1, max_energy * 0.5f, genes.Cross(partner.genes), manager, manager.GetAgent(id));
 
             // Give the egg a copy of this brain's model
             x.brain = brain.GetModel().Copy();
 
-            // An egg requires the same amount of energy as the end product
-            energy -= max_energy;
+            // An egg requres 50% of the agents max energy
+            energy -= max_energy * 0.5f;
 
             // Add the egg to the manager to track
             manager.AddAgent(x);
 
             // Update this value 
             eggs_layed++;
+
+            // Reset the egg formation cooldown
+            egg_formation_cooldown = 0;
         }
     }
 
@@ -640,7 +833,15 @@ public class BaseAgent : Interactable
     /// </summary>
     public virtual void LayEgg()
     {
-        if (energy > max_energy)
+
+        // If we have not had enough time to form an egg, we return without doing anything
+        if (egg_formation_cooldown < egg_gestation_time)
+        {
+            return;
+        }
+
+        // Testing the 0.5 energy
+        if (energy > max_energy * 0.5f)
         {
             // Spawn in the egg object
             Vector2 pos = egg_location.position;
@@ -651,25 +852,28 @@ public class BaseAgent : Interactable
 
             // Every agent will have its eggs id be the agents id + 1
             // Create a perfect clone of the genes and pass it on to the egg
-            x.Setup(this.id + 1, max_energy, genes.Clone(), manager, manager.GetAgent(id));
+            x.Setup(this.id + 1, max_energy * 0.5f, genes.Clone(), manager, manager.GetAgent(id));
 
             // Give the egg a copy of this brain's model
             x.brain = brain.GetModel().Copy();
 
-            // An egg requires the same amount of energy as the end product
-            energy -= max_energy;
+            // An egg requres 50% of the agents max energy
+            energy -= max_energy * 0.5f;
 
             // Add the egg to the manager to track
             manager.AddAgent(x);
 
             // Update this value 
             eggs_layed++;
+
+            // Reset the egg formation cooldown
+            egg_formation_cooldown = 0;
         }
     }
 
     public virtual void Eat(Interactable other)
     {
-        // The agent should not be able to overeat and reproduce if it is not of age
+        // The agent recieves less and less energy when they get too full
         if (energy >= max_energy * 2f)
         {
             return;
@@ -757,12 +961,13 @@ public class BaseAgent : Interactable
 
     public virtual void Attack(BaseAgent other)
     {
-        other.Damage(attack * Time.deltaTime);
+        other.Damage(attack * transform.localScale.x);
     }
 
     public virtual void Damage(float damage)
     {
-        health -= Mathf.Clamp(damage - (defense * (genes.size - genes.speed)), 1, damage);
+        float total_damage = Mathf.Max(damage - (defense * transform.localScale.x), 0.5f);
+        health -= total_damage * Time.deltaTime;
     }
 
     public virtual void Die()
@@ -779,25 +984,20 @@ public class BaseAgent : Interactable
             if (energy - energy_per <= 0)
             {
                 Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
-                m.Setup((int)ID.Meat, energy, 1f, genes.size + transform.localScale.x, this.genes, manager);
+                m.Setup((int)ID.Meat, energy, 0.5f, transform.localScale.x / pieces, this.genes, manager);
                 manager.agents.Add(m);
                 break;
             }
             else
             {
                 Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
-                m.Setup((int)ID.Meat, energy_per, 1f, genes.size + transform.localScale.x, this.genes, manager);
+                m.Setup((int)ID.Meat, energy_per, 0.5f, transform.localScale.x / pieces, this.genes, manager);
                 manager.agents.Add(m);
                 energy -= energy_per;
             }
         }
 
         Destroy(gameObject);
-    }
-
-    public virtual void CheckVitality()
-    {
-
     }
 
     public virtual void OnCollisionStay2D(Collision2D collision)
@@ -811,7 +1011,6 @@ public class BaseAgent : Interactable
                 Eat(i);
             }
         }
-
     }
 
     public void OnCollisionEnter2D(Collision2D collision)
@@ -838,8 +1037,20 @@ public class BaseAgent : Interactable
         }
     }
 
+    public string GetRawName()
+    {
+        string raw = genus.ToUpper()[0] + genus.Substring(1) + " " + species.ToUpper()[0] + species.Substring(1);
+        raw = raw.Split('>')[1];
+        return raw;
+    }
+
     private void OnDrawGizmos()
     {
-        Gizmos.DrawLine(transform.up + transform.position, transform.up * 5 + transform.position);
+        if (grabbed != null)
+        {
+            Vector2 c1 = grabbed.GetCol().ClosestPoint(transform.position);
+            Vector2 c2 = col.ClosestPoint(c1);
+            Gizmos.DrawLine(c1, c2);
+        }
     }
 }

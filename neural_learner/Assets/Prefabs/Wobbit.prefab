@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 8284897868176631420}
   - component: {fileID: 7000150729006972410}
   - component: {fileID: 8284897868176631421}
-  - component: {fileID: 685899110729052593}
+  - component: {fileID: 3353258988676551412}
   m_Layer: 0
   m_Name: Wobbit
   m_TagString: agent
@@ -80,7 +80,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88b02eed9adbc43b7b44d9fc04f97453, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  model_code: EvoNN:in-17-50-Tanh>fc-50-8-Tanh>ot-8-0-Tanh
+  model_code: EvoNN:in-19-5-Tanh>fc-5-6-Tanh>ot-6-0-Tanh
 --- !u!114 &8284897868176631410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93,6 +93,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb405b5c0080447f08ed9e7016547ceb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  body: {fileID: 0}
+  head: {fileID: 0}
   base_health: 50
   base_attack: 5
   base_defense: 5
@@ -100,12 +102,13 @@ MonoBehaviour:
   base_rotation_speed: 10
   base_perception: 14
   base_gestation_time: 5
-  base_lifespan: 120
+  base_lifespan: 60
   base_mass: 1
-  base_consumption_rate: 1
+  base_consumption_rate: 5
   wants_to_breed: 0
   wants_to_eat: 0
   wants_to_grab: 0
+  wants_to_attack: 0
   inf: []
   genus: 
   species: 
@@ -139,12 +142,14 @@ MonoBehaviour:
   meat: {fileID: 4058128813785644151, guid: 70565dae98084450eaaf14c20f28fea9, type: 3}
   egg: {fileID: 798380245572057900, guid: 147dc55d0b0304c8cbf8fc3ae99ab8ce, type: 3}
   egg_location: {fileID: 4975962514911026767}
-  senses: {fileID: 0}
+  senses: {fileID: 7000150729006972410}
   brain: {fileID: 0}
   grabbed: {fileID: 0}
+  internal_clock: 0
   movement_speed: 0
   rotation_speed: 0
   speed: 0
+  kenetic_energy: 0
   health: 0
   max_health: 0
   energy: 0
@@ -156,10 +161,13 @@ MonoBehaviour:
   consumption_rate: 0
   age: 0
   maturity_age: 0
-  eggs_layed: 0
   lifespan: 0
   is_mature: 0
+  egg_formation_time: 0
+  num_eggs_ready: 0
+  eggs_layed: 0
   metabolism: 0
+  true_metabolic_cost: 0
   time_to_die: 0
   control: 2
   node:
@@ -193,6 +201,8 @@ MonoBehaviour:
       code: {x: 0, y: 0, z: 0}
   generation: 0
   god: 0
+  grabbed_force: 0
+  strength: 0
   obs: []
 --- !u!212 &8284897868176631423
 SpriteRenderer:
@@ -302,7 +312,7 @@ PolygonCollider2D:
   m_GameObject: {fileID: 8284897868176631411}
   m_Enabled: 1
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: b92e7d08455324b7f8717cd538a1f6d8, type: 2}
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
@@ -320,12 +330,14 @@ PolygonCollider2D:
     m_Paths:
     - - {x: 0.12023673, y: 0.14878674}
       - {x: 0.14024039, y: 0.21305509}
-      - {x: 0.089999996, y: 0.31}
-      - {x: 0.050537594, y: 0.29922202}
+      - {x: 0.091346435, y: 0.2810524}
+      - {x: 0.055923194, y: 0.29181683}
+      - {x: 0.05719151, y: 0.21451788}
       - {x: 0.0007779747, y: 0.1865909}
-      - {x: -0.055148564, y: 0.2974257}
-      - {x: -0.11, y: 0.31}
-      - {x: -0.14999999, y: 0.26}
+      - {x: -0.05654701, y: 0.22291496}
+      - {x: -0.046396967, y: 0.29136688}
+      - {x: -0.07230081, y: 0.2918236}
+      - {x: -0.13115042, y: 0.22768643}
       - {x: -0.123184286, y: 0.12754405}
       - {x: -0.17562942, y: 0.01}
       - {x: -0.18101835, y: -0.10407343}
@@ -335,7 +347,7 @@ PolygonCollider2D:
       - {x: 0.16729553, y: -0.11798506}
       - {x: 0.16844405, y: 0.01}
       - {x: 0.1153322, y: 0.09951922}
---- !u!254 &685899110729052593
+--- !u!254 &3353258988676551412
 RelativeJoint2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -348,9 +360,9 @@ RelativeJoint2D:
   m_ConnectedRigidBody: {fileID: 0}
   m_BreakForce: Infinity
   m_BreakTorque: Infinity
-  m_MaxForce: 500
-  m_MaxTorque: 500
-  m_CorrectionScale: 0.8
+  m_MaxForce: 10
+  m_MaxTorque: 10
+  m_CorrectionScale: 0.3
   m_AutoConfigureOffset: 1
   m_LinearOffset: {x: 0, y: 0}
   m_AngularOffset: 0

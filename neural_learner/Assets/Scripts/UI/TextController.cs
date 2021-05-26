@@ -7,35 +7,37 @@ public class TextController : MonoBehaviour
 {
 
     public Text layer, neuron, value, bias, controls;
+    public Camera target_cam;
+
+
     // Start is called before the first frame update
     void Start()
     {
-        Deactivate();
+
     }
 
     public void Deactivate()
     {
-        layer.enabled = false;
-        neuron.enabled = false;
-        value.enabled = false;
-        bias.enabled = false;
-        controls.enabled = false;
+
     }
 
     public void Activate()
     {
-        layer.enabled = true;
-        neuron.enabled = true;
-        value.enabled = true;
-        bias.enabled = true;
-        controls.enabled = true;
+
     }
 
     public void UpdateText(int layer, int neuron, float value, float bias)
     {
-        this.layer.text = "Layer: " + layer.ToString();
-        this.neuron.text = "Neuron: " + neuron.ToString();
-        this.value.text = "Value: " + value.ToString();
-        this.bias.text = "Bias: " + bias.ToString();
+
+    }
+
+    public void Update()
+    {
+        // If the selected agent is not null, then follow it around
+        if (StateManager.selected_agent != null)
+        {
+            // Set the position 
+            target_cam.transform.position = StateManager.selected_agent.transform.position + Vector3.forward * -5;
+        }
     }
 }

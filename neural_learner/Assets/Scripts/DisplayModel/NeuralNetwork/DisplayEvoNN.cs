@@ -4,44 +4,34 @@ using UnityEngine;
 using Model;
 using Layers;
 using Activations;
+using System.Linq;
 
-public class DisplayEvoNN : MonoBehaviour
+public class DisplayEvoNN : Display
 {
     // the learner to display
     public EvolutionaryNeuralLearner learner;
     public GameObject neuron;
     public NeuralNet model;
-    public float update_rate = 1f;
 
     public List<List<GameObject>> neurons;
     public List<float> x = new List<float>();
     public float cooldown;
 
-    [Header("Horizontal Layer Seperation ")]
-    public float alpha = 3;
-
-    [Header("Vertical Neuron Seperation ")]
-    public float lambda = 3;
-
-    [Header("Max Neuron Size")]
-    public float beta = 0.76f;
-
-    [Header("Neuron Scale Rate")]
-    public float theta = 6.9f;
-
-    [Header("Max Weight Width")]
-    public float sigma = 0.31f;
-
-    [Header("Neuron Movement Speed")]
-    public float gamma = 30f;
-
-    [Header("The Visualizer Has Been Activated (Click To Reset)")]
-    public bool activated = false;
-
-
     // Start is called before the first frame update
-    void Activate()
+    public override void Activate()
     {
+
+        // Grab the agent passed into the state manager
+        if (StateManager.selected_agent != null)
+        {
+            learner = (EvolutionaryNeuralLearner)StateManager.selected_agent.brain;
+        }
+        else
+        {
+            learner.Setup();
+            //Model.NeuralNet.RandomizeWeights(learner.model);
+        }
+
         if (neurons != null)
         {
             // Delete each neuron
@@ -77,6 +67,9 @@ public class DisplayEvoNN : MonoBehaviour
 
         // Set the neighbour nodes
         SetNeighbours();
+
+        // Run the base activate method
+        base.Activate();
     }
 
     void AddChildren()
@@ -143,19 +136,17 @@ public class DisplayEvoNN : MonoBehaviour
         if (activated == false)
         {
             Activate();
-            activated = true;
         }
-        else
+        else if (cooldown <= 0)
         {
             model = (NeuralNet)learner.GetModel();
-
-            //for (int i = 0; i < x.Count; i++)
-            //{
-            //    x[i] = Mathf.PerlinNoise(i, Time.realtimeSinceStartup);
-            //}
-            List<float> model_out = model.FeedForward(x);
+            // Set the model input to the selected agent's
             UpdateNeurons();
+            cooldown = update_rate;
         }
+
+        // Tick down the timer!
+        cooldown -= Time.deltaTime;
     }
 
     public void ForceDrawLines()
@@ -180,8 +171,6 @@ public class DisplayEvoNN : MonoBehaviour
 
     public void AddLayer(int layer_pos, int size)
     {
-
-        print("Before: " + model.GetCode());
         List<GameObject> new_layer = new List<GameObject>();
         model.AddLayer(layer_pos - 1, "fc", new Tanh());
         neurons.Insert(layer_pos, new_layer);
@@ -189,8 +178,6 @@ public class DisplayEvoNN : MonoBehaviour
         {
             AddNeuron(layer_pos - 1, 0);
         }
-
-        print("After: " + model.GetCode());
     }
 
     public void RemoveLayer(int layer_pos)
@@ -210,10 +197,10 @@ public class DisplayEvoNN : MonoBehaviour
         AddChildren();
     }
 
-    public void AddNeuron(int layer, int position)
+    public void AddNeuron(int layer, int position, bool full = false)
     {
         print("Adding Neuron To Layer " + layer + " at position " + position);
-        // Add a neuron to the neural net's hidden layer 
+        // Add a neuron to the neural net's hidden layer
         model.AddNeuron(layer, position);
 
         // Add a neuron to the display
@@ -257,6 +244,134 @@ public class DisplayEvoNN : MonoBehaviour
         AddChildren();
     }
 
+    public string Mutate(float base_mutation_rate, float weight_mutation_rate, float neuro_mutation_rate, float bias_mutation_rate, float dropout_rate)
+    {
+        // A string value to track the mutations
+        string log = "<";
+
+        // Tracks how many individual mutations occured
+        int mutation_tracker = 0;
+
+        // In supremely rare cases, it may mutate and add another layer (this is probably not benificial)
+        if (Random.value < neuro_mutation_rate)
+        {
+            // Not implemented yet
+            log += "M" + mutation_tracker + "->" + "LayerAdded, ";
+            mutation_tracker++;
+        }
+
+        if (Random.value < neuro_mutation_rate)
+        {
+            // Not implemented yet
+            log += "M" + mutation_tracker + "->" + "LayerAdded, ";
+            mutation_tracker++;
+        }
+
+        // Get all of the layers
+        List<Layer> all_layers = model.GetAllLayers().ToList(); ;
+
+        // Remove and store the last layer (it has no weights)
+        Layer output = all_layers[all_layers.Count - 1];
+        all_layers.RemoveAt(all_layers.Count - 1);
+
+        // Look at each layer...
+        int layer_index = 0;
+        foreach (Layer layer in all_layers)
+        {
+            // Looking at each layer, we will use the neuro_mutation_rate and dropout_rate to see if we mutate
+            // Here we look at the layer and for each time we have a triggered neuro mutation event we add a neuron
+            int where = 0;
+            while (Random.value < neuro_mutation_rate && layer_index > 0)  // Note that we cannot add neurons to the input layer
+            {
+                // If triggered, we add a neuron to this layer
+                where = Random.Range(0, layer.GetUnits());
+                AddNeuron(layer_index - 1, where);
+
+                // Update the log
+                log += "M" + mutation_tracker + "->" + "NeuronAdded@<L:" + layer_index + ", P:" + where + ">, ";
+                mutation_tracker++;
+            }
+
+            // If the dropout was triggered, we remove a neuron if there is no weights
+            // We count how many occurence of successful dropouts we have
+            int weight_index;
+            while (Random.value < dropout_rate)
+            {
+                // We only remove a neuron if the connection is zero or the dropout rate is triggered twice (a significant event)
+                where = Random.Range(0, layer.GetUnits());
+
+                try
+                {
+                    // Which weight to look at
+                    weight_index = Random.Range(0, layer.GetWeights()[where].Count);
+                }
+                catch
+                {
+                    return "Error: " + where + ", " + layer.GetUnits() + ", " + layer.GetWeights().Count + ", " + layer_index;
+                }
+
+                // If we have triggered another event or the sum of the weights are zero (no connections) it will be dropped
+                float sum = layer.weights[where].Sum();
+                bool drop = Random.value < dropout_rate || Mathf.Approximately(sum, 0);
+                if (drop && layer_index > 0)  // Note that we cannot add neurons to the input layer
+                {
+                    // Remove a neuron
+                    RemoveNeuron(layer_index - 1, where);
+
+                    // Update the log
+                    log += "M" + mutation_tracker + "->" + "NeuronDropped@<L:" + layer_index + ", P:" + where + "> , ";
+                    mutation_tracker++;
+                }
+                else if (layer_index > 0)
+                {
+                    // It is not ready to dropout unless the value is zero so here we set it to zero
+                    layer.weights[where][weight_index] = 0;
+                    layer.biases[where] = 0;
+
+                    // Update the log
+                    log += "M" + mutation_tracker + "->" + "SynapseRemoved@<L:" + layer_index + ", P:(" + where + "," + weight_index + ")>, ";
+                    mutation_tracker++;
+                }
+            }
+
+            // We now mutate biases
+            float old_value;
+            while (Random.value < bias_mutation_rate)
+            {
+                // Which neuron 
+                where = Random.Range(0, layer.GetUnits());
+                // Store old value
+                old_value = layer.biases[where];
+                // We nudge the value by using the base mutation rate (how much will it mutate?)
+                layer.biases[where] += Random.Range(-base_mutation_rate * 10f, base_mutation_rate * 10f);
+
+                // Update the log
+                log += "M" + mutation_tracker + "->" + "BiasMutated@<L:" + layer_index + ", P:" + where + ">; E{" + old_value + "->" + layer.biases[where] + "}, ";
+                mutation_tracker++;
+            }
+
+            // We now mutate weights 
+            while (Random.value < weight_mutation_rate)
+            {
+                // Which neuron 
+                where = Random.Range(0, layer.GetUnits());
+                // We nudge the value by using the base mutation rate (how much will it mutate?)
+                weight_index = Random.Range(0, layer.GetWeights()[where].Count);
+                // Store old weight
+                old_value = layer.weights[where][weight_index];
+                layer.weights[where][weight_index] += Random.Range(-base_mutation_rate * 10f, base_mutation_rate * 10f);
+
+                // Update the log
+                log += "M" + mutation_tracker + "->" + "WeightMutated@<L:" + layer_index + ", P:(" + where + "," + weight_index + ")>; E{" + old_value + "->" + layer.weights[where][weight_index] + "}, ";
+                mutation_tracker++;
+            }
+
+            layer_index++;
+        }
+        log += "END>";
+        return log;
+    }
+
     void UpdateNeurons()
     {
         // Look at each layer
@@ -267,15 +382,18 @@ public class DisplayEvoNN : MonoBehaviour
             // Look at each neuron in the layer
             for (int i = 0; i < layer.GetUnits(); i++)
             {
+
                 // Get the neuron
                 n = neurons[layer_index][i].GetComponent<Neuron>();
 
                 // Update the weights, bias, value, etc
                 n.SetWeights(w: layer.GetWeights()[i]);
+                n.SetActivation(layer.activation.name);
                 n.SetValue(layer.GetNeurons()[i]);
                 n.SetBias(layer.biases[i]);
                 n.SetLayer(layer_index);
                 n.SetPosition(i);
+
 
                 // Set the max size, scale rate, and weight edge thickness
                 // If we scale the alpha and lambda factors by a great deal, we should also scale beta by a small amount
@@ -283,7 +401,7 @@ public class DisplayEvoNN : MonoBehaviour
                 n.max_size = beta + scale_factor;
                 n.scale_rate = theta;
                 n.line_scaler = sigma;
-
+                n.min_line_width = sigma_prime;
 
                 // Redraw the lines if the neuron has moved
                 n.DrawLine(false);
@@ -295,7 +413,7 @@ public class DisplayEvoNN : MonoBehaviour
                 n.CalculateDesiredPosition(layer_index, i, layer.GetUnits(), alpha, lambda);
 
                 // Update the movement of the neuron
-                n.UpdateMovement(gamma);
+                n.UpdateMovement(gamma, phi);
 
             }
             // Increment the layer

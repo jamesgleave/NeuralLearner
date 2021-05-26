@@ -126,7 +126,7 @@ public class Manager : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            RespawnFoodPellets();
+            ToggleRender();
         }
     }
 
@@ -151,7 +151,8 @@ public class Manager : MonoBehaviour
         foreach (FoodPellet pellet in food_pellets)
         {
             // If the pellet has been eaten then respawn if we have enough energy
-            if (pellet.eaten)
+            // TODO Come up with a better way to manage the number of agents
+            if (pellet.eaten && agents.Count < starting_agents)
             {
                 Vector2 center = cluster_pos[Random.Range(0, pellet_clusters)];
                 Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
@@ -180,15 +181,11 @@ public class Manager : MonoBehaviour
             FoodPellet p = Instantiate(pellet, center + offset, Quaternion.identity, transform);
 
             p.Setup((int)ID.FoodPellet, food_pellet_energy, food_growth_rate, food_pellet_size, this);
+            p.energy_consumed = food_pellet_energy;
+            p.energy = food_pellet_energy;
+            energy -= food_pellet_energy;
             food_pellets.Add(p);
 
-            //// Remove energy from the manager
-            //energy -= food_pellet_energy;
-            //if (energy <= 0)
-            //{
-            //    energy = 0;
-            //    break;
-            //}
         }
     }
 
@@ -226,14 +223,32 @@ public class Manager : MonoBehaviour
 
             // Create names and base genes for the creatures
             Genes g = Genes.RandomGenes(); // TODO Replace the random genes here with some kind of default
-            string identifier = "<" + Random.Range(0, 1000).ToString("X") + ">";
+            string identifier = "<" + Random.Range(1000, 10000).ToString("X") + ">";
             string full_name = identifier + NameGenerator.GenerateFullName();
             g.genus = full_name.Split(' ')[0];
             g.species = full_name.Split(' ')[1];
 
+            // Set the genes' spritemap (establish the look of the agent randomly)
+            GetComponent<SpriteManager>().SetRandomComponents(g);
+
             // Setup the agent
             a.Setup((int)ID.Wobbit, g);
             a.genes.genetic_drift = 0;
+            a.age = a.maturity_age;
+
+            // Give them randomized brains
+            for (int j = Random.Range(1, 100); j > 0; j--)
+            {
+                try
+                {
+                    Model.NeuralNet.MutateWeights((Model.NeuralNet)a.brain.GetModel(), a.genes.weight_mutation_prob, a.genes.dropout_prob);
+                }
+                catch
+                {
+                    // Do nothing
+                    print("oof");
+                }
+            }
 
             // To track the ancestory, we use an ancestor manager object which is a tree like structure using nodes
             AncestorNode node = new AncestorNode(parent: null, genes: g, name: full_name);
@@ -360,6 +375,21 @@ public class Manager : MonoBehaviour
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// Setup the sprite by setting the child sprite renderer object's sprite image and setting the points on the polygon colider
+    /// </summary>
+    /// <param name="a"></param>
+    public void SetSprite(BaseAgent a, float r, float g, float b)
+    {
+        // Setup the sprite by setting the child sprite renderer object's sprite image and setting the points on the polygon collider
+        GetComponent<SpriteManager>().SetSprite(a.genes.spritemap["head"], a.genes.spritemap["body"], a, new Color(r, g, b));
+    }
+
+    public void ToggleRender()
+    {
+
     }
 
     public void OnDrawGizmos()

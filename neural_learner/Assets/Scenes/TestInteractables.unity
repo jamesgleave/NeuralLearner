@@ -403,17 +403,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   total_food: 2000
   food_growth_rate: 5
-  pellet_distrobution: 30
-  pellet_clusters: 15
+  pellet_distrobution: 20
+  pellet_clusters: 100
   food_pellet_size: 3
-  food_pellet_energy: 15
+  food_pellet_energy: 30
   pellet: {fileID: 3829854075992685049, guid: 72416a997ceb74010b84d5ace9c7462e, type: 3}
   food_pellets: []
   update_rate: 0.033333335
-  gridsize: 200
+  gridsize: 150
   scale: 3
   agent: {fileID: 8284897868176631410, guid: 84287a1358b2f4f7e8196dc4edd24254, type: 3}
-  starting_agents: 200
+  starting_agents: 400
   metabolism_scale_rate: 5
   agents: []
   energy: 0

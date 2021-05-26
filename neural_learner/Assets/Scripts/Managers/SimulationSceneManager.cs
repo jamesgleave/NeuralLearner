@@ -7,10 +7,10 @@ public class SimulationSceneManager : MonoBehaviour
 {
     public void ToSim()
     {
-        SceneManager.LoadScene("TestInteractables");
+        SceneManager.LoadScene("TestInteractables + UI");
     }
 
-    public void ToAncestory(GameObject agent_obj, BaseAgent agent, Manager manager)
+    public void ToAncestory(GameObject agent_obj, BaseAgent agent, Manager manager, GameObject gui)
     {
         // Save the values to the state manager
         StateManager.interactable = agent_obj;
@@ -21,14 +21,40 @@ public class SimulationSceneManager : MonoBehaviour
 
         // Detatch the manager from the parent
         manager.transform.SetParent(null);
+
         // Move the manager to the "Do not destroy scene"
         DontDestroyOnLoad(manager);
+
+        // Move the gui to the "Do not destroy scene"
+        DontDestroyOnLoad(gui);
 
         // Move scenes
         SceneManager.LoadScene("TestAncestory");
 
         // Set the manager to inactive for now 
         StateManager.manager.gameObject.SetActive(false);
+    }
+
+    public void ToNeural(GameObject agent_obj, BaseAgent agent, Manager manager, GameObject gui)
+    {
+        // Save the values to the state manager
+        StateManager.interactable = agent_obj;
+        StateManager.selected_agent = agent;
+        StateManager.manager = manager;
+        StateManager.ancestor_manager = manager.anc_manager;
+        StateManager.camera_position = Camera.main.transform.position;
+
+        // Detatch the manager from the parent
+        manager.transform.SetParent(null);
+
+        // Move the manager to the "Do not destroy scene"
+        DontDestroyOnLoad(manager);
+
+        // Move scenes
+        SceneManager.LoadScene("TestVisualization + UI");
+
+        // Set the manager to inactive for now 
+        //StateManager.manager.gameObject.SetActive(false);
     }
 
     public static void Move(GameObject obj)

@@ -45,18 +45,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   learner: {fileID: 0}
   neuron: {fileID: 3772734473918104972, guid: 55b4bce7051f14d089a9e076fbb430d2, type: 3}
-  update_rate: 0
+  update_rate: 0.016666668
   x:
-  - 2.14
-  - 0.31
-  - 0.04
-  - 2.09
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0.24
+  - 0.24
+  - 0.24
+  - 0.24
+  - 0.24
+  - 0.24
+  - 0.24
+  - 0.24
+  - 0.24
+  - 0.24
+  - 0.24
   - 0.24
   cooldown: 0
   alpha: 8
-  lambda: 20
-  beta: 0.76
+  lambda: 15
+  beta: 6
   theta: 3
-  sigma: 0.31
-  gamma: 30
+  sigma: 0.5
+  sigma_prime: 0.2
+  phi: 30
+  gamma: 100
   activated: 0

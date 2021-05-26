@@ -9,7 +9,6 @@ namespace Layers
     {
         public List<List<float>> weights;    //weights
         public List<float> neurons;    //neurons
-        public float bias;  // The bias of course
         public List<float> biases;
         public Activation activation;   // The activation function
         public string code;
@@ -66,6 +65,7 @@ namespace Layers
 
         public override int GetUnits()
         {
+            units = neurons.Count;
             return units;
         }
 
@@ -170,9 +170,15 @@ namespace Layers
                 SetNeuron(i, inputs[i]);
             }
 
+            // Perform the dot product and activate the final result
             foreach (List<float> wv in weights)
             {
-
+                float lin_comb = 0;
+                for (int i = 0; i < wv.Count; i++)
+                {
+                    lin_comb += wv[i] * inputs[i] + biases[i];
+                }
+                outputs.Add(Activate(lin_comb));
             }
             return outputs;
         }

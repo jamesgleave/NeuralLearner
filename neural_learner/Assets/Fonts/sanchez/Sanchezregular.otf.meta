@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: b1b53ca55119e4f94b0f369a5639e3f6
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - 'Sanchez '
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: a0d12075b4ef44bf8b9d0f45f6707365, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

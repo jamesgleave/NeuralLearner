@@ -121,6 +121,11 @@ public class Genes
     public Vector3 code;
 
     /// <summary>
+    ///   <para>The body hashmap which stores the indices for the agent's body, head, etc</para>
+    /// </summary>
+    public Dictionary<string, int> spritemap = new Dictionary<string, int>();
+
+    /// <summary>
     ///   <para>The agent's genes</para>
     /// </summary>
     public Genes(
@@ -198,6 +203,11 @@ public class Genes
 
         g.species = species;
         g.genus = genus;
+
+        // Copy over the sprite map values
+        g.spritemap["body"] = spritemap["body"];
+        g.spritemap["head"] = spritemap["head"];
+
         return g;
     }
 
@@ -206,7 +216,14 @@ public class Genes
     /// </summary>
     public Genes Cross(Genes other)
     {
+        // Take the average between the two genes
         Genes new_genes = (other.Clone() + this) / 2;
+
+        // Take one of the body parts from each creature
+        new_genes.spritemap["body"] = other.spritemap["body"];
+        new_genes.spritemap["head"] = spritemap["head"];
+
+        // Return the new genes
         return new_genes;
     }
 
@@ -215,27 +232,28 @@ public class Genes
     /// </summary>
     public static Genes RandomGenes()
     {
+        // TODO Make the maturity time and gestation time inversely proportional
         return new Genes(
-        0.1f,
-         0.01f,
-        0.1f,
          Random.value * Random.value,
          Random.value * Random.value,
          Random.value * Random.value,
          Random.value * Random.value,
          Random.value * Random.value,
-         Random.value,
-         Random.value,
-         Random.value,
-         Random.value,
-         Random.value,
-         Random.value,
-         Random.value,
-         Random.value,
-         Random.value,
-         Random.value,
-         Random.value,
-         Random.value
+         Random.value * Random.value,
+         Random.value * Random.value,
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f),
+         Mathf.Clamp(Random.value, 0.1f, 1f)
         );
     }
 
@@ -252,58 +270,58 @@ public class Genes
     {
         if (GetProb(colour_mutation_prob))
         {
-            colour_r += Random.Range(-Random.value, Random.value);
-            colour_r = Mathf.Max(speed, 0);
+            colour_r += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            colour_r = Mathf.Max(colour_r, 0);
         }
 
         if (GetProb(colour_mutation_prob))
         {
-            colour_g += Random.Range(-Random.value, Random.value);
-            colour_g = Mathf.Max(speed, 0);
+            colour_g += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            colour_g = Mathf.Max(colour_g, 0);
         }
 
         if (GetProb(colour_mutation_prob))
         {
-            colour_b += Random.Range(-Random.value, Random.value);
-            colour_b = Mathf.Max(speed, 0);
+            colour_b += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            colour_b = Mathf.Max(colour_b, 0);
         }
     }
 
     private void TryMutateMutationRates()
     {
-        if (GetProb(0.01f))
+        if (GetProb(attribute_mutation_rate))
         {
-            base_mutation_rate = Random.value;
+            base_mutation_rate += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(0.01f))
+        if (GetProb(attribute_mutation_rate))
         {
-            colour_mutation_prob = Random.value;
+            colour_mutation_prob += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(0.01f))
+        if (GetProb(attribute_mutation_rate))
         {
-            attribute_mutation_rate = Random.value;
+            attribute_mutation_rate += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(0.01f))
+        if (GetProb(attribute_mutation_rate))
         {
-            neuro_mutation_prob = Random.value;
+            neuro_mutation_prob += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(0.01f))
+        if (GetProb(attribute_mutation_rate))
         {
-            weight_mutation_prob = Random.value;
+            weight_mutation_prob += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(0.01f))
+        if (GetProb(attribute_mutation_rate))
         {
-            bias_mutation_prob = Random.value;
+            bias_mutation_prob += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(0.01f))
+        if (GetProb(attribute_mutation_rate))
         {
-            dropout_prob = Random.value;
+            dropout_prob += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
     }
 
@@ -441,7 +459,7 @@ public class Genes
         }
 
         // Return the code in vector form
-        return new Vector3(x, y, z);
+        return new Vector3(x, y, z).normalized;
     }
 
 

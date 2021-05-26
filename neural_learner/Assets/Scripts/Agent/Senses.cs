@@ -44,16 +44,19 @@ public class Senses : MonoBehaviour
         List<float> observations = new List<float>();
 
         // An embedded funciton to add things to our observation list
-        void AddTo(Interactable i, float dist)
+        void AddTo(Interactable i, float dist, float scaled_magnitude)
         {
             // Add the distance
             observations.Add(dist);
 
+            // Add the number of interactables found (scaled)
+            observations.Add(scaled_magnitude);
+
             // If i is not null, we add the angle too, but if it is null then we add 0
             if (i != null)
             {
-                // Add the dot product normalized between 0 and 1
-                observations.Add((Vector3.Dot(transform.up, (i.transform.position - transform.position).normalized) + 1) / 2);
+                // Add the dot product
+                observations.Add(Vector3.Dot(transform.up, (i.transform.position - transform.position).normalized));
             }
             else
             {
@@ -61,61 +64,75 @@ public class Senses : MonoBehaviour
             }
         }
 
+        // We normalize the num_* proportionally to each value (min max scaling)
+        float max = Mathf.Max(num_agents, num_eggs, num_meats, num_pellets);
+        float min = Mathf.Min(num_agents, num_eggs, num_meats, num_pellets);
+        float scaled_num_agents = (num_agents - min) / Mathf.Max(max - min, 1);
+        float scaled_num_eggs = (num_eggs - min) / Mathf.Max(max - min, 1);
+        float scaled_num_meats = (num_meats - min) / Mathf.Max(max - min, 1);
+        float scaled_num_pellets = (num_pellets - min) / Mathf.Max(max - min, 1);
+
         // Add the values found with Sense()
         // The first 8 values will be to do with sight
-        // 1-2
-        AddTo(closest_pellet, closest_pellet_dist_magnitude);
-        // 2-4
-        AddTo(closest_meat, closest_meat_dist_magnitude);
+        // 1-3
+        AddTo(closest_pellet, closest_pellet_dist_magnitude, scaled_num_pellets);
         // 4-6
-        AddTo(closest_egg, closest_egg_dist_magnitude);
-        // 7 - 8
-        AddTo(closest_agent, closest_agent_dist_magnitude);
+        AddTo(closest_meat, closest_meat_dist_magnitude, scaled_num_meats);
+        // 7-9
+        AddTo(closest_egg, closest_egg_dist_magnitude, scaled_num_eggs);
+        // 10 - 12
+        AddTo(closest_agent, closest_agent_dist_magnitude, scaled_num_agents);
 
         // The next five are all about the closest agent seen
         if (closest_agent != null)
         {
             // Add the code of the other agent
-            // 8, 9, 10
-            observations.Add(closest_agent.genes.code.x);
-            observations.Add(closest_agent.genes.code.y);
-            observations.Add(closest_agent.genes.code.z);
-
-            // Add the size and health for the agent
-            // 11, 12
-            observations.Add(closest_agent.genes.size);
-            observations.Add(closest_agent.health / closest_agent.max_health);
+            // 13, 14, 15
+            // Note: I have changed this to the colour of the agent for testing
+            Vector3 normalized_code = closest_agent.genes.code;
+            observations.Add(closest_agent.genes.colour_r);
+            observations.Add(closest_agent.genes.colour_g);
+            observations.Add(closest_agent.genes.colour_b);
         }
         else
         {
             // If there is nothing, then just add default values
             // Add the code of the other agent
-            // 8, 9, 10
+            // 13, 14, 15
             observations.Add(0);
-            observations.Add(0);
-            observations.Add(0);
-
-            // Add the size and health for the agent
-            // 11, 12
             observations.Add(0);
             observations.Add(0);
         }
 
         // The next things to add are about the agent's own state
-        // Add the agent's energy % (13)
+        // Add the agent's energy % (16)
         observations.Add(agent.energy / (2 * agent.max_energy));
 
-        // Add the agent's health % (14)
+        // Add the agent's health % (17)
         observations.Add(Mathf.Clamp(agent.health / agent.max_health, 0f, 1f));
 
-        // Add the agent's lifetime % (15)
+        // Add the agent's lifetime % (18)
         observations.Add(agent.age / agent.lifespan);
 
-        // Add the agent's speed % (16)
+        // Add the agent's speed % (18)
         observations.Add(1 - 1 / (1 + agent.speed));
 
-        // Rotation % (17)
+        // Rotation % (20)
         observations.Add(Mathf.Abs(agent.transform.rotation.z));
+
+        // Whether or not the agent has something grabbed (21)
+        if (agent.grabbed != null)
+        {
+            // Add the normalized ID of the object we have grabbed
+            observations.Add(agent.grabbed.GetID() / (int)ID.MaxID);
+        }
+        else
+        {
+            observations.Add(0);
+        }
+
+        // Constant (22)
+        observations.Add(1);
 
         return observations;
     }
@@ -133,7 +150,7 @@ public class Senses : MonoBehaviour
         closest_pellet = null;
 
         // Reset all distances
-        closest_pellet_dist_magnitude = closest_meat_dist_magnitude = closest_egg_dist_magnitude = closest_agent_dist_magnitude = 1;
+        closest_pellet_dist_magnitude = closest_meat_dist_magnitude = closest_egg_dist_magnitude = closest_agent_dist_magnitude = 0;
 
         // Reset counts
         num_pellets = num_meats = num_eggs = num_agents = 0;
@@ -219,14 +236,56 @@ public class Senses : MonoBehaviour
         }
     }
 
+    public string Touch(Collider2D collision, Vector3 facing)
+    {
+        if (collision.gameObject.TryGetComponent(out Interactable i))
+        {
+            // If the dot product between the forward vector of an agent and the interactable is greater than 0.5 then it is facing the object
+            bool is_facing = Vector3.Dot(facing, (i.transform.position - transform.position).normalized) > 0.5f;
+
+            if (is_facing)
+            {
+                return "Front";
+            }
+            else
+            {
+                return "Back";
+            }
+        }
+        else
+        {
+            return "Unknown";
+        }
+    }
+
     public void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(transform.position + transform.up * vision_width / 1.5f, vision_width);
-        Gizmos.DrawWireSphere(transform.position + transform.up * vision_distance, vision_width);
+        //Gizmos.DrawWireSphere(transform.position + transform.up * vision_width / 1.5f, vision_width);
+        //Gizmos.DrawWireSphere(transform.position + transform.up * vision_distance, vision_width);
 
         foreach (Interactable i in detected)
         {
-            Gizmos.DrawLine(transform.position, i.transform.position);
+            if (i != null)
+            {
+                Gizmos.DrawLine(transform.position, i.transform.position);
+            }
+        }
+
+        if (closest_agent != null)
+        {
+            Gizmos.DrawSphere(closest_agent.transform.position, 0.1f);
+        }
+        if (closest_meat != null)
+        {
+            Gizmos.DrawSphere(closest_meat.transform.position, 0.1f);
+        }
+        if (closest_pellet != null)
+        {
+            Gizmos.DrawSphere(closest_pellet.transform.position, 0.1f);
+        }
+        if (closest_egg != null)
+        {
+            Gizmos.DrawSphere(closest_egg.transform.position, 0.1f);
         }
     }
 }

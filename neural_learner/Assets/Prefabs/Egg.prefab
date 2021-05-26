@@ -11,8 +11,8 @@ GameObject:
   - component: {fileID: 798380245572057891}
   - component: {fileID: 798380245572057900}
   - component: {fileID: 798380245572057890}
-  - component: {fileID: 8334363288744660535}
   - component: {fileID: -8927307701422138979}
+  - component: {fileID: 2665559723502215639}
   m_Layer: 0
   m_Name: Egg
   m_TagString: Untagged
@@ -28,8 +28,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 798380245572057901}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7630719, y: 0.30817336, z: 0}
-  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -52,6 +52,36 @@ MonoBehaviour:
   manager: {fileID: 0}
   agent: {fileID: 0}
   parent: {fileID: 0}
+  parent_node:
+    genus: 
+    species: 
+    genetic_drift: 0
+    original_genes:
+      base_mutation_rate: 0
+      attribute_mutation_rate: 0
+      colour_mutation_prob: 0
+      neuro_mutation_prob: 0
+      dropout_prob: 0
+      weight_mutation_prob: 0
+      bias_mutation_prob: 0
+      speed: 0
+      diet: 0
+      attack: 0
+      defense: 0
+      vitality: 0
+      size: 0
+      perception: 0
+      clockrate: 0
+      gestation_time: 0
+      maturity_time: 0
+      colour_r: 0
+      colour_g: 0
+      colour_b: 0
+      genus: 
+      species: 
+      genetic_drift: 0
+      code: {x: 0, y: 0, z: 0}
+  generation: 0
 --- !u!212 &798380245572057890
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -92,7 +122,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 5ef23976ec17d41fba8b190c394f7238, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -103,22 +133,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!58 &8334363288744660535
-CircleCollider2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 798380245572057901}
-  m_Enabled: 1
-  m_Density: 1
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  serializedVersion: 2
-  m_Radius: 0.1
 --- !u!50 &-8927307701422138979
 Rigidbody2D:
   serializedVersion: 4
@@ -140,3 +154,42 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!60 &2665559723502215639
+PolygonCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 798380245572057901}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.64, y: 0.64}
+    newSize: {x: 0.2, y: 0.2}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Points:
+    m_Paths:
+    - - {x: 0.1603199, y: 0.25662607}
+      - {x: -0.009809837, y: 0.32954043}
+      - {x: -0.16814925, y: 0.25662607}
+      - {x: -0.20722939, y: 0.1696764}
+      - {x: -0.2469985, y: 0.014580081}
+      - {x: -0.2720639, y: -0.043587215}
+      - {x: -0.2732597, y: -0.15760854}
+      - {x: -0.25369382, y: -0.2204341}
+      - {x: -0.12811092, y: -0.32003254}
+      - {x: 0.13140902, y: -0.32}
+      - {x: 0.25130236, y: -0.22282559}
+      - {x: 0.2716237, y: -0.15703295}
+      - {x: 0.27311164, y: -0.04228267}
+      - {x: 0.21466866, y: 0.15826353}

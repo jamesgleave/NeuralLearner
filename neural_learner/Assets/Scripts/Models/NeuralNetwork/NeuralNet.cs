@@ -2,7 +2,7 @@
 using UnityEngine;
 using Layers;
 using Activations;
-using Callbacks;
+using System.Linq;
 
 namespace Model
 {
@@ -186,6 +186,13 @@ namespace Model
 
         public void AddNeuron(int layer, int position)
         {
+
+            // Evacuate if layer is invalid
+            if (layer < 0 || layer >= layers.Length)
+            {
+                return;
+            }
+
             // Add a neuron with a specific value to a specified layer
             total_neurons += 1;
 
@@ -226,6 +233,13 @@ namespace Model
 
         public void RemoveNeuron(int layer, int position)
         {
+
+            // Evacuate if layer is invalid
+            if (layer < 0 || layer >= layers.Length)
+            {
+                return;
+            }
+
             // Remove a neuron
             total_neurons += -1;
 
@@ -315,7 +329,10 @@ namespace Model
                 }
 
                 // Set the neuron for the next layer
-                output.SetNeuron(i, current_layer.Activate(linear_combination + output.biases[i]));
+                // TODO For testing, I am removing the bias term from the calculation of the final layer
+                //output.SetNeuron(i, current_layer.Activate(linear_combination + output.biases[i]));
+                output.SetNeuron(i, current_layer.Activate(linear_combination));
+
             }
 
             // Apply the final activation to the ouput layer
@@ -364,6 +381,182 @@ namespace Model
         }
 
 
+        public static string Mutate(NeuralNet nn, float base_mutation_rate, float weight_mutation_rate, float neuro_mutation_rate, float bias_mutation_rate, float dropout_rate)
+        {
+            // A string value to track the mutations
+            string log = "<";
+
+            // Tracks how many individual mutations occured
+            int mutation_tracker = 0;
+
+            // Scale the rates down by half (smooths things out a bit)
+            base_mutation_rate *= 0.5f;
+            weight_mutation_rate *= 0.5f;
+            neuro_mutation_rate *= 0.5f;
+            bias_mutation_rate *= 0.5f;
+            dropout_rate *= 0.5f;
+
+            // Get all of the layers
+            List<Layer> all_layers = nn.GetAllLayers().ToList();
+
+            // Remove and store the last layer (it has no weights)
+            Layer output = all_layers[all_layers.Count - 1];
+            all_layers.RemoveAt(all_layers.Count - 1);
+
+            // Since the output layer has no weights, we only want to mutate the activation funciton
+            //if (Random.value < neuro_mutation_rate)
+            //{
+            //    // Get a random activation funciton
+            //    string code = ActivationHelper.GetRandomActivation();
+
+            //    // Update log
+            //    log += "M" + mutation_tracker + "->" + "ActivationChanged@<L:" + "Output" + ">; E{" + output.activation.name + "->" + code + "}, ";
+
+            //    // Change activation
+            //    output.activation = Parse.Parser.ReadActivation(code);
+            //}
+
+            // In supremely rare cases, it may mutate and add another layer (this is probably not benificial)
+            if (Random.value < neuro_mutation_rate)
+            {
+                // Not implemented yet
+                log += "M" + mutation_tracker + "->" + "LayerAdded, ";
+                mutation_tracker++;
+            }
+
+            // Look at each layer...
+            int layer_index = 0;
+            foreach (Layer layer in all_layers)
+            {
+
+                // Mutate the activation function
+                if (Random.value < neuro_mutation_rate)
+                {
+                    // Get a random activation funciton
+                    string code = ActivationHelper.GetRandomActivation();
+
+                    // Update log
+                    log += "M" + mutation_tracker + "->" + "ActivationChanged@<L:" + layer_index + ">; E{" + layer.activation.name + "->" + code + "}, ";
+
+                    // Change activation
+                    layer.activation = Parse.Parser.ReadActivation(code);
+                }
+
+                // Looking at each layer, we will use the neuro_mutation_rate and dropout_rate to see if we mutate
+                // Here we look at the layer and for each time we have a triggered neuro mutation event we add a neuron
+                int where = 0;
+                while (Random.value * Random.value < neuro_mutation_rate && layer_index > 0)  // Note that we cannot add neurons to the input layer
+                {
+                    // If triggered, we add a neuron to this layer
+                    where = Random.Range(0, layer.GetUnits());
+                    nn.AddNeuron(layer_index - 1, where);
+
+                    // Update the log
+                    log += "M" + mutation_tracker + "->" + "NeuronAdded@<L:" + layer_index + ", P:" + where + ">, ";
+                    mutation_tracker++;
+                }
+
+                // If the dropout was triggered, we remove a neuron if there is no weights
+                // We count how many occurence of successful dropouts we have
+                int weight_index;
+                while (Random.value * Random.value < dropout_rate)
+                {
+                    // We only remove a neuron if the connection is zero or the dropout rate is triggered twice (a significant event)
+                    where = Random.Range(0, layer.GetUnits());
+
+                    try
+                    {
+                        // Which weight to look at
+                        weight_index = Random.Range(0, layer.GetWeights()[where].Count);
+                        // If we have triggered another event or the sum of the weights are zero (no connections) it will be dropped
+                        float sum = layer.weights[where].Sum();
+                        bool drop = Random.value < dropout_rate || Mathf.Approximately(sum, 0);
+                        if (drop && layer_index > 0)  // Note that we cannot add neurons to the input layer
+                        {
+
+                            // If there is more than one neuron then delete it else remove layer
+                            if (nn.layers[layer_index - 1].GetNeurons().Count > 1)
+                            {
+                                // Remove a neuron
+                                nn.RemoveNeuron(layer_index - 1, where);
+                                log += "M" + mutation_tracker + "->" + "NeuronDropped@<L:" + layer_index + ", P:" + where + "> , ";
+                            }
+                            else
+                            {
+                                nn.RemoveLayer(layer_index - 1);
+                                log += "M" + mutation_tracker + "->" + "LayerDropped@<L:" + layer_index + ", P:" + where + "> , ";
+                            }
+
+
+                            // Update the log
+                            mutation_tracker++;
+                        }
+                        else
+                        {
+                            // It is not ready to dropout unless the value is zero so here we set it to zero
+                            layer.weights[where][weight_index] = 0;
+                            layer.biases[where] = 0;
+
+                            // Update the log
+                            log += "M" + mutation_tracker + "->" + "SynapseRemoved@<L:" + layer_index + ", P:(" + where + "," + weight_index + ")>, ";
+                            mutation_tracker++;
+                        }
+                    }
+                    catch
+                    {
+                        break;
+                    }
+                }
+
+                // We now mutate biases
+                float old_value;
+                while (Random.value < bias_mutation_rate)
+                {
+                    // Which neuron 
+                    where = Random.Range(0, layer.GetUnits());
+                    // Store old value
+                    old_value = layer.biases[where];
+                    // We nudge the value by using the base mutation rate (how much will it mutate?)
+                    layer.biases[where] += Random.Range(-base_mutation_rate * 10f, base_mutation_rate * 10f);
+
+                    // Update the log
+                    log += "M" + mutation_tracker + "->" + "BiasMutated@<L:" + layer_index + ", P:" + where + ">; E{" + old_value + "->" + layer.biases[where] + "}, ";
+                    mutation_tracker++;
+                }
+
+                // We now mutate weights 
+                while (Random.value < weight_mutation_rate)
+                {
+                    // Which neuron 
+                    where = Random.Range(0, layer.GetUnits());
+                    // We nudge the value by using the base mutation rate (how much will it mutate?)
+                    try
+                    {
+                        weight_index = Random.Range(0, layer.GetWeights()[where].Count);
+                        // Store old weight
+                        old_value = layer.weights[where][weight_index];
+
+                        layer.weights[where][weight_index] += Random.Range(-base_mutation_rate * 10f, base_mutation_rate * 10f);
+
+                        // Update the log
+                        log += "M" + mutation_tracker + "->" + "WeightMutated@<L:" + layer_index + ", P:(" + where + "," + weight_index + ")>; E{" + old_value + "->" + layer.weights[where][weight_index] + "}, ";
+                        mutation_tracker++;
+                    }
+                    catch
+                    {
+                        // Do nothing
+                        break;
+                    }
+                }
+
+                layer_index++;
+            }
+            log += "END>";
+
+            return log;
+        }
+
+
         public static void MutateWeights(NeuralNet nn, float mutation_rate, float dropout_rate)
         {
             // Look at each layer...
@@ -385,16 +578,6 @@ namespace Model
                         {
                             layer.weights[i][j] = 0;
                         }
-                    }
-
-                    // Adjust the bias if triggered
-                    if (Random.value < mutation_rate)
-                    {
-                        layer.biases[i] = Random.value - 0.5f;
-                    }
-                    else if (Random.value < dropout_rate)
-                    {
-                        layer.biases[i] = 0;
                     }
                 }
             }

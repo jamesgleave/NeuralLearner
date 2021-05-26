@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Neuron : MonoBehaviour
+public class Neuron : Interactable
 {
 
     // All but the final layer will have child neurons
@@ -10,8 +10,6 @@ public class Neuron : MonoBehaviour
 
     // The neurons neighbours
     public Dictionary<string, GameObject> neighbours = new Dictionary<string, GameObject>();
-
-    public Rigidbody rb;
 
     // We want to store the weight between this node and its children.
     // The weight at weights[i] corresponds to the weight between this neuron and child[i].
@@ -22,11 +20,13 @@ public class Neuron : MonoBehaviour
     public float bias;
     public float layer;
     public float position;
+    public string activation;
 
     // This value controls how fast it scales
     public float scale_rate = 1.5f;
     public float max_size = 1;
     public float line_scaler = 1;
+    public float min_line_width = 1;
 
     // We need a line renderer to create show the weights and neurons
     public List<LineDrawer> artists;
@@ -39,16 +39,19 @@ public class Neuron : MonoBehaviour
     public bool moving;
     public bool grabbed;
 
-    // The materials
-    public Material neuron_mat;
-    public Material selected_mat;
+    // The internal clock (for lerping)
+    public float internal_clock = 0;
+
+    // The pen for the editor
+    public LineDrawer editor_pen;
+    public float editor_value = 1f;
 
 
     // Start is called before the first frame update
     void Start()
     {
-        // Get the rigidbody and create the list of artists to draw the edges
-        rb = GetComponent<Rigidbody>();
+        // Set up the neuron
+        Setup((int)ID.Neuron);
     }
 
     public void SetupInsertedNode()
@@ -56,19 +59,25 @@ public class Neuron : MonoBehaviour
         Start();
     }
 
-    public void UpdateMovement(float speed)
+    public void UpdateMovement(float speed, float acc = 0.3f)
     {
-        // We clamp the distance so we arnt wiggling
+        // Find the distance and direction
         float dist = Vector3.Distance(desired_position, transform.localPosition);
-        if (dist > 0.001f)
+        Vector3 dir = desired_position - transform.localPosition;
+
+        // Calculate the desired force
+        Vector3 force = dir.normalized * acc * dist;
+
+        // Add force to neuron rb
+        rb.AddForce(force, ForceMode2D.Impulse);
+
+        // Clamp the velocity
+        rb.velocity = Vector3.ClampMagnitude(rb.velocity, speed);
+
+        // If we are pretty much not moving then stop completely
+        if (Mathf.Approximately(rb.velocity.magnitude, 0.1f))
         {
-            Vector3 relative = desired_position - transform.localPosition;
-            Vector3 new_vel = relative.normalized * speed * (float)System.Math.Tanh(dist);
-            rb.velocity = Vector3.Lerp(rb.velocity, new_vel, 0.05f);
-        }
-        else
-        {
-            rb.velocity = Vector3.zero;
+            rb.velocity = Vector2.zero;
         }
     }
 
@@ -76,13 +85,18 @@ public class Neuron : MonoBehaviour
     {
         // Set new scale
         float new_size = Mathf.Min(scale_rate * Mathf.Exp(Mathf.Abs(value)) + max_size / 10, max_size);
-        transform.localScale = new Vector3(new_size, new_size, new_size);
+        float current = transform.localScale.x;
+        float step = new_size * Time.deltaTime * (new_size - current);
+        if (!Mathf.Approximately(current, new_size))
+        {
+            transform.localScale = new Vector3(current + step, current + step, current + step);
+        }
     }
 
     public void DrawLine(bool forced)
     {
         // If this is moving
-        moving = rb.velocity.magnitude > 0;
+        moving = rb.velocity.magnitude > 0.1f;
 
         // First, check if we are missing any artists or if we have too many
         // Remove/Add values until they match
@@ -109,7 +123,24 @@ public class Neuron : MonoBehaviour
                 // Set the thickness of the line
                 if (weights.Count > 0)
                 {
-                    artists[i].SetFeatures(Mathf.Abs(weights[i]) * line_scaler, Mathf.Abs(weights[i]) * line_scaler);
+                    // Get the scale of the weight
+                    float scale = Mathf.Abs(weights[i]) * line_scaler;
+
+                    //Clamp the scale 
+                    if (Mathf.Approximately(scale, 0))
+                    {
+                        scale = 0;
+                    }
+                    else
+                    {
+                        scale = Mathf.Clamp(scale, min_line_width, line_scaler);
+                    }
+
+                    // Set the features of the artist
+                    artists[i].SetFeatures(scale, scale);
+
+                    // Set the colour
+                    artists[i].SetColour(weights[i]);
                 }
                 artists[i].Draw(transform.position, children[i].transform.position);
             }
@@ -132,6 +163,13 @@ public class Neuron : MonoBehaviour
     {
         // Set the value of the neuron
         value = v;
+
+        // Like the artists lines, we adjust the colour to show the magnitude of the values
+        // Scale v between 0 and 1
+        v = (float)System.Math.Tanh(v) + 1;
+
+        // Set the colour
+        sprite.material.color = Color32.Lerp(artist.clow, artist.chigh, v);
     }
 
     public void SetBias(float b)
@@ -142,6 +180,11 @@ public class Neuron : MonoBehaviour
     public void SetLayer(float l)
     {
         layer = l;
+    }
+
+    public void SetActivation(string a)
+    {
+        activation = a;
     }
 
     public void SetPosition(float pos)
@@ -167,12 +210,10 @@ public class Neuron : MonoBehaviour
 
     public void Select()
     {
-        GetComponent<MeshRenderer>().material = selected_mat;
     }
 
     public void Deselect()
     {
-        GetComponent<MeshRenderer>().material = neuron_mat;
     }
 
     public void CalculateDesiredPosition(int layer_index, int neuron_index, int layer_size, float vertical_offset, float horizontal_offset)
@@ -191,30 +232,18 @@ public class Neuron : MonoBehaviour
 
         // Set up the basic coords
         float x, y, z;
-        x = 0;
+        x = -layer_index * horizontal_offset;
         y = (neuron_index - layer_size / 2) * vertical_offset + even_odd_offset;
-        z = layer_index * horizontal_offset;
+        z = 0;
 
-        // Loop through each key and find the position that is in the middle of each of the neighbours positions plus an offset
-        foreach (string key in neighbours.Keys)
-        {
-            if (neighbours[key] != null)
-            {
-                GameObject neighbour = neighbours[key];
-                Vector3 np = neighbour.transform.localPosition;
-
-                // If the neighbour is an upper neighbour then set the desired position the be below it
-                if (key == "upper")
-                {
-
-                }
-                // If the neighbour is a lower neighbour then set the desired position the be above it
-                else if (key == "lower")
-                {
-
-                }
-            }
-        }
+        // Testing the arc
+        // The concept is to arc the input layer to be able to more clearly see what is going on
+        //if (layer_index == 0 || true)
+        //{
+        //    // Calculate the arc
+        //    // The greatest value for arch should be at position = layer_size/2
+        //    x -= Mathf.Abs(layer_size - neuron_index * 2);
+        //}
 
         // set the desired position
         desired_position.Set(x, y, z);

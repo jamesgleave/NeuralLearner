@@ -74,8 +74,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Color: {r: 0.8113208, g: 0, b: 0, a: 1}
+  m_Sprite: {fileID: 21300000, guid: ecd6d7353b2874324bd38b0ffd7f06d3, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -98,9 +98,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   energy: 0
+  initial_energy: 0
   rot_rate: 0
   size: 0
   manager: {fileID: 0}
+  genes:
+    base_mutation_rate: 0
+    attribute_mutation_rate: 0
+    colour_mutation_prob: 0
+    neuro_mutation_prob: 0
+    dropout_prob: 0
+    weight_mutation_prob: 0
+    bias_mutation_prob: 0
+    speed: 0
+    diet: 0
+    attack: 0
+    defense: 0
+    vitality: 0
+    size: 0
+    perception: 0
+    clockrate: 0
+    gestation_time: 0
+    maturity_time: 0
+    colour_r: 0
+    colour_g: 0
+    colour_b: 0
+    genus: 
+    species: 
+    genetic_drift: 0
+    code: {x: 0, y: 0, z: 0}
 --- !u!50 &2566791335146662808
 Rigidbody2D:
   serializedVersion: 4
@@ -113,7 +139,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 1
-  m_Mass: 1
+  m_Mass: 0.36169213
   m_LinearDrag: 1
   m_AngularDrag: 1
   m_GravityScale: 0
@@ -137,4 +163,4 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.08
+  m_Radius: 0.33930838

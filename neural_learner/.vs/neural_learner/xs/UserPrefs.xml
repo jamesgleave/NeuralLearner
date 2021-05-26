@@ -1,23 +1,38 @@
 ﻿<Properties StartupConfiguration="{B3AF31EC-A24B-61DB-F2F2-AC2579EB55ED}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Inanimates/Egg.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/UserControl/UserControllerEvoSim.cs">
     <Files>
-      <File FileName="Assets/Scripts/Inanimates/FoodPellet.cs" Line="153" Column="26" />
-      <File FileName="Assets/Scripts/DisplayModel/NeuralNetwork/DisplayEvoNN.cs" Line="142" Column="36" />
-      <File FileName="Assets/Scripts/Brains/EvolutionaryNeuralLearner.cs" Line="66" Column="1" />
-      <File FileName="Assets/Scripts/Brains/Brain.cs" Line="9" Column="26" />
-      <File FileName="Assets/Scripts/Inanimates/Egg.cs" Line="106" Column="56" />
-      <File FileName="Assets/Scripts/Models/NeuralNetwork/Activations.cs" Line="46" Column="24" />
-      <File FileName="Assets/Scripts/Agent/Genes.cs" Line="226" Column="37" />
-      <File FileName="Assets/Scripts/Agent/BaseAgent.cs" Line="313" Column="118" />
-      <File FileName="Assets/Scripts/Agent/Senses.cs" Line="115" Column="50" />
-      <File FileName="Assets/Scripts/Managers/Manager.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Models/BaseModel.cs" Line="8" Column="35" />
-      <File FileName="Assets/Scripts/Models/NeuralNetwork/NeuralNet.cs" Line="387" Column="26" />
+      <File FileName="Assets/Scripts/Util/LineDrawer.cs" Line="68" Column="40" />
+      <File FileName="Assets/Scripts/UI/TextController.cs" Line="17" Column="1" />
+      <File FileName="Assets/Scripts/UserControl/UserControllerEvoNN.cs" Line="337" Column="10" />
+      <File FileName="Assets/Scripts/Brains/EvolutionaryNeuralLearner.cs" Line="72" Column="13" />
+      <File FileName="Assets/Scripts/Brains/EvolutionaryNEATLearner.cs" Line="37" Column="52" />
+      <File FileName="Assets/Scripts/DisplayModel/NeatNetwork/NEATNeuron.cs" Line="12" Column="1" />
+      <File FileName="Assets/Scripts/DisplayModel/NeatNetwork/DisplayEvoNeat.cs" Line="17" Column="6" />
+      <File FileName="Assets/Scripts/DisplayModel/NeuralNetwork/DisplayEvoNN.cs" Line="139" Column="1" />
+      <File FileName="Assets/Scripts/DisplayModel/Display.cs" Line="38" Column="6" />
+      <File FileName="Assets/Scripts/DisplayModel/NeuralNetwork/Neuron.cs" Line="54" Column="10" />
+      <File FileName="Assets/Scripts/Models/NeuralNetwork/NeatNet.cs" Line="21" Column="25" />
+      <File FileName="Assets/Scripts/Models/NeatNetwork/NeatNode.cs" Line="5" Column="1" />
+      <File FileName="Assets/Scripts/Managers/Manager.cs" Line="186" Column="42" />
+      <File FileName="Assets/Scripts/Agent/BaseAgent.cs" Line="490" Column="43" />
+      <File FileName="Assets/Scripts/Agent/Genes.cs" Line="235" Column="42" />
+      <File FileName="Assets/Scripts/Inanimates/Meat.cs" Line="74" Column="39" />
+      <File FileName="Assets/Scripts/Inanimates/Egg.cs" Line="72" Column="1" />
+      <File FileName="Assets/Scripts/UI/AgentUIController.cs" Line="166" Column="26" />
+      <File FileName="Assets/Scripts/Inanimates/FoodPellet.cs" Line="48" Column="17" />
+      <File FileName="Assets/Scripts/UserControl/UserControllerEvoSim.cs" Line="1" Column="1" />
     </Files>
+    <Pads>
+      <Pad Id="MonoDevelop.UnitTesting.TestPad">
+        <State name="__root__">
+          <Node name="neural_learner" expanded="True" selected="True" />
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="3011366e-1750-4b00-a0fd-3fbd5f696292" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="44f73c5f-1356-4005-b453-76559ac55f0d" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

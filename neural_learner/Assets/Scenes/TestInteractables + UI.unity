@@ -413,20 +413,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f59269cc84b94ec48eac2cb189a6bd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  total_food: 3000
+  total_food: 2000
   food_growth_rate: 5
-  pellet_distrobution: 25
-  pellet_clusters: 50
+  pellet_distrobution: 8
+  pellet_clusters: 100
   food_pellet_size: 3
   food_pellet_energy: 10
   pellet: {fileID: 3829854075992685049, guid: 72416a997ceb74010b84d5ace9c7462e, type: 3}
   food_pellets: []
   update_rate: 0.033333335
-  gridsize: 200
+  gridsize: 150
   scale: 3
   agent: {fileID: 8284897868176631410, guid: 695dec7bc1f2948cdb928ea96fec1112, type: 3}
-  starting_agents: 500
-  metabolism_scale_rate: 6.5
+  starting_agents: 200
+  metabolism_scale_rate: 7
   agents: []
   energy: 0
   initial_energy: 0
@@ -626,5 +626,13 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 555443581}
+    - target: {fileID: 7850362715485705440, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
+      propertyPath: m_Text
+      value: Eggs Layed
+      objectReference: {fileID: 0}
+    - target: {fileID: 7850362715485705446, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
+      propertyPath: m_Name
+      value: Eggs Layed
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c62286a5e71d04fe1b361cc994592802, type: 3}

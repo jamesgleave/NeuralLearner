@@ -308,7 +308,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88b02eed9adbc43b7b44d9fc04f97453, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  model_code: EvoNN:in-22-32-Tanh>fc-32-8-Tanh>ot-8-0-Sigmoid
+  model_code: EvoNN:in-22-8-Tanh>fc-8-8-Sigmoid>ot-8-0-Sigmoid
 --- !u!114 &8284897868176631410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -394,6 +394,8 @@ MonoBehaviour:
   egg_formation_time: 0
   num_eggs_ready: 0
   eggs_layed: 0
+  egg_formation_cooldown: 0
+  egg_gestation_time: 0
   metabolism: 0
   true_metabolic_cost: 0
   time_to_die: 0

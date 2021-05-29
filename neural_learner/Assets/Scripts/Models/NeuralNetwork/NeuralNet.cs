@@ -445,7 +445,7 @@ namespace Model
                 // Looking at each layer, we will use the neuro_mutation_rate and dropout_rate to see if we mutate
                 // Here we look at the layer and for each time we have a triggered neuro mutation event we add a neuron
                 int where = 0;
-                while (Random.value * Random.value < neuro_mutation_rate && layer_index > 0)  // Note that we cannot add neurons to the input layer
+                while (Random.value < neuro_mutation_rate && layer_index > 0)  // Note that we cannot add neurons to the input layer
                 {
                     // If triggered, we add a neuron to this layer
                     where = Random.Range(0, layer.GetUnits());
@@ -459,7 +459,7 @@ namespace Model
                 // If the dropout was triggered, we remove a neuron if there is no weights
                 // We count how many occurence of successful dropouts we have
                 int weight_index;
-                while (Random.value * Random.value < dropout_rate)
+                while (Random.value < dropout_rate)
                 {
                     // We only remove a neuron if the connection is zero or the dropout rate is triggered twice (a significant event)
                     where = Random.Range(0, layer.GetUnits());
@@ -571,7 +571,7 @@ namespace Model
                         // If the mutation is triggered, change the weight (the chances are proportional to the layers size)
                         if (Random.value < (mutation_rate / layer.GetUnits()))
                         {
-                            layer.weights[i][j] += 2 * (Random.value - 0.5f);
+                            layer.weights[i][j] += Random.Range(-5f, 5f);
                         }
                         // If the dropout is triggered and the mutation is not, drop the connection
                         else if (Random.value < (dropout_rate / layer.GetUnits()))
@@ -595,7 +595,7 @@ namespace Model
                     // Look at each weight
                     for (int j = 0; j < layer.weights[i].Count; j++)
                     {
-                        layer.weights[i][j] += Random.value - 0.5f;
+                        layer.weights[i][j] += Random.Range(-1f, 1f);
                     }
                 }
             }

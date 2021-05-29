@@ -734,16 +734,17 @@ public class BaseAgent : Interactable
         wants_to_grab = inf[6] > 0.5f;
         wants_to_attack = inf[7] > 0.5f;
 
-        // Check to see if it wants to breed
-        if (wants_to_breed && energy > max_energy)
-        {
-            LayEgg();
-        }
         // TODO Give the agent the ability to decide whether it wants to just lay an egg or breed (sexual vs asexual reproduction)
         // If the agent wants to breed and has grabbed another agent, check if that agent is close enough genetically or if it has the same name (meaning it is the same species)
-        else if (wants_to_breed && grabbed != null && grabbed.TryGetComponent<BaseAgent>(out BaseAgent a) && (genes.CalculateGeneticDrift(a.genes) < 1 || a.GetRawName().Equals(GetRawName())))
+        if (wants_to_breed && grabbed != null && grabbed.TryGetComponent<BaseAgent>(out BaseAgent a) && (genes.CalculateGeneticDrift(a.genes) < 1 || a.GetRawName().Equals(GetRawName())))
         {
             Breed(a);
+            print("Bread");
+        }
+        // If it does not then asexually reproduce
+        else if (wants_to_breed)
+        {
+            LayEgg();
         }
 
         // If we have something grabbed and are hungry then eat it!
@@ -798,7 +799,7 @@ public class BaseAgent : Interactable
         }
 
         // If the partner wants to breed, then shoot your shot it
-        if (partner.wants_to_breed && energy > max_energy * 0.5f)
+        if (partner.wants_to_breed)
         {
             // Spawn in the egg object
             Vector2 pos = egg_location.position;
@@ -812,6 +813,7 @@ public class BaseAgent : Interactable
             x.Setup(this.id + 1, max_energy * 0.5f, genes.Cross(partner.genes), manager, manager.GetAgent(id));
 
             // Give the egg a copy of this brain's model
+            // TODO Cross over of brains
             x.brain = brain.GetModel().Copy();
 
             // An egg requres 50% of the agents max energy
@@ -840,35 +842,31 @@ public class BaseAgent : Interactable
             return;
         }
 
-        // Testing the 0.5 energy
-        if (energy > max_energy * 0.5f)
-        {
-            // Spawn in the egg object
-            Vector2 pos = egg_location.position;
-            var x = Instantiate(egg, pos, transform.rotation, manager.transform);
+        // Spawn in the egg object
+        Vector2 pos = egg_location.position;
+        var x = Instantiate(egg, pos, transform.rotation, manager.transform);
 
-            // Add this agent as the parent to the egg
-            x.parent = this;
+        // Add this agent as the parent to the egg
+        x.parent = this;
 
-            // Every agent will have its eggs id be the agents id + 1
-            // Create a perfect clone of the genes and pass it on to the egg
-            x.Setup(this.id + 1, max_energy * 0.5f, genes.Clone(), manager, manager.GetAgent(id));
+        // Every agent will have its eggs id be the agents id + 1
+        // Create a perfect clone of the genes and pass it on to the egg
+        x.Setup(this.id + 1, max_energy * 0.5f, genes.Clone(), manager, manager.GetAgent(id));
 
-            // Give the egg a copy of this brain's model
-            x.brain = brain.GetModel().Copy();
+        // Give the egg a copy of this brain's model
+        x.brain = brain.GetModel().Copy();
 
-            // An egg requres 50% of the agents max energy
-            energy -= max_energy * 0.5f;
+        // An egg requres 50% of the agents max energy
+        energy -= max_energy * 0.5f;
 
-            // Add the egg to the manager to track
-            manager.AddAgent(x);
+        // Add the egg to the manager to track
+        manager.AddAgent(x);
 
-            // Update this value 
-            eggs_layed++;
+        // Update this value 
+        eggs_layed++;
 
-            // Reset the egg formation cooldown
-            egg_formation_cooldown = 0;
-        }
+        // Reset the egg formation cooldown
+        egg_formation_cooldown = 0;
     }
 
     public virtual void Eat(Interactable other)

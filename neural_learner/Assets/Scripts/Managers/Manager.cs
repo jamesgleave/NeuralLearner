@@ -234,14 +234,15 @@ public class Manager : MonoBehaviour
             // Setup the agent
             a.Setup((int)ID.Wobbit, g);
             a.genes.genetic_drift = 0;
-            a.age = a.maturity_age;
 
             // Give them randomized brains
-            for (int j = Random.Range(1, 100); j > 0; j--)
+            Model.NeuralNet.RandomizeWeights((Model.NeuralNet)a.brain.GetModel());
+            for (int j = Random.Range(1, 10); j > 0; j--)
             {
                 try
                 {
-                    Model.NeuralNet.MutateWeights((Model.NeuralNet)a.brain.GetModel(), a.genes.weight_mutation_prob, a.genes.dropout_prob);
+                    //Model.NeuralNet.MutateWeights((Model.NeuralNet)a.brain.GetModel(), a.genes.weight_mutation_prob, a.genes.dropout_prob);
+
                 }
                 catch
                 {

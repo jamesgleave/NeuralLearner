@@ -36,10 +36,12 @@ public class SpriteManager : MonoBehaviour
 
         // Setup the agent's collider
         agent.head.GetComponent<PolygonCollider2D>().points = head.GetComponent<PolygonCollider2D>().points;
+    }
 
-
-        // Generate the geometry
-        ((CompositeCollider2D)agent.GetCol()).GenerateGeometry();
+    public void SetBiChromaticAgent(BaseAgent agent, Color body_colour, Color head_colour)
+    {
+        agent.body.GetComponent<SpriteRenderer>().color = body_colour;
+        agent.head.GetComponent<SpriteRenderer>().color = head_colour;
     }
 
     public void SetRandomComponents(Genes genes)

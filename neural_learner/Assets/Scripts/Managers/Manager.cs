@@ -38,15 +38,24 @@ public class Manager : MonoBehaviour
     [Tooltip("The size of our simulation area")]
     public int gridsize;
 
-    [Header("Testing")]
-    public float scale;
+    [Header("Adaptive Grid Settings")]
+    [Tooltip("Use an adaptive grid which expands and contracts with the number of agents")]
+    public bool adaptive_grid;
+    public float adaptive_gridsize;
+    public int adaptive_grid_agent_threshold;
+
+    [Header("Adaptive Food Settings")]
+    public bool adaptive_food;
+    public int agent_pellet_threshold;
 
     [Header("Agent Settings")]
     [Tooltip("The Agent")]
     public BaseAgent agent;
+    public Egg egg;
 
     [Tooltip("The number of initial agents to spawn in.")]
     public float starting_agents;
+    public int min_agents;
 
     [Tooltip("The scale rate for the agent metabolism. Increase this value to increate the lifetime of each agent.")]
     public float metabolism_scale_rate;
@@ -76,21 +85,19 @@ public class Manager : MonoBehaviour
     [Header("Ancesory")]
     public AncestorManager anc_manager = new AncestorManager();
 
-    // These are values the manager uses to manage the simulation
-    // The spawn map contains probabilities for spawning food pellets
-    private List<List<float>> spawnmap = new List<List<float>>();
+    [Header("Garbage Collection")]
+    public bool use_auto_manual_collection;
 
+    // These are values the manager uses to manage the simulation (does not need to be seen)
     // The cluster pos is the center positions of all the clusters 
     private List<Vector2> cluster_pos = new List<Vector2>();
-
+    // List of all activate agents 
+    private List<BaseAgent> all_agents = new List<BaseAgent>();
 
     public void Setup()
     {
         // Create clusters for the spawning
         CreateClusters();
-
-        // This generates a heatmap of probabilities based on perlin noise
-        GenerateMap();
 
         // Spawn in agents!
         // This spawns the agents and calculates the required energy to spawn in the food.
@@ -111,6 +118,7 @@ public class Manager : MonoBehaviour
         {
             clock = update_rate;
             ManageFoodPellets();
+            ManageClusters();
             ManageAgents();
             CalculateEnergyInEth();
             combined = energy_in_agents + energy_in_ether + energy_in_pellets;
@@ -123,10 +131,34 @@ public class Manager : MonoBehaviour
         {
             clock -= Time.deltaTime;
         }
+    }
 
-        if (Input.GetKeyDown(KeyCode.Space))
+    public void ManageClusters()
+    {
+        // If we are using the adaptive grid, perform these calculations
+        if (adaptive_grid)
         {
-            ToggleRender();
+            // Calculate the ratio of agents to max agents
+            float adaption_factor = stat_manager.num_agents / (float)adaptive_grid_agent_threshold;
+
+            // Get a temp gridsize for comparison
+            float potential_gridsize = Mathf.Max(adaption_factor * ((float)gridsize), gridsize);
+
+            // If we pretty much have the same grid, dont bother updating anything
+            if (!Mathf.Approximately(potential_gridsize, adaptive_gridsize) && potential_gridsize > adaptive_gridsize || stat_manager.num_agents < (float)adaptive_grid_agent_threshold)
+            {
+                // update the gridsize
+                adaptive_gridsize += ((potential_gridsize - adaptive_gridsize) / 30) * Time.deltaTime;
+
+                if (Mathf.Abs(potential_gridsize - adaptive_gridsize) > 5)
+                {
+                    // Move the clusters
+                    for (int i = 0; i < cluster_pos.Count; i++)
+                    {
+                        cluster_pos[i] = Random.insideUnitCircle * adaptive_gridsize;
+                    }
+                }
+            }
         }
     }
 
@@ -138,7 +170,7 @@ public class Manager : MonoBehaviour
         // Set up the clusters
         for (int i = 0; i < num_clusters; i++)
         {
-            cluster_pos.Add(new Vector2((Random.Range(-1f, 1f)) * (gridsize / 2), Random.Range(-1f, 1f) * (gridsize / 2)));
+            cluster_pos.Add(Random.insideUnitCircle * gridsize);
         }
     }
 
@@ -151,13 +183,14 @@ public class Manager : MonoBehaviour
         foreach (FoodPellet pellet in food_pellets)
         {
             // If the pellet has been eaten then respawn if we have enough energy
-            // TODO Come up with a better way to manage the number of agents
-            if (pellet.eaten && agents.Count < starting_agents)
+            // As the number of agents increase, the probability of a food pellet respawning drops
+            if (pellet.eaten) //  && Random.value < max_agents / (1 + stat_manager.num_agents)
             {
                 Vector2 center = cluster_pos[Random.Range(0, pellet_clusters)];
                 Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
                 pellet.Respawn(center + offset, food_pellet_energy, food_growth_rate, food_pellet_size);
             }
+
             // Add the energy in that pellet
             percent_energy_in_pellets += pellet.energy;
         }
@@ -165,6 +198,15 @@ public class Manager : MonoBehaviour
         // Get the ratio of total energy in the system and the energy in the pellets
         energy_in_pellets = percent_energy_in_pellets;
         percent_energy_in_pellets /= initial_energy;
+    }
+
+    /// <summary>
+    /// Returns the time each pellet has to wait before it may respawn. If adaptive food is not on, it will return zero
+    /// </summary>
+    /// <returns></returns>
+    public float CalculatePelletRespawnTime()
+    {
+        return adaptive_food ? Mathf.Lerp(10, 500, stat_manager.num_agents / agent_pellet_threshold) : 0;
     }
 
     public void SpawnFoodPellets()
@@ -189,76 +231,18 @@ public class Manager : MonoBehaviour
         }
     }
 
-    public void RespawnFoodPellets()
-    {
-        int num_clusters = pellet_clusters;
-        cluster_pos.Clear();
-
-        // Set up the clusters
-        for (int i = 0; i < num_clusters; i++)
-        {
-            cluster_pos.Add(new Vector2((Random.Range(-1f, 1f)) * (gridsize / 2), Random.Range(-1f, 1f) * (gridsize / 2)));
-        }
-
-        // Spawn in the pellets
-        foreach (FoodPellet p in food_pellets)
-        {
-            Vector2 center = cluster_pos[Random.Range(0, num_clusters)];
-            Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
-            p.Respawn(center + offset, food_pellet_energy, food_growth_rate, food_pellet_size);
-        }
-    }
-
     // Returns the amount of energy needed to create the agents
     public float SpawnAgents()
     {
         // Spawn in the agents
         for (int i = 0; i < starting_agents; i++)
         {
-
+            // Spawn in the egg object
             Vector2 center = cluster_pos[Random.Range(0, cluster_pos.Count)];
             Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
-            BaseAgent a = Instantiate(agent, center + offset, transform.rotation, transform);
-            a.manager = this;
-
-            // Create names and base genes for the creatures
-            Genes g = Genes.RandomGenes(); // TODO Replace the random genes here with some kind of default
-            string identifier = "<" + Random.Range(1000, 10000).ToString("X") + ">";
-            string full_name = identifier + NameGenerator.GenerateFullName();
-            g.genus = full_name.Split(' ')[0];
-            g.species = full_name.Split(' ')[1];
-
-            // Set the genes' spritemap (establish the look of the agent randomly)
-            GetComponent<SpriteManager>().SetRandomComponents(g);
-
-            // Setup the agent
-            a.Setup((int)ID.Wobbit, g);
-            a.genes.genetic_drift = 0;
-
-            // Give them randomized brains
-            Model.NeuralNet.RandomizeWeights((Model.NeuralNet)a.brain.GetModel());
-            for (int j = Random.Range(1, 10); j > 0; j--)
-            {
-                try
-                {
-                    //Model.NeuralNet.MutateWeights((Model.NeuralNet)a.brain.GetModel(), a.genes.weight_mutation_prob, a.genes.dropout_prob);
-
-                }
-                catch
-                {
-                    // Do nothing
-                    print("oof");
-                }
-            }
-
-            // To track the ancestory, we use an ancestor manager object which is a tree like structure using nodes
-            AncestorNode node = new AncestorNode(parent: null, genes: g, name: full_name);
-            anc_manager.UpdatePopulation(a);
-            anc_manager.AddGenus(node);
-
-            a.node = node; // Add the agents ancestory (which is nothing yet)
-            energy -= a.energy;
-            AddAgent(a);
+            Vector2 pos = center + offset;
+            var e = Instantiate(egg, pos, transform.rotation, transform);
+            e.Setup(this, (int)ID.WobbitEgg);
         }
 
         // If the agents used all the energy then make up for it
@@ -280,7 +264,22 @@ public class Manager : MonoBehaviour
         float in_eggs = 0;
         percent_energy_in_agents = 0;
 
-        List<BaseAgent> all_agents = new List<BaseAgent>();
+        // Spawn more agents if we dont have enough
+        if (stat_manager.num_agents < min_agents)
+        {
+            float energy_required = agent.base_health * Mathf.Pow(Genes.GetBaseGenes().size, 2);
+            if (energy >= energy_required)
+            {
+                Vector2 center = cluster_pos[Random.Range(0, cluster_pos.Count)];
+                Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
+                Vector2 pos = center + offset;
+                var e = Instantiate(egg, pos, transform.rotation, transform);
+                e.Setup(this, (int)ID.WobbitEgg);
+            }
+        }
+
+        // Clear the list of agents
+        all_agents.Clear();
         foreach (Interactable a in agents)
         {
             if (a.GetID() == (int)ID.Wobbit)
@@ -319,26 +318,9 @@ public class Manager : MonoBehaviour
     {
         percent_energy_in_ether = 1 - percent_energy_in_pellets - percent_energy_in_agents;
         energy_in_ether = initial_energy - energy_in_agents - energy_in_pellets;
-    }
 
-    public void GenerateMap()
-    {
-        // The offset to make the perlin noise different each time it is generated
-        float px;
-        float py;
-        float offset = Random.Range(-1000f, 1000f);
-
-        for (int x = 0; x < gridsize; x++)
-        {
-            List<float> row = new List<float>();
-            for (int y = 0; y < gridsize; y++)
-            {
-                px = (float)x / (float)gridsize * scale;
-                py = (float)y / (float)gridsize * scale;
-                row.Add(Mathf.PerlinNoise(px + offset, py + offset));
-            }
-            spawnmap.Add(row);
-        }
+        // Set the energy (in case we lose precision due to floating point rounding)
+        energy = energy_in_ether;
     }
 
     public float Round(float value, int digits)
@@ -388,6 +370,16 @@ public class Manager : MonoBehaviour
         GetComponent<SpriteManager>().SetSprite(a.genes.spritemap["head"], a.genes.spritemap["body"], a, new Color(r, g, b));
     }
 
+    /// <summary>
+    /// Setup the sprite for a child which was created from sexual reproduction
+    /// </summary>
+    /// <param name="a"></param>
+    public void SetSprite(BaseAgent a, Color c1, Color c2)
+    {
+        // Sets the body and head to be two different colours (one from each parent)
+        GetComponent<SpriteManager>().SetBiChromaticAgent(a, c1, c2);
+    }
+
     public void ToggleRender()
     {
 
@@ -395,7 +387,12 @@ public class Manager : MonoBehaviour
 
     public void OnDrawGizmos()
     {
+        foreach (var c in cluster_pos)
+        {
+            Gizmos.DrawSphere(c, 0.1f);
+        }
 
+        Gizmos.DrawWireSphere(transform.position, adaptive_gridsize);
     }
 
 }

@@ -51,7 +51,15 @@ public class SimulationSceneManager : MonoBehaviour
         DontDestroyOnLoad(manager);
 
         // Move scenes
-        SceneManager.LoadScene("TestVisualization + UI");
+        // TODO this is temporary to test NEAT
+        if (agent.TryGetComponent<EvolutionaryNEATLearner>(out EvolutionaryNEATLearner learner))
+        {
+            SceneManager.LoadScene("NEATVisualization");
+        }
+        else
+        {
+            SceneManager.LoadScene("TestVisualization + UI");
+        }
 
         // Set the manager to inactive for now 
         //StateManager.manager.gameObject.SetActive(false);

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class Genome
 {
@@ -45,36 +46,6 @@ public class Genome
     }
 
     /// <summary>
-    /// Returns true if there is a cycle between node 1 and node 2
-    /// </summary>
-    /// <param name="new_connection_id"></param>
-    /// <param name="original_node"></param>
-    /// <returns></returns>
-    public bool CyclicConnection(int new_connection_id, int original_node)
-    {
-        // Find outgoing connections from the new connection
-        foreach (ConnectionGene connection in connections.Values)
-        {
-            // Grab all connections starting at 'new_connection'
-            if (connection.getInNode() == new_connection_id)
-            {
-                // We can see it loops back
-                if (connection.getOutNode() == original_node)
-                {
-                    return true;
-                }
-                else
-                {
-                    return CyclicConnection(connection.getOutNode(), original_node);
-                }
-            }
-        }
-
-        throw new System.Exception("Made it to end");
-        return false;
-    }
-
-    /// <summary>
     /// Returns the connections dict
     /// </summary>
     /// <returns></returns>
@@ -92,6 +63,33 @@ public class Genome
         return nodes;
     }
 
+    /// <summary>
+    /// Remove a node from the genome
+    /// </summary>
+    /// <returns></returns>
+    public void RemoveNode(int id)
+    {
+        // Remove the node
+        nodes.Remove(id);
+
+        // Remove any connection using the node
+        // Create temp list of keys
+        List<int> keys = new List<int>();
+        foreach (int key in connections.Keys)
+        {
+            keys.Add(key);
+        }
+
+        // Look at each key and remove any connection
+        foreach (int key in keys)
+        {
+            if (connections[key].getInNode() == id || connections[key].getOutNode() == id)
+            {
+                connections.Remove(key);
+            }
+        }
+    }
+
 
     /// <summary>
     /// Returns the next innovation number & increments the genome's innovation generator
@@ -102,10 +100,7 @@ public class Genome
         return innovation.GetInnovation();
     }
 
-    /// <summary>
-    /// Adds a connection between two random nodes
-    /// </summary>
-    public void AddConnectionMutation()
+    public bool ChangeActivationMutation()
     {
         // Create a list of all keys in the nodes list
         List<int> keys = new List<int>(nodes.Count);
@@ -117,9 +112,55 @@ public class Genome
         // Create a new random variable
         System.Random r = new System.Random();
 
+        // Grab the node that we will be changing
+        NodeGene node = nodes[keys[r.Next(keys.Count)]];
+
+        // Only change the activation if the node is not an output node (they must stay a sigmoid)
+        if (node.IsOutput() == false)
+        {
+            node.SetActivationString(Activations.ActivationHelper.GetRandomActivation());
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Adds a connection between two random nodes. Returns true if successful
+    /// </summary>
+    public bool AddConnectionMutation()
+    {
+        // Create a list of all keys in the nodes list
+        List<int> keys = new List<int>(nodes.Count);
+        List<int> non_input_ids = new List<int>();
+        List<int> non_output_ids = new List<int>();
+        foreach (var item in nodes)
+        {
+            keys.Add(item.Key);
+
+            // Add to these lists (in case we get a double up, where node is attatch to another of the same node given its an input or output)
+            if (item.Value.IsHidden() || item.Value.IsOutput())
+            {
+                non_input_ids.Add(item.Key);
+            }
+            else if (item.Value.IsHidden() || item.Value.IsInput())
+            {
+                non_output_ids.Add(item.Key);
+            }
+        }
+
         // Grab the two nodes that we will be connecting
-        NodeGene node1 = nodes[keys[r.Next(keys.Count)]];
-        NodeGene node2 = nodes[keys[r.Next(keys.Count)]];
+        NodeGene node1 = nodes[keys[Random.Range(0, keys.Count)]];
+        NodeGene node2 = nodes[keys[Random.Range(0, keys.Count)]];
+
+        // If we fail and have an input connecting to an input or an output connecting to an output we search and find all outputs/inputs and select one at random that works
+        if (node1.IsInput() && node2.IsInput())
+        {
+            node1 = nodes[non_input_ids[Random.Range(0, non_input_ids.Count)]];
+        }
+        else if (node1.IsOutput() && node2.IsOutput())
+        {
+            node1 = nodes[non_output_ids[Random.Range(0, non_output_ids.Count)]];
+        }
 
         // Reversed, meaning swapping the outgoing and incomming neuron
         bool reversed = false;
@@ -159,13 +200,11 @@ public class Genome
 
         // Return if the connection exists, because we would not want to create another connection if one exists!
         // Also, inputs should not be able to connect to inputs, and same with outputs!
-        if (connection_exists || node1 == node2 || node1.IsInput() && node2.IsInput() || node1.IsOutput() && node2.IsOutput())
+        // TODO Remove from the if statement. This allows for recurrent output nodes
+        if (connection_exists || node1.IsInput() && node2.IsInput() || node1.IsOutput() && node2.IsOutput())
         {
-            return;
+            return false;
         }
-
-        // TODO Check for cycles!!!!
-
 
         // if it is reversed, we must swap node 1 and node 2
         float weight = (Random.value * 2f) - 1f;
@@ -181,18 +220,53 @@ public class Genome
 
         // Add the new connection to our connections
         connections.Add(new_connection.GetInnovation(), new_connection);
+        return true;
+    }
+
+    public bool DropConnectionMutation()
+    {
+        // Get a random connection and disable it
+        // Create a list of all keys in the connections list
+        List<int> keys = new List<int>(connections.Count);
+        foreach (var item in connections)
+        {
+            keys.Add(item.Key);
+        }
+
+        // If we have no connections, return false
+        if (keys.Count == 0)
+        {
+            return false;
+        }
+
+        // Create a new random variable
+        System.Random r = new System.Random();
+
+        // Disable connection
+        ConnectionGene connection = connections[keys[r.Next(keys.Count)]];
+
+        // Swap the expression status
+        if (connection.IsExpressed())
+        {
+            connection.SetExpressedStatus(false);
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     /// <summary>
-    /// Adds a new node inplace of an existing connection
+    /// Adds a new node inplace of an existing connection. Returns true if successful
     /// </summary>
-    public void AddNodeMutation()
+    public bool AddNodeMutation()
     {
 
         // We need connections to create a node
         if (connections.Count == 0)
         {
-            return;
+            return false;
         }
 
         // Get a random connection and disable it
@@ -227,6 +301,12 @@ public class Genome
         // Create a new node
         NodeGene new_node = new NodeGene(NodeGeneType.Hidden, nodes.Count);
 
+        // Increment the node's ID until we have a new one
+        while (nodes.ContainsKey(new_node.GetID()))
+        {
+            new_node.IncrementID();
+        }
+
         // Create the two new connections
         ConnectionGene going_to_new = new ConnectionGene(in_node.GetID(), new_node.GetID(), 1f, true, innovation.GetInnovation());
         ConnectionGene new_to_next = new ConnectionGene(new_node.GetID(), out_node.GetID(), connection.GetWeight(), true, innovation.GetInnovation());
@@ -237,6 +317,34 @@ public class Genome
         // Add the new connections to the dict
         connections.Add(going_to_new.GetInnovation(), going_to_new);
         connections.Add(new_to_next.GetInnovation(), new_to_next);
+
+        return true;
+    }
+
+    public bool RemoveNodeMutation()
+    {
+        // Create a list of all keys in the nodes list
+        List<int> keys = new List<int>(nodes.Count);
+        foreach (var item in nodes)
+        {
+            keys.Add(item.Key);
+        }
+
+        // Create a new random variable
+        System.Random r = new System.Random();
+
+        // Grab the node we will be removing
+        NodeGene node = nodes[keys[r.Next(keys.Count)]];
+
+        // Only remove a hidden neuron
+        if (!node.IsHidden())
+        {
+            return false;
+        }
+
+        // Remove the node
+        RemoveNode(node.GetID());
+        return true;
     }
 
     /// <summary>
@@ -260,8 +368,16 @@ public class Genome
             new_genome.AddConnection(connection.Copy());
         }
 
+        // Set the innovation generator
+        new_genome.SetInnovationProgress(innovation.Query());
+
         // Return the new genome
         return new_genome;
+    }
+
+    public void SetInnovationProgress(int inno)
+    {
+        innovation.SetProgress(inno);
     }
 
     /// <summary>
@@ -306,41 +422,224 @@ public class Genome
         return child;
     }
 
+    public string SaveGenome(string save_path)
+    {
+        string code = "";
+
+        int id;
+        string method;
+        string activation;
+        NodeGeneType type;
+
+        code += "Genome:Innovation=" + innovation.Query() + "\n";
+
+        code += "Nodes: ";
+        foreach (NodeGene node in nodes.Values)
+        {
+            id = node.GetID();
+            method = "lin_comb";
+            type = node.GetNodeType();
+            activation = node.GetActivationString();
+            code += id + "," + method + "," + type + "," + activation + "; ";
+        }
+
+        code += "\n";
+        code += "Connections: ";
+        foreach (ConnectionGene conneciton in connections.Values)
+        {
+            code += conneciton.GetInnovation() + "," + conneciton.getInNode() + "," + conneciton.getOutNode() + "," + conneciton.GetWeight() + "; ";
+        }
+
+        ///
+        /// Genome:Innovation=0
+        /// Nodes: 0,lin_comb,Input,Tanh; 1,lin_comb,Input,Tanh; 2,lin_comb,Input,Tanh; 3,lin_comb,Input,Tanh; 4,lin_comb,Input,Tanh; 5,lin_comb,Input,Tanh; 6,lin_comb,Input,Tanh; 7,lin_comb,Input,Tanh; 8,lin_comb,Input,Tanh; 9,lin_comb,Input,Tanh; 10,lin_comb,Input,Tanh; 11,lin_comb,Input,Tanh; 12,lin_comb,Input,Tanh; 13,lin_comb,Input,Tanh; 14,lin_comb,Input,Tanh; 15,lin_comb,Input,Tanh; 16,lin_comb,Input,Tanh; 17,lin_comb,Input,Tanh; 18,lin_comb,Input,Tanh; 19,lin_comb,Input,Tanh; 20,lin_comb,Input,Tanh; 21,lin_comb,Input,Tanh; 22,lin_comb,Output,Tanh; 23,lin_comb,Output,Tanh; 24,lin_comb,Output,Tanh; 25,lin_comb,Output,Tanh; 26,lin_comb,Output,Tanh; 27,lin_comb,Output,Tanh;
+        ///
+        // "./Assets/SaveData/WriteLines.txt" 
+        File.WriteAllText(save_path, code);
+        return code;
+    }
+
+    public static Genome LoadFrom(string path_to_saved)
+    {
+        // Create the new genome
+        Genome new_genome = new Genome();
+
+        // Read the lines
+        string[] lines = System.IO.File.ReadAllLines(path_to_saved);
+
+        // Display the file contents by using a foreach loop.
+        foreach (string line in lines)
+        {
+            // Look at each part of the Genome
+            if (line.Contains("Genome:"))
+            {
+                string[] comps = line.Split(':');
+                foreach (string comp in comps)
+                {
+                    // Set innovation
+                    if (comp.Contains("Innovation"))
+                    {
+                        new_genome.innovation.SetProgress(int.Parse(comp.Split('=')[1]));
+                    }
+                }
+            }
+            // Add new nodes
+            else if (line.Contains("Nodes:"))
+            {
+                // Pattern:
+                // id + "," + method + "," + type + "," + activation + "; "
+                string data = line.Split(':')[1];
+
+
+                // Look at each node
+                int id;
+                string method;
+                string activation;
+                NodeGeneType type;
+                foreach (string comp in data.Split(';'))
+                {
+                    // Skip out if the string is empty
+                    if (comp.Equals(" "))
+                    {
+                        continue;
+                    }
+                    // Look at each data point in each node
+                    var node_data = comp.Split(',');  // break the string
+                    id = int.Parse(node_data[0]);  // Get the ID
+                    method = node_data[1]; // Get the method
+                    // Determine the neuron type
+                    type = NodeGeneType.Hidden;
+                    switch (node_data[2])
+                    {
+                        case "Input":
+                            type = NodeGeneType.Input;
+                            break;
+                        case "Hidden":
+                            type = NodeGeneType.Hidden;
+                            break;
+                        case "Output":
+                            type = NodeGeneType.Output;
+                            break;
+                    }
+                    // Get the activation code
+                    activation = node_data[3];
+
+                    // Add node to genome
+                    new_genome.AddNode(new NodeGene(type, id, activation));
+                }
+            }
+            else if (line.Contains("Connections:"))
+            {
+                // Pattern:
+                // Look at each connection
+                string data = line.Split(':')[1];
+
+                // Look at each node
+                int innovation, in_node_id, out_node_id;
+                float weight;
+                foreach (string comp in data.Split(';'))
+                {
+
+                    // Skip out if the string is empty
+                    if (comp.Equals(" "))
+                    {
+                        continue;
+                    }
+
+                    // Look at each data point in each node
+                    var c_data = comp.Split(',');  // break the string
+                    innovation = int.Parse(c_data[0]);
+                    in_node_id = int.Parse(c_data[1]);
+                    out_node_id = int.Parse(c_data[2]);
+                    weight = float.Parse(c_data[3]);
+                    new_genome.AddConnection(new ConnectionGene(in_node_id, out_node_id, weight, true, innovation));
+                }
+            }
+        }
+
+        return new_genome;
+    }
+
     public static string Mutate(Genome model, float mutation_amount, float weight_mutation_prob, float neuro_mutation_prob, float bias_mutation_prob, float dropout_prob)
     {
+        string log = "";
+
         // There is a base 80% chance of a genome mutation
-        if (0.80f < Random.value)
+        if (0.80f > Random.value)
         {
-            return "";
-        }
 
-        // Loop through each connection and mutate the weights according to the passed weight mutation probability
-        foreach (ConnectionGene con in model.connections.Values)
-        {
-            // If weight_mutation_prob is triggered, perturb the weight by a random value determined by the passed mutation amount
-            if (weight_mutation_prob > Random.value)
+            // Mutate add node
+            float prob_trigger = Random.Range(0f, 1f);
+            bool trigger = (neuro_mutation_prob > prob_trigger);
+            if (trigger)
             {
-                con.SetWeight(con.GetWeight() * Random.Range(-2 * mutation_amount, 2 * mutation_amount));
+                log += "Added Node: <" + neuro_mutation_prob + " > " + prob_trigger + "> " + model.AddNodeMutation() + ", ";
             }
-            // If the weight mutation is not triggered, then we assign the weights a new value (as from the NEAT paper)
-            else
+
+            // Mutate activations
+            prob_trigger = Random.Range(0f, 1f);
+            trigger = (neuro_mutation_prob > prob_trigger);
+            if (trigger)
             {
-                // If not, then set the weight value 
-                con.SetWeight(Random.Range(-2 * mutation_amount, 2 * mutation_amount));
+                log += "Changed Activation: " + ", ";
+                model.ChangeActivationMutation();
+            }
+
+            // Mutate the connections by adding a few more
+            float num_added_connections = 3 * neuro_mutation_prob;
+            // We can only add up to 5 new connections per mutation
+            prob_trigger = Random.Range(0f, 1f);
+            trigger = (weight_mutation_prob > prob_trigger);
+            while (trigger && num_added_connections > 0)
+            {
+                // Add new connection
+                log += "Added Connection: " + model.AddConnectionMutation() + ", ";
+                num_added_connections -= 1;
+
+                // Recalculate trigger
+                prob_trigger = Random.Range(0f, 1f);
+                trigger = (weight_mutation_prob > prob_trigger);
+            }
+
+            // Loop through each connection and mutate the weights according to the passed weight mutation probability
+            foreach (ConnectionGene con in model.connections.Values)
+            {
+                // First, we must trigger if we want to mutate this connection at all
+                if (weight_mutation_prob > Random.value)
+                {
+                    // If weight_mutation_prob is triggered, perturb the weight. There is a 75% chance of this happening
+                    if (0.75f > Random.value)
+                    {
+                        con.SetWeight(con.GetWeight() + Random.Range(-2 * mutation_amount, 2 * mutation_amount));
+                        // Only add to the log if our value is greater than zero
+                        if (con.GetWeight() > 0)
+                        {
+                            log += "Updated weight, ";
+                        }
+                    }
+                    // If the weight mutation is not triggered, then we assign the weights a new value (as from the NEAT paper)
+                    // If the weight is not pertubed, there is a 25% chance of the weight being set to an all new value
+                    else if (0.25f > Random.value)
+                    {
+                        // If not, then set the weight value 
+                        con.SetWeight(Random.Range(-2 * mutation_amount, 2 * mutation_amount));
+                        log += "Set weight, ";
+                    }
+                }
+            }
+
+
+            // Recalculate trigger but this time for dropping a connection
+            prob_trigger = Random.Range(0f, 1f);
+            trigger = (dropout_prob > prob_trigger);
+            if (trigger)
+            {
+                // Drop the connection
+                model.DropConnectionMutation();
+                log += "Dropped connection, ";
             }
         }
-
-        if (neuro_mutation_prob > Random.value)
-        {
-            model.AddConnectionMutation();
-        }
-
-        if (neuro_mutation_prob > Random.value)
-        {
-            model.AddNodeMutation();
-        }
-
-        return "";
+        return log;
     }
 
     /// <summary>

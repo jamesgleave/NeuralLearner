@@ -8,4 +8,5 @@ public abstract class Brain : MonoBehaviour
     public abstract void Setup();
     public abstract void Setup(Model.BaseModel model);
     public abstract Model.BaseModel GetModel();
+    public abstract void Mutate();
 }

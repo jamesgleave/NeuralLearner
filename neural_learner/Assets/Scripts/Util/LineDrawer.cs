@@ -69,6 +69,29 @@ public class LineDrawer : MonoBehaviour
         }
     }
 
+    public void DrawRecurrentConnection(Vector3 point0, Vector3 point1, float midscaler)
+    {
+
+        // The number of verts will reach its max value when we are at least at 100 frames per second
+        num_verts = Mathf.Clamp((int)(max_verts / (100 * Time.deltaTime)), 10, max_verts);
+
+        // Ensure we have a scale of one nomatter how large the parent gets 
+        transform.lossyScale.Set(1 / transform.parent.localScale.x, 1 / transform.parent.localScale.x, 1 / transform.parent.localScale.x);
+
+        Vector3 mid;
+        // Find the mid point
+        mid = (point0 + point1) / 2 + Vector3.up * midscaler;
+
+        // If the points are equal, meaning the node feeds into itself, just shift point 1 and two a bit
+        if (point1 == point0)
+        {
+            point1.x += 0.1f;
+            point0.x -= 0.1f;
+        }
+
+        DrawQuadraticBezierCurve(point0, mid, point1, num_verts);
+    }
+
     public void SimpleLine(Vector3 v1, Vector3 v2)
     {
         line = GetComponent<LineRenderer>();

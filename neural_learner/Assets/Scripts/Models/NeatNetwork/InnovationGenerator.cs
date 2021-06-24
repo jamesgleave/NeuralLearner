@@ -14,4 +14,22 @@ public class InnovationGenerator
     {
         return current_innovation++;
     }
+
+    /// <summary>
+    /// Returns the current innovation value but does not increment it
+    /// </summary>
+    /// <returns></returns>
+    public int Query()
+    {
+        return current_innovation;
+    }
+
+    /// <summary>
+    /// Set the innovation count
+    /// </summary>
+    /// <returns></returns>
+    public void SetProgress(int progress)
+    {
+        current_innovation = progress;
+    }
 }

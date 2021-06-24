@@ -46,9 +46,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6f1a7df647a04eb488bdd982bc9a299, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  col: {fileID: 0}
   energy: 0
   size: 0
   gestation_time: 0
+  total_gestation_time: 0
   manager: {fileID: 0}
   agent: {fileID: 0}
   parent: {fileID: 0}
@@ -151,7 +153,7 @@ Rigidbody2D:
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_Interpolate: 0
-  m_SleepingMode: 1
+  m_SleepingMode: 2
   m_CollisionDetection: 0
   m_Constraints: 0
 --- !u!60 &2665559723502215639

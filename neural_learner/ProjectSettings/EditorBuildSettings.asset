@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TestVisualization + UI.unity
     guid: 9f27cb7bbcc9143328c608aa48eacd0b
+  - enabled: 1
+    path: Assets/Scenes/NEATVisualization.unity
+    guid: 193dd5d4fc56d4b4d98c6c71b69184a2
   m_configObjects: {}

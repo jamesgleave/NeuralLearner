@@ -12,9 +12,7 @@ public class TestNEAT : MonoBehaviour
     public List<float> outputs = new List<float>();
 
     public List<float> input_values = new List<float>();
-    public List<bool> input_recurrence = new List<bool>();
     public List<float> output_weights = new List<float>();
-    public List<float> hidden_state = new List<float>();
     public List<int> out_ids = new List<int>();
     public List<int> execution_order = new List<int>();
 
@@ -36,12 +34,19 @@ public class TestNEAT : MonoBehaviour
         g.AddNode(new NodeGene(NodeGeneType.Hidden, 2));
         g.AddNode(new NodeGene(NodeGeneType.Hidden, 3));
 
-        g.AddConnection(new ConnectionGene(0, 2, 1, true, g.GetNextInnovation()));
+        //genome.AddNode(new NodeGene(NodeGeneType.Input, 0));
+        //genome.AddNode(new NodeGene(NodeGeneType.Output, 1));
 
-        g.AddConnection(new ConnectionGene(2, 3, 1, true, g.GetNextInnovation()));
+        //genome.AddNode(new NodeGene(NodeGeneType.Hidden, 2));
+        //genome.AddNode(new NodeGene(NodeGeneType.Hidden, 3));
 
-        g.AddConnection(new ConnectionGene(3, 2, 1, true, g.GetNextInnovation()));
-        g.AddConnection(new ConnectionGene(3, 1, 1, true, g.GetNextInnovation()));
+        g.AddConnection(new ConnectionGene(0, 2, Random.value - 0.5f, true, g.GetNextInnovation()));
+
+        g.AddConnection(new ConnectionGene(2, 3, Random.value - 0.5f, true, g.GetNextInnovation()));
+
+        //g.AddConnection(new ConnectionGene(3, 3, Random.value - 0.5f, true, g.GetNextInnovation()));
+        g.AddConnection(new ConnectionGene(3, 2, Random.value - 0.5f, true, g.GetNextInnovation()));
+        g.AddConnection(new ConnectionGene(3, 1, Random.value - 0.5f, true, g.GetNextInnovation()));
 
 
         // Setup nn
@@ -50,17 +55,12 @@ public class TestNEAT : MonoBehaviour
         List<float> inputs = new List<float>();
         inputs.Add(input);
 
-        CalculateDepth();
-        nn.FindRecurrence(inputs);
-
+        print(new NEATInputContainer());
         output_weights = nn.GetNeurons()[lookat].GetWeights();
         out_ids = nn.GetNeurons()[lookat].GetOutputIDs();
-        input_recurrence = nn.GetNeurons()[lookat].GetRecurrence();
-        input_values = nn.GetNeurons()[lookat].GetInputs();
         neuron_output = nn.GetNeurons()[lookat].GetOutput();
         execution_order = nn.GetNeurons()[lookat].order;
         neuron_ready = nn.GetNeurons()[lookat].IsReady();
-        hidden_state = nn.GetNeurons()[lookat].GetHiddenStateList();
         depth = nn.GetNeurons()[lookat].GetDepth();
     }
 
@@ -74,26 +74,25 @@ public class TestNEAT : MonoBehaviour
             inputs.Add(input);
             outputs = nn.Infer(inputs);
         }
-        if (Input.GetKeyDown(KeyCode.C))
+
+        if (Input.GetKeyDown(KeyCode.P))
         {
-            List<float> inputs = new List<float>();
-            inputs.Add(input);
+            foreach (var x in nn.GetNeurons()[lookat].GetInputs())
+            {
+                print("Input-ID: " + x.Key + ", Value: " + x.Value);
+            }
         }
         output_weights = nn.GetNeurons()[lookat].GetWeights();
         out_ids = nn.GetNeurons()[lookat].GetOutputIDs();
-        input_recurrence = nn.GetNeurons()[lookat].GetRecurrence();
-        input_values = nn.GetNeurons()[lookat].GetInputs();
         neuron_output = nn.GetNeurons()[lookat].GetOutput();
         execution_order = nn.GetNeurons()[lookat].order;
         neuron_ready = nn.GetNeurons()[lookat].IsReady();
-        hidden_state = nn.GetNeurons()[lookat].GetHiddenStateList();
         depth = nn.GetNeurons()[lookat].GetDepth();
     }
 
     public void CalculateDepth()
     {
         Dictionary<int, NEATNeuron> neurons = nn.GetNeurons();
-        Dictionary<NEATNeuron, int> buffer = new Dictionary<NEATNeuron, int>();
 
         bool cont = true;
         int iterations = 0;
@@ -122,6 +121,5 @@ public class TestNEAT : MonoBehaviour
                 }
             }
         }
-        print("iterations: " + iterations + " with a total of " + total_loops + " loops");
     }
 }

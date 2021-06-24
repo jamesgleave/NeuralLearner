@@ -12,6 +12,11 @@ public enum ID
     WobbitEgg = 2,
     FoodPellet = 3,
     Meat = 4,
+
+    red_pharomone = 6,
+    blue_pharomone = 7,
+    green_pharomone = 8,
+
     MaxID = 10,
 
     // For neuron display (Anything outside of the simulation has a negative ID because I said so)
@@ -27,7 +32,7 @@ public class Interactable : MonoBehaviour
     protected Rigidbody2D rb;
 
     // The collider attached to this item
-    protected Collider2D col;
+    public Collider2D col;
 
     // The sprite renderer
     protected SpriteRenderer sprite;
@@ -45,6 +50,11 @@ public class Interactable : MonoBehaviour
         // Set the rigidbody, collider, and sprite renderer
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<Collider2D>();
+        if (col == null)
+        {
+            col = GetComponentsInChildren<Collider2D>()[1];
+        }
+
         sprite = GetComponent<SpriteRenderer>();
 
         // Setup the id
@@ -74,6 +84,7 @@ public class Interactable : MonoBehaviour
         // Only generate if it is of the type composite collider
         if (col.GetType() == typeof(CompositeCollider2D))
         {
+            ((CompositeCollider2D)col).generationType = CompositeCollider2D.GenerationType.Manual;
             ((CompositeCollider2D)col).GenerateGeometry();
         }
     }

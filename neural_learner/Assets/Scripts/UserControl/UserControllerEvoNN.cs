@@ -144,20 +144,21 @@ public class UserControllerEvoNN : MonoBehaviour
         // Check for hotkey
         WatchHotKeys();
 
-        if (selected != null)
-        {
-            // Set the text
-            Neuron n = selected.GetComponent<Neuron>();
-            text.UpdateText((int)n.layer, (int)n.position, n.value, n.bias);
+        if (text)
+            if (selected != null)
+            {
+                // Set the text
+                Neuron n = selected.GetComponent<Neuron>();
+                text.UpdateText((int)n.layer, (int)n.position, n.value, n.bias);
 
-            // Turn on the text
-            text.Activate();
-        }
-        else
-        {
-            // Turn off the text
-            text.Deactivate();
-        }
+                // Turn on the text
+                text.Activate();
+            }
+            else
+            {
+                // Turn off the text
+                text.Deactivate();
+            }
     }
 
     void MouseController()
@@ -318,7 +319,7 @@ public class UserControllerEvoNN : MonoBehaviour
             selected = nn.neurons[layer][(int)nn.neurons[layer].Count / 2];
             selected.GetComponent<Neuron>().Select();
         }
-        else if (selected != null && nn.neurons[(int)selected.GetComponent<Neuron>().GetInfo()["layer"]].Count == 1 && Input.GetKeyDown(KeyCode.Backspace))
+        else if (nn != null && selected != null && nn.neurons[(int)selected.GetComponent<Neuron>().GetInfo()["layer"]].Count == 1 && Input.GetKeyDown(KeyCode.Backspace))
         {
             // If we have selected a layer/neuron, and we try to delete the last one, delete the layer!
             int layer = (int)selected.GetComponent<Neuron>().GetInfo()["layer"];

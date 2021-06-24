@@ -29,19 +29,82 @@ public class Senses : MonoBehaviour
     public float closest_agent_dist_magnitude;
     public int num_agents;
 
+    [Space]
+    public Pheromone red;
+    public Pheromone green;
+    public Pheromone blue;
+    public float red_distance = 0, blue_distance = 0, green_distance = 0;
+
+    // The list of observations
+    public List<float> observations = new List<float>();
+    public List<string> observation_names = new List<string>();
+
+    // The buffer for the circlecast
+    public RaycastHit2D[] buffer;
+    ContactFilter2D filter;
 
     public void Setup(float dist, int id, Transform t)
     {
         // Set the vision radius 
         vision_distance = dist;
         vision_width = dist / 2;
+
+        // Setup the names of all observations in the right order (the ith observation lines up with the ith observation_name)
+        SetupNames();
+
+        // Create the buffer
+        buffer = new RaycastHit2D[20];
+        filter = new ContactFilter2D();
+    }
+
+    public void SetupNames()
+    {
+        // Add observation names for the pellets
+        observation_names.Add("Distance To Closest Pellet");
+        observation_names.Add("Number Of Pellets Seen");
+        observation_names.Add("Is Facing Closest Pellet");
+
+        // Add observation names for the meat
+        observation_names.Add("Distance To Closest Meat");
+        observation_names.Add("Number Of Meat Seen");
+        observation_names.Add("Is Facing Closest Meat");
+
+        // Add observation names for the egg
+        observation_names.Add("Distance To Closest Egg");
+        observation_names.Add("Number Of Eggs Seen");
+        observation_names.Add("Is Facing Closest Egg");
+
+        // Add observation names for the Agent
+        observation_names.Add("Distance To Closest Agent");
+        observation_names.Add("Number Of Agents Seen");
+        observation_names.Add("Is Facing Closest Agent");
+
+        // The next 3 are all about the closest agent seen
+        observation_names.Add("Red Value Of Closest Agent Seen");
+        observation_names.Add("Green Value Of Closest Agent Seen");
+        observation_names.Add("Blue Value Of Closest Agent Seen");
+
+        // Next are all about the agent's state
+        observation_names.Add("Agent's Energy");
+        observation_names.Add("Agent's Health");
+        observation_names.Add("Agent's Lifespan");
+        observation_names.Add("Agent's Speed");
+        observation_names.Add("Agent's Rotation");
+        observation_names.Add("ID Of Grabbed Entity");
+
+        // Pheromones
+        observation_names.Add("Is Facing Red Pheromone");
+        observation_names.Add("Is Facing Green Pheromone");
+        observation_names.Add("Is Facing Blue Pheromone");
+
+        // The constant value
+        observation_names.Add("Constant Value");
     }
 
     public List<float> GetObservations(BaseAgent agent)
     {
-
-        // Create the obs list
-        List<float> observations = new List<float>();
+        // Clear obs
+        observations.Clear();
 
         // An embedded funciton to add things to our observation list
         void AddTo(Interactable i, float dist, float scaled_magnitude)
@@ -56,7 +119,10 @@ public class Senses : MonoBehaviour
             if (i != null)
             {
                 // Add the dot product
-                observations.Add(Vector3.Dot(transform.up, (i.transform.position - transform.position).normalized));
+                //observations.Add((1 - Vector3.Dot(transform.up, (i.transform.position - transform.position).normalized)) / 2);
+                // Add the normalized angle (between -1 and 1)
+                observations.Add(Vector3.SignedAngle(transform.up, i.transform.position - transform.position, transform.forward) / 180f);
+
             }
             else
             {
@@ -83,13 +149,12 @@ public class Senses : MonoBehaviour
         // 10 - 12
         AddTo(closest_agent, closest_agent_dist_magnitude, scaled_num_agents);
 
-        // The next five are all about the closest agent seen
+        // The next 3 are all about the closest agent seen
         if (closest_agent != null)
         {
             // Add the code of the other agent
             // 13, 14, 15
             // Note: I have changed this to the colour of the agent for testing
-            Vector3 normalized_code = closest_agent.genes.code;
             observations.Add(closest_agent.genes.colour_r);
             observations.Add(closest_agent.genes.colour_g);
             observations.Add(closest_agent.genes.colour_b);
@@ -131,9 +196,41 @@ public class Senses : MonoBehaviour
             observations.Add(0);
         }
 
-        // Constant (22)
-        observations.Add(1);
+        // 22
+        // Add red pheromone
+        if (red != null)
+        {
+            observations.Add(Vector3.SignedAngle(transform.up, red.transform.position - transform.position, transform.forward) / 180f);
+        }
+        else
+        {
+            observations.Add(0);
+        }
 
+        // 23
+        // Add green pheromone
+        if (green != null)
+        {
+            observations.Add(Vector3.SignedAngle(transform.up, green.transform.position - transform.position, transform.forward) / 180f);
+        }
+        else
+        {
+            observations.Add(0);
+        }
+
+        // 24
+        // Add blue pheromone
+        if (blue != null)
+        {
+            observations.Add(Vector3.SignedAngle(transform.up, blue.transform.position - transform.position, transform.forward) / 180f);
+        }
+        else
+        {
+            observations.Add(0);
+        }
+
+        // Constant 25
+        observations.Add(1);
         return observations;
     }
 
@@ -143,28 +240,44 @@ public class Senses : MonoBehaviour
         // Clear the list of detected game objects
         detected.Clear();
 
+        // Clear the buffer
+        System.Array.Clear(buffer, 0, buffer.Length);
+
         // Clear all of the closest values
         closest_agent = null;
         closest_egg = null;
         closest_meat = null;
         closest_pellet = null;
+        red = null;
+        green = null;
+        blue = null;
 
         // Reset all distances
-        closest_pellet_dist_magnitude = closest_meat_dist_magnitude = closest_egg_dist_magnitude = closest_agent_dist_magnitude = 0;
+        closest_pellet_dist_magnitude = closest_meat_dist_magnitude = closest_egg_dist_magnitude = closest_agent_dist_magnitude = red_distance = green_distance = blue_distance = 0;
 
         // Reset counts
         num_pellets = num_meats = num_eggs = num_agents = 0;
 
         // Look at stuff!
-        foreach (RaycastHit2D c in Physics2D.CircleCastAll(transform.position + transform.up * vision_width / 1.5f, vision_width, transform.up, vision_distance))
+        Physics2D.CircleCast(origin: transform.position + transform.up * vision_width / 1.5f, radius: vision_width, direction: transform.up, distance: vision_distance, results: buffer, contactFilter: filter.NoFilter());
+        foreach (RaycastHit2D c in buffer)
         {
+            // If we have a null value, skip!
+            if (c.collider == null)
+            {
+                continue;
+            }
+
             if (c.collider.TryGetComponent<Interactable>(out Interactable obj) && obj.gameObject != this.gameObject)
             {
-                detected.Add(obj);
-
                 // Now update the closest values
                 // Use a switch case cuz it be faster
-                float dist = Vector2.Distance(obj.transform.position, transform.position) / (vision_distance + vision_width * 2f);
+                float raw_dist = Vector2.Distance(obj.transform.position, transform.position);
+                float dist = raw_dist / (vision_distance + vision_width * 2f);
+
+                // Add the object to the list of things we have detected
+                detected.Add(obj);
+
                 switch ((ID)obj.GetID())
                 {
                     case ID.FoodPellet:
@@ -206,6 +319,27 @@ public class Senses : MonoBehaviour
                             closest_agent_dist_magnitude = dist;
                         }
                         num_agents++;
+                        break;
+                    case ID.red_pharomone:
+                        if (red == null || dist < red_distance)
+                        {
+                            red = (Pheromone)obj;
+                            red_distance = dist;
+                        }
+                        break;
+                    case ID.green_pharomone:
+                        if (green == null || dist < green_distance)
+                        {
+                            green = (Pheromone)obj;
+                            green_distance = dist;
+                        }
+                        break;
+                    case ID.blue_pharomone:
+                        if (blue == null || dist < blue_distance)
+                        {
+                            blue = (Pheromone)obj;
+                            blue_distance = dist;
+                        }
                         break;
                 }
             }
@@ -260,8 +394,8 @@ public class Senses : MonoBehaviour
 
     public void OnDrawGizmos()
     {
-        //Gizmos.DrawWireSphere(transform.position + transform.up * vision_width / 1.5f, vision_width);
-        //Gizmos.DrawWireSphere(transform.position + transform.up * vision_distance, vision_width);
+        Gizmos.DrawWireSphere(transform.position + transform.up * vision_width / 1.5f, vision_width);
+        Gizmos.DrawWireSphere(transform.position + transform.up * vision_distance, vision_width);
 
         foreach (Interactable i in detected)
         {

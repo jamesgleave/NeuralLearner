@@ -16,8 +16,6 @@ public class Egg : Interactable
 
     public float gestation_time;
     public float total_gestation_time;
-    public float parent_maturity_age;
-    public float parent_lifespan;
 
     /// <summary>
     ///   <para>The manager associated with this meat</para>
@@ -49,7 +47,18 @@ public class Egg : Interactable
     /// </summary>
     public Model.BaseModel brain = null;
 
+    /// <summary>
+    /// If the egg was created by the manager instead of another agent
+    /// </summary>
+    private bool initial_population;
+
     protected Genes genes = null;
+
+    /// <summary>
+    /// True if the egg was produced using sexual reproduction, false otherwise.
+    /// </summary>
+    private bool sexually_produced;
+    private BaseAgent p1, p2;
 
     public void Setup(int id, float e, Genes genes, Manager m, BaseAgent a)
     {
@@ -70,14 +79,88 @@ public class Egg : Interactable
         // Calculate the gestation time
         gestation_time = Mathf.Max(Mathf.Log(genes.gestation_time * size * e) * parent.base_gestation_time, parent.base_gestation_time);
         total_gestation_time = gestation_time;
-        parent_maturity_age = parent.maturity_age;
-        parent_lifespan = parent.lifespan;
 
         // Setup the parent node & generation
         parent_node = parent.node;
         generation = parent.generation + 1;
 
         base.Setup(id);
+    }
+
+    public void Setup(int id, float e, Genes genes, Manager m, BaseAgent a, BaseAgent parent_1, BaseAgent parent_2)
+    {
+
+        // Set genes and mutate them
+        this.genes = genes;
+        this.genes.Mutate();
+
+        // Set the agent
+        this.agent = a;
+
+        // Set the values
+        manager = m;
+        energy = e;
+        size = parent.genes.size;
+        transform.localScale = new Vector3(size, size, size);
+
+        // Calculate the gestation time
+        gestation_time = Mathf.Max(Mathf.Log(genes.gestation_time * size * e) * parent.base_gestation_time, parent.base_gestation_time);
+        total_gestation_time = gestation_time;
+
+        // Setup the parent node & generation
+        parent_node = parent.node;
+        generation = parent.generation + 1;
+
+        // Setup the parents
+        sexually_produced = true;
+        p1 = parent_1;
+        p2 = parent_2;
+
+        // Setup as an interactable
+        base.Setup(id);
+    }
+
+    public void Setup(Manager m, int id)
+    {
+        // Set genes and mutate them
+        this.genes = Genes.GetBaseGenes();
+
+        // Set the agent
+        this.agent = m.agent;
+
+        // Set the values
+        manager = m;
+        energy = Mathf.Pow(genes.size, 2) * agent.base_health;
+        manager.energy -= energy;
+        size = genes.size;
+        transform.localScale = new Vector3(size, size, size);
+
+        // Calculate the gestation time
+        gestation_time = Mathf.Max(Mathf.Log(genes.gestation_time * size * energy) * agent.base_gestation_time, agent.base_gestation_time) * Random.Range(0.5f, 2f);
+        total_gestation_time = gestation_time;
+
+        // Generate a name
+        string identifier = "<" + Random.Range(1000, 10000).ToString("X") + ">";
+        string full_name = identifier + NameGenerator.GenerateFullName();
+        genes.genus = full_name.Split(' ')[0];
+        genes.species = full_name.Split(' ')[1];
+
+        // Setup the parent node & generation
+        parent_node = new AncestorNode(parent: null, genes: agent.genes, name: full_name); ;
+        generation = 0;
+
+        // To track the ancestory, we use an ancestor manager object which is a tree like structure using nodes
+        manager.anc_manager.AddGenus(parent_node);
+
+        // Add the egg to the manager
+        manager.AddAgent(this);
+
+        // Set this as the initial population
+        initial_population = true;
+
+        // Setup as an interactable
+        base.Setup(id);
+
     }
 
     public void Update()
@@ -87,23 +170,35 @@ public class Egg : Interactable
         {
             // Remove from this list of all agents
             manager.agents.Remove(this);
-
             Destroy(gameObject);
         }
 
         gestation_time -= Time.deltaTime;
         if (gestation_time <= 0)
         {
-            // TODO create a funciton for the manager that takes the ID and  returns the agent (given we have multiple types of agents)
             BaseAgent a = Instantiate(agent, transform.localPosition, transform.rotation, manager.transform);
+            a.transform.Rotate(new Vector3(0, 0, Random.Range(0, 180f)));
+
+            // If created by manager, we want to randomize is body
+            if (initial_population)
+            {
+                // Set the genes' spritemap (establish the look of the agent randomly)
+                manager.GetComponent<SpriteManager>().SetRandomComponents(genes);
+
+                // If it is the initial population, we dont have any genetic drift
+                genes.genetic_drift = 0;
+            }
+            else
+            {
+                // Set the genetic drift of the agent by checking againts its parent's node. The parent's node contains the genes of the original.
+                genes.genetic_drift = manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).CalculateGeneticDrift(genes);
+            }
 
             // Add the agent object to the manager's list
             manager.AddAgent(a);
 
             // To track the ancestory, we use an ancestor manager object which is a tree like structure using nodes
             a.node = parent_node;
-            // Set the genetic drift of the agent by checking againts its parent's node. The parent's node contains the genes of the original.
-            genes.genetic_drift = manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).CalculateGeneticDrift(genes);
             // Increment the generation
             a.generation = generation;
 
@@ -134,8 +229,11 @@ public class Egg : Interactable
             a.Setup(id - 1, genes, manager);
             a.energy = energy;
 
-            // Give the brain
-            a.brain.Setup(brain);
+            // Setup the brain
+            SetupBrain(a);
+
+            // Setup using parents
+            HandleReproductionMode(a);
 
             // Remove the egg from the manager
             manager.agents.Remove(this);
@@ -145,6 +243,40 @@ public class Egg : Interactable
 
             // Kill the egg!
             Destroy(gameObject);
+        }
+    }
+
+    /// <summary>
+    /// If the agent was created using sexual reproduciton, the parents will determine the colouration
+    /// </summary>
+    /// <param name="a"></param>
+    public void HandleReproductionMode(BaseAgent a)
+    {
+        if (sexually_produced)
+        {
+            Color c1 = new Color(p1.genes.colour_r, p1.genes.colour_g, p1.genes.colour_b);
+            Color c2 = new Color(p2.genes.colour_r, p1.genes.colour_g, p1.genes.colour_b);
+            manager.SetSprite(a, c1, c2);
+            print(c1 + ", " + c2);
+        }
+    }
+
+    public void SetupBrain(BaseAgent a)
+    {
+        // Give the brain
+        if (initial_population)
+        {
+            // If initial population, give a new brain
+            a.brain.Setup();
+            for (int i = 0; i < 20 * Random.value; i++)
+            {
+                a.brain.Mutate();
+            }
+        }
+        else
+        {
+            // Else, use the brain set by the parent
+            a.brain.Setup(brain);
         }
     }
 

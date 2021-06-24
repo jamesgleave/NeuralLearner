@@ -45,14 +45,22 @@ public class FoodPellet : Interactable
     /// </summary>
     Vector3 goal_scale;
 
+    // Ready is true when the cooldown time is less than zero meaning it can respawn
+    public float cooldown_time;
+    public bool ready;
+
+    // The time since they have last been eaten
+    // When this is 30, they can start to regrow
+    public float time_since_eaten = 0;
+
     public void Setup(int id, float me, float gr, float s, Manager m)
     {
         // Set values
-        max_energy = me;
         growth_rate = gr * Random.Range(0.9f, 1.1f);
+        size = s * Random.Range(0.5f, 1.5f);
+        max_energy = me;
         manager = m;
         energy = 0;
-        size = s * Random.Range(0.9f, 1.1f);
 
         transform.localScale = Vector3.zero;
         base.Setup(id);
@@ -60,18 +68,23 @@ public class FoodPellet : Interactable
 
     public void Respawn(Vector2 pos, float me, float gr, float s)
     {
-        transform.position = pos;
-        max_energy = me;
-        growth_rate = gr * Random.Range(0.9f, 1.1f);
-        eaten = false;
-        energy = 0;
-        size = s * Random.Range(0.9f, 1.1f);
+        if (ready)
+        {
+            transform.position = pos;
+            max_energy = me;
+            growth_rate = gr * Random.Range(0.9f, 1.1f);
+            eaten = false;
+            energy = 0;
+            size = s * Random.Range(0.5f, 1.5f);
 
-        sprite.enabled = true;
-        rb.simulated = true;
-        col.enabled = true;
+            sprite.enabled = true;
+            rb.simulated = true;
+            col.enabled = true;
 
-        transform.localScale = Vector3.zero;
+            transform.localScale = Vector3.zero;
+
+            ready = false;
+        }
     }
 
     // Update is called once per frame
@@ -97,13 +110,20 @@ public class FoodPellet : Interactable
             // Find the delta energy and the goal size
             goal_scale = new Vector3(size, size, size) * Mathf.Max((energy / max_energy), 0.1f) + Vector3.one / 10f;
             transform.localScale = Vector3.Lerp(transform.localScale, goal_scale, growth_rate);
-        }
 
-        //// If we have reached a critical point, which is arbitrarily set to 1 then the max energy consumed, it just respawns and recycles its energy 
-        //if (energy < 0.1f * max_energy && energy_consumed >= max_energy)
-        //{
-        //    manager.RecycleEnergy(Eat());
-        //}
+            // Count down if we are not ready
+            if (cooldown_time > 0 && ready == false)
+            {
+                cooldown_time -= Time.deltaTime;
+            }
+            else
+            // If we are ready, set a respawn timer equal to the proportion of max_agents
+            {
+                // The cooldown time exponentially increases as the number of agents reach the max threshold
+                cooldown_time = Mathf.Min(manager.CalculatePelletRespawnTime(), 300);
+                ready = true;
+            }
+        }
     }
 
     void Deactivate()
@@ -121,6 +141,9 @@ public class FoodPellet : Interactable
     {
         // Temp store the energy so it can be returned
         float temp_energy = energy;
+
+        // Set time to zero
+        time_since_eaten = 0;
 
         // Set the energy of this pellet to zero since it has been eaten
         energy = 0;
@@ -140,6 +163,10 @@ public class FoodPellet : Interactable
 
     public float Eat(float consumption_rate)
     {
+
+        // Set time to zero
+        time_since_eaten = 0;
+
         // If we have enough energy after consuming then we do not destroy
         if (energy - consumption_rate > 0)
         {

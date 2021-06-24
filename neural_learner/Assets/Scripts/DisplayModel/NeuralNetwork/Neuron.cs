@@ -236,15 +236,6 @@ public class Neuron : Interactable
         y = (neuron_index - layer_size / 2) * vertical_offset + even_odd_offset;
         z = 0;
 
-        // Testing the arc
-        // The concept is to arc the input layer to be able to more clearly see what is going on
-        //if (layer_index == 0 || true)
-        //{
-        //    // Calculate the arc
-        //    // The greatest value for arch should be at position = layer_size/2
-        //    x -= Mathf.Abs(layer_size - neuron_index * 2);
-        //}
-
         // set the desired position
         desired_position.Set(x, y, z);
     }

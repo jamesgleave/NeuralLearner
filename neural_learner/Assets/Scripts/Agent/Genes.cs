@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 
 [System.Serializable]
@@ -126,6 +127,11 @@ public class Genes
     public Dictionary<string, int> spritemap = new Dictionary<string, int>();
 
     /// <summary>
+    /// The list of genes (gl standing for gene list)
+    /// </summary>
+    private List<float> gl = new List<float>();
+
+    /// <summary>
     ///   <para>The agent's genes</para>
     /// </summary>
     public Genes(
@@ -171,6 +177,8 @@ public class Genes
         this.colour_r = colour_r;
         this.colour_g = colour_g;
         this.colour_b = colour_b;
+        spritemap = new Dictionary<string, int>();
+        ClampMutationRates();
     }
 
     /// <summary>
@@ -208,6 +216,9 @@ public class Genes
         g.spritemap["body"] = spritemap["body"];
         g.spritemap["head"] = spritemap["head"];
 
+        // Clamp the rates
+        ClampMutationRates();
+
         return g;
     }
 
@@ -223,6 +234,9 @@ public class Genes
         new_genes.spritemap["body"] = other.spritemap["body"];
         new_genes.spritemap["head"] = spritemap["head"];
 
+        // Clamp rates
+        ClampMutationRates();
+
         // Return the new genes
         return new_genes;
     }
@@ -230,30 +244,29 @@ public class Genes
     /// <summary>
     ///   <para>Returns a random genes object (for testing)</para>
     /// </summary>
-    public static Genes RandomGenes()
+    public static Genes GetBaseGenes()
     {
-        // TODO Make the maturity time and gestation time inversely proportional
         return new Genes(
-         Random.value * Random.value,
-         Random.value * Random.value,
-         Random.value * Random.value,
-         Random.value * Random.value,
-         Random.value * Random.value,
-         Random.value * Random.value,
-         Random.value * Random.value,
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f),
-         Mathf.Clamp(Random.value, 0.1f, 1f)
+         base_mutation_rate: 0.5f + Random.value / 10,
+         colour_mutation_prob: 0.1f + Random.value / 10,
+         attribute_mutation_rate: 0.1f + Random.value / 10,
+         neuro_mutation_prob: 0.1f + Random.value / 100,
+         weight_mutation_prob: 0.5f + Random.value / 10,
+         bias_mutation_prob: 0.5f + Random.value / 10,
+         dropout_prob: 0.15f + Random.value / 10,
+         speed: 0.5f + Random.value / 10,
+         diet: 0.4f + Random.value / 10,
+         attack: 0.5f + Random.value / 10,
+         defense: 0.5f + Random.value / 10,
+         vitality: 0.5f + Random.value / 10,
+         size: 0.4f + Random.value / 10,
+         perception: 0.5f + Random.value / 10,
+         clockrate: 0.5f + Random.value / 10,
+         gestation_time: 0.5f + Random.value / 10,
+         maturity_time: 0.5f + Random.value / 10,
+         colour_r: Mathf.Clamp(Random.value, 0.0f, 1f),
+         colour_g: Mathf.Clamp(Random.value, 0.0f, 1f),
+         colour_b: Mathf.Clamp(Random.value, 0.0f, 1f)
         );
     }
 
@@ -263,7 +276,7 @@ public class Genes
         TryMutateColour();
         TryMutateAttributes();
         TryMutateMutationRates();
-
+        ClampMutationRates();
     }
 
     private void TryMutateColour()
@@ -289,74 +302,163 @@ public class Genes
 
     private void TryMutateMutationRates()
     {
-        if (GetProb(attribute_mutation_rate))
+
+        if (GetProb(Mathf.Pow(base_mutation_rate, 2)))
         {
-            base_mutation_rate += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            base_mutation_rate += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(attribute_mutation_rate))
+        if (GetProb(Mathf.Pow(base_mutation_rate, 2)))
         {
-            colour_mutation_prob += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            colour_mutation_prob += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(attribute_mutation_rate))
+        if (GetProb(Mathf.Pow(base_mutation_rate, 2)))
         {
-            attribute_mutation_rate += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            attribute_mutation_rate += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(attribute_mutation_rate))
+
+        if (GetProb(Mathf.Pow(base_mutation_rate, 2)))
         {
-            neuro_mutation_prob += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            neuro_mutation_prob += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(attribute_mutation_rate))
+
+        if (GetProb(Mathf.Pow(base_mutation_rate, 2)))
         {
-            weight_mutation_prob += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            weight_mutation_prob += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(attribute_mutation_rate))
+
+        if (GetProb(Mathf.Pow(base_mutation_rate, 2)))
         {
-            bias_mutation_prob += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            bias_mutation_prob += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
 
-        if (GetProb(attribute_mutation_rate))
+
+        if (GetProb(Mathf.Pow(base_mutation_rate, 2)))
         {
-            dropout_prob += Random.value * Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            dropout_prob += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+        }
+    }
+
+    private void ClampMutationRates()
+    {
+        base_mutation_rate = Mathf.Clamp01(base_mutation_rate);
+        colour_mutation_prob = Mathf.Clamp01(colour_mutation_prob);
+        attribute_mutation_rate = Mathf.Clamp01(attribute_mutation_rate);
+        neuro_mutation_prob = Mathf.Clamp01(neuro_mutation_prob);
+        weight_mutation_prob = Mathf.Clamp01(weight_mutation_prob);
+        bias_mutation_prob = Mathf.Clamp01(bias_mutation_prob);
+        dropout_prob = Mathf.Clamp01(dropout_prob);
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (base_mutation_rate == 0 || base_mutation_rate == 1)
+        {
+            base_mutation_rate = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (colour_mutation_prob < 0.01f || colour_mutation_prob == 1)
+        {
+            colour_mutation_prob = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (attribute_mutation_rate < 0.01f || attribute_mutation_rate == 1)
+        {
+            attribute_mutation_rate = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (neuro_mutation_prob < 0.01f || neuro_mutation_prob == 1)
+        {
+            neuro_mutation_prob = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (weight_mutation_prob < 0.01f || weight_mutation_prob == 1)
+        {
+            weight_mutation_prob = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (bias_mutation_prob < 0.01f || bias_mutation_prob == 1)
+        {
+            bias_mutation_prob = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (dropout_prob < 0.01f || dropout_prob == 1)
+        {
+            dropout_prob = Random.Range(0, 1f);
         }
     }
 
     private void TryMutateAttributes()
     {
-        speed += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        speed = Mathf.Max(speed, 0);
 
-        diet += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        diet = Mathf.Clamp(diet, 0, 1);
+        if (GetProb(base_mutation_rate))
+        {
+            speed += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            speed = Mathf.Max(speed, 0.01f);
+        }
 
-        attack += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        attack = Mathf.Max(attack, 0);
+        if (GetProb(base_mutation_rate))
+        {
+            diet += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            diet = Mathf.Clamp(diet, 0.01f, 1);
+        }
 
-        defense += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        defense = Mathf.Max(defense, 0);
+        if (GetProb(base_mutation_rate))
+        {
+            attack += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            attack = Mathf.Max(attack, 0.01f);
+        }
 
-        vitality += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        vitality = Mathf.Max(vitality, 0);
+        if (GetProb(base_mutation_rate))
+        {
+            defense += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            defense = Mathf.Max(defense, 0.01f);
+        }
 
-        size += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        size = Mathf.Max(size, 0.1f);
+        if (GetProb(base_mutation_rate))
+        {
 
-        perception += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        perception = Mathf.Max(perception, 0);
+            vitality += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            vitality = Mathf.Max(vitality, 0.01f);
+        }
 
-        clockrate += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        clockrate = Mathf.Max(clockrate, 0);
+        if (GetProb(base_mutation_rate))
+        {
+            size += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            size = Mathf.Max(size, 0.1f);
+        }
 
-        gestation_time += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        gestation_time = Mathf.Max(gestation_time, 0.1f);
+        if (GetProb(base_mutation_rate))
+        {
+            perception += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            perception = Mathf.Max(perception, 0.01f);
+        }
 
-        maturity_time += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        maturity_time = Mathf.Max(maturity_time, 0.1f);
+        if (GetProb(base_mutation_rate))
+        {
+            clockrate += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            clockrate = Mathf.Max(clockrate, 0.01f);
+        }
 
+        if (GetProb(base_mutation_rate))
+        {
+            gestation_time += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            gestation_time = Mathf.Max(gestation_time, 0.1f);
+        }
+
+        if (GetProb(base_mutation_rate))
+        {
+            maturity_time += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            maturity_time = Mathf.Max(maturity_time, 0.1f);
+        }
     }
 
     /// <summary>
@@ -369,7 +471,7 @@ public class Genes
 
     public List<float> GetGeneList()
     {
-        List<float> gl = new List<float>();
+        gl.Clear();
         gl.Add(base_mutation_rate);
         gl.Add(colour_mutation_prob);
         gl.Add(attribute_mutation_rate);
@@ -409,7 +511,7 @@ public class Genes
     {
         // Calculate the euclidian distance between these genes and the passed genes g
         float dist = 0;
-        List<float> g1 = GetGeneList();
+        List<float> g1 = gl;
         List<float> g2 = g.GetGeneList();
         for (int i = 0; i < g1.Count; i++)
         {
@@ -462,6 +564,132 @@ public class Genes
         return new Vector3(x, y, z).normalized;
     }
 
+    public void SaveGenes(string save_path)
+    {
+        string gene_data = "Genes:";
+        // Add each gene value
+        foreach (float val in GetGeneList())
+        {
+            gene_data += val.ToString() + ",";
+        }
+
+        // Add the species
+        gene_data += genus + "," + species + ",";
+
+        // Add spritemap
+        gene_data += spritemap["body"] + "," + spritemap["head"];
+
+        // Write to file
+        File.WriteAllText(save_path, gene_data);
+    }
+
+    public static Genes LoadFrom(string save_path)
+    {
+        // Read the lines
+        string[] lines = System.IO.File.ReadAllLines(save_path);
+
+        float
+         base_mutation_rate = 0,
+         colour_mutation_prob = 0,
+         attribute_mutation_rate = 0,
+         neuro_mutation_prob = 0,
+         weight_mutation_prob = 0,
+         bias_mutation_prob = 0,
+         dropout_prob = 0,
+         speed = 0,
+         diet = 0,
+         attack = 0,
+         defense = 0,
+         vitality = 0,
+         size = 0,
+         perception = 0,
+         clockrate = 0,
+         gestation_time = 0,
+         maturity_time = 0,
+         colour_r = 0,
+         colour_g = 0,
+         colour_b = 0;
+
+        // The name
+        string species = null;
+        string genus = null;
+
+        // Copy over the sprite map values
+        int sm_body = 0, sm_head = 0;
+
+        // Display the file contents by using a foreach loop.
+        int i = 0;
+        foreach (string unsplit in lines)
+        {
+            if (unsplit.Contains("Genes:"))
+            {
+                // Get each value and assign our values
+                string line = unsplit.Split(':')[1];
+                var values = line.Split(',');
+
+                // Each of the gene values
+                base_mutation_rate = float.Parse(values[i++]);
+                colour_mutation_prob = float.Parse(values[i++]);
+                attribute_mutation_rate = float.Parse(values[i++]);
+                neuro_mutation_prob = float.Parse(values[i++]);
+                weight_mutation_prob = float.Parse(values[i++]);
+                bias_mutation_prob = float.Parse(values[i++]);
+                dropout_prob = float.Parse(values[i++]);
+                speed = float.Parse(values[i++]);
+                diet = float.Parse(values[i++]);
+                attack = float.Parse(values[i++]);
+                defense = float.Parse(values[i++]);
+                vitality = float.Parse(values[i++]);
+                size = float.Parse(values[i++]);
+                perception = float.Parse(values[i++]);
+                clockrate = float.Parse(values[i++]);
+                gestation_time = float.Parse(values[i++]);
+                maturity_time = float.Parse(values[i++]);
+                colour_r = float.Parse(values[i++]);
+                colour_g = float.Parse(values[i++]);
+                colour_b = float.Parse(values[i++]);
+
+                // The name
+                genus = values[i++];
+                species = values[i++];
+
+                // Get the spritemap
+                sm_body = int.Parse(values[i++]);
+                sm_head = int.Parse(values[i++]);
+            }
+        }
+        Genes loaded = new Genes(
+         base_mutation_rate,
+         colour_mutation_prob,
+         attribute_mutation_rate,
+         neuro_mutation_prob,
+         weight_mutation_prob,
+         bias_mutation_prob,
+         dropout_prob,
+         speed,
+         diet,
+         attack,
+         defense,
+         vitality,
+         size,
+         perception,
+         clockrate,
+         gestation_time,
+         maturity_time,
+         colour_r,
+         colour_g,
+         colour_b);
+
+        loaded.species = species;
+        loaded.genus = genus;
+
+        // Copy over the sprite map values
+        loaded.spritemap["body"] = sm_body;
+        loaded.spritemap["head"] = sm_head;
+
+        return loaded;
+    }
+
 
     /// <summary>
     ///   <para>Override the + operator</para>
@@ -508,26 +736,67 @@ public class Genes
 
         // Divide all attributes by the denom
         g1.base_mutation_rate /= denom;
+        g1.base_mutation_rate = Mathf.Clamp01(g1.base_mutation_rate);
+
         g1.colour_mutation_prob /= denom;
+        g1.colour_mutation_prob = Mathf.Clamp01(g1.colour_mutation_prob);
+
         g1.attribute_mutation_rate /= denom;
+        g1.attribute_mutation_rate = Mathf.Clamp01(g1.attribute_mutation_rate);
+
         g1.neuro_mutation_prob /= denom;
+        g1.neuro_mutation_prob = Mathf.Clamp01(g1.neuro_mutation_prob);
+
         g1.weight_mutation_prob /= denom;
+        g1.weight_mutation_prob = Mathf.Clamp01(g1.weight_mutation_prob);
+
         g1.bias_mutation_prob /= denom;
+        g1.bias_mutation_prob = Mathf.Clamp01(g1.bias_mutation_prob);
+
         g1.dropout_prob /= denom;
+        g1.dropout_prob = Mathf.Clamp01(g1.dropout_prob);
+
         g1.speed /= denom;
+        g1.speed = Mathf.Clamp01(g1.speed);
+
         g1.diet /= denom;
+        g1.diet = Mathf.Clamp01(g1.diet);
+
         g1.attack /= denom;
+        g1.attack = Mathf.Clamp01(g1.attack);
+
         g1.defense /= denom;
+        g1.defense = Mathf.Clamp01(g1.defense);
+
         g1.vitality /= denom;
+        g1.vitality = Mathf.Clamp01(g1.vitality);
+
         g1.size /= denom;
+        g1.size = Mathf.Clamp01(g1.size);
+
         g1.perception /= denom;
+        g1.perception = Mathf.Clamp01(g1.perception);
+
         g1.clockrate /= denom;
+        g1.clockrate = Mathf.Clamp01(g1.clockrate);
+
         g1.gestation_time /= denom;
+        g1.gestation_time = Mathf.Clamp01(g1.gestation_time);
+
         g1.maturity_time /= denom;
+        g1.maturity_time = Mathf.Clamp01(g1.maturity_time);
+
         g1.colour_r /= denom;
+        g1.colour_r = Mathf.Clamp01(g1.colour_r);
+
         g1.colour_g /= denom;
+        g1.colour_g = Mathf.Clamp01(g1.colour_g);
+
         g1.colour_b /= denom;
+        g1.colour_b = Mathf.Clamp01(g1.colour_b);
+
         g1.genetic_drift /= denom;
+        g1.genetic_drift = Mathf.Clamp01(g1.genetic_drift);
 
         // Return the clone
         return g1;

@@ -57,7 +57,7 @@ public class EvolutionaryNeuralLearner : Brain
         return model.total_neurons;
     }
 
-    public void Mutate()
+    public override void Mutate()
     {
         if (TryGetComponent<BaseAgent>(out BaseAgent a))
         {

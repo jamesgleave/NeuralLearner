@@ -238,14 +238,14 @@ public class AncestorManager
     {
 
         string name = "A A";
-        AncestorNode a = new AncestorNode(null, Genes.RandomGenes(), name);
-        AncestorNode b = new AncestorNode(a, Genes.RandomGenes(), "A B");
-        AncestorNode c = new AncestorNode(Genes.RandomGenes(), "A C");
-        AncestorNode d = new AncestorNode(Genes.RandomGenes(), "A D");
-        AncestorNode e = new AncestorNode(Genes.RandomGenes(), "A E");
-        AncestorNode f = new AncestorNode(Genes.RandomGenes(), "A F");
-        AncestorNode g = new AncestorNode(Genes.RandomGenes(), "A G");
-        AncestorNode h = new AncestorNode(Genes.RandomGenes(), "A H");
+        AncestorNode a = new AncestorNode(null, Genes.GetBaseGenes(), name);
+        AncestorNode b = new AncestorNode(a, Genes.GetBaseGenes(), "A B");
+        AncestorNode c = new AncestorNode(Genes.GetBaseGenes(), "A C");
+        AncestorNode d = new AncestorNode(Genes.GetBaseGenes(), "A D");
+        AncestorNode e = new AncestorNode(Genes.GetBaseGenes(), "A E");
+        AncestorNode f = new AncestorNode(Genes.GetBaseGenes(), "A F");
+        AncestorNode g = new AncestorNode(Genes.GetBaseGenes(), "A G");
+        AncestorNode h = new AncestorNode(Genes.GetBaseGenes(), "A H");
 
         AddGenus(a);
 
@@ -260,8 +260,8 @@ public class AncestorManager
 
         g.AddChild(h);
 
-        AncestorNode a2 = new AncestorNode(null, Genes.RandomGenes(), "X Y");
-        AncestorNode c2 = new AncestorNode(a2, Genes.RandomGenes(), "X Z");
+        AncestorNode a2 = new AncestorNode(null, Genes.GetBaseGenes(), "X Y");
+        AncestorNode c2 = new AncestorNode(a2, Genes.GetBaseGenes(), "X Z");
         AddGenus(a2);
         a2.AddChild(c2);
 

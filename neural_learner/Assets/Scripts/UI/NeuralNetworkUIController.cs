@@ -32,7 +32,9 @@ public class NeuralNetworkUIController : MonoBehaviour
     public Button editor;
 
     [Header("Manager")]
+    //public DisplayEvoNN display;
     public DisplayEvoNN display;
+
     public UserControllerEvoNN user;
 
     // Used to store the selected neuron

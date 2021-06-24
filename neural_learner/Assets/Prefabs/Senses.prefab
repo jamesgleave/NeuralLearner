@@ -46,3 +46,24 @@ MonoBehaviour:
   vision_width: 0
   vision_distance: 0
   detected: []
+  closest_pellet: {fileID: 0}
+  closest_pellet_dist_magnitude: 0
+  num_pellets: 0
+  closest_meat: {fileID: 0}
+  closest_meat_dist_magnitude: 0
+  num_meats: 0
+  closest_egg: {fileID: 0}
+  closest_egg_dist_magnitude: 0
+  num_eggs: 0
+  closest_agent: {fileID: 0}
+  closest_agent_dist_magnitude: 0
+  num_agents: 0
+  red: {fileID: 0}
+  green: {fileID: 0}
+  blue: {fileID: 0}
+  red_distance: 0
+  blue_distance: 0
+  green_distance: 0
+  observations: []
+  observation_names: []
+  buffer_size: 20

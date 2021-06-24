@@ -55,8 +55,9 @@
     <Analyzer Include="/Applications/Visual Studio.app/Contents/Resources/lib/monodevelop/AddIns/MonoDevelop.Unity/Analyzers/Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs" />
+    <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/InputField.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Image.cs" />
+    <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Button.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Layout/CanvasScaler.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/IMaskable.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Utility/VertexHelper.cs" />
@@ -109,7 +110,6 @@
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Utility/ListPool.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Navigation.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/VertexModifiers/BaseMeshEffect.cs" />
-    <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/InputField.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Layout/HorizontalLayoutGroup.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/EventSystem/Raycasters/Physics2DRaycaster.cs" />
     <Compile Include="/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Resources/PackageManager/BuiltInPackages/com.unity.ugui/Runtime/UI/Core/Layout/LayoutGroup.cs" />

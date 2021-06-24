@@ -21,6 +21,11 @@ public class NEATNetwork : Model.BaseModel
     // The genome for this neat network
     private Genome genome;
 
+    public int num_times_recompiled = 0;
+
+    // The list of output values
+    private List<float> output_values = new List<float>();
+
     public NEATNetwork(Genome genome)
     {
         // Set the genome
@@ -37,14 +42,16 @@ public class NEATNetwork : Model.BaseModel
         {
             // Get the node with the id
             NodeGene node = genome.GetNodes()[id];
+
             // TODO Make sure we have the ability to mutate activation in the genome
-            NEATNeuron neuron = new NEATNeuron(new Linear(), node.GetID());
+            NEATNeuron neuron = new NEATNeuron(Parse.Parser.ReadActivation(node.GetActivationString()), node.GetID());
 
             // Look at each key (id)
             if (node.IsInput())
             {
                 // Setup the input neuron
-                neuron.AddInput();
+                // Input neurons do not have 'inputs', so we represent the input ID with a '-1'
+                neuron.AddInput(-1, new NEATInputContainer());
                 inputs.Add(id);
 
                 // Set the depth of the input neuron (it is always zero)
@@ -73,12 +80,187 @@ public class NEATNetwork : Model.BaseModel
 
             // Get the neuron that leads into the connection (where the connection comes from)
             NEATNeuron connection_input_neuron = neurons[connection.getInNode()];
+
             // Add the node to the output with its weight
             connection_input_neuron.AddOutput(connection.getOutNode(), connection.GetWeight());
+
             // Now do the same for the output (where the connection leads to)
             NEATNeuron connection_receiver = neurons[connection.getOutNode()];
+
             // Add an input (the connection)
-            connection_receiver.AddInput();
+            connection_receiver.AddInput(connection_input_neuron.GetNeuronID(), new NEATInputContainer());
+        }
+
+        // Calculate each neurons depth (distance from an input)
+        CalculateDepth();
+
+        // Find recurrent connections
+        FindRecurrence();
+    }
+
+    /// <summary>
+    /// Returns a copy of the genome
+    /// </summary>
+    /// <returns></returns>
+    public Genome CopyGenome()
+    {
+        return genome.Copy();
+    }
+
+    public void Recompile(Genome genome)
+    {
+        // Increment the recompile counter
+        num_times_recompiled++;
+
+        // Set the new genome
+        this.genome = genome;
+
+        // Clear everything
+        inputs.Clear();
+        outputs.Clear();
+        neurons.Clear();
+        unprocessed_neurons.Clear();
+
+        // Set up the input / output neurons
+        foreach (int id in genome.GetNodes().Keys)
+        {
+            // Get the node with the id
+            NodeGene node = genome.GetNodes()[id];
+            NEATNeuron neuron = new NEATNeuron(Parse.Parser.ReadActivation(node.GetActivationString()), node.GetID());
+
+            // Look at each key (id)
+            if (node.IsInput())
+            {
+                // Setup the input neuron
+                // Input neurons do not have 'inputs', so we represent the input ID with a '-1'
+                neuron.AddInput(-1, new NEATInputContainer());
+                inputs.Add(id);
+
+                // Set the depth of the input neuron (it is always zero)
+                neuron.SetDepth(0);
+            }
+            else if (node.IsOutput())
+            {
+                // Set up as an output
+                outputs.Add(id);
+            }
+            // Add neuron to dict (mapped with node id)
+            neurons.Add(id, neuron);
+        }
+
+        // Loop through connections now
+        foreach (int id in genome.GetConnections().Keys)
+        {
+            // Get the connection with the ID 'id'
+            ConnectionGene connection = genome.GetConnections()[id];
+
+            // Check if the connection is expressed or not
+            if (connection.IsExpressed() == false)
+            {
+                continue;
+            }
+
+            // Get the neuron that leads into the connection (where the connection comes from)
+            NEATNeuron connection_input_neuron = neurons[connection.getInNode()];
+
+            // Add the node to the output with its weight
+            connection_input_neuron.AddOutput(connection.getOutNode(), connection.GetWeight());
+
+            // Now do the same for the output (where the connection leads to)
+            NEATNeuron connection_receiver = neurons[connection.getOutNode()];
+
+            // Add an input (the connection)
+            connection_receiver.AddInput(connection_input_neuron.GetNeuronID(), new NEATInputContainer());
+        }
+
+        // Calculate each neurons depth (distance from an input)
+        CalculateDepth();
+
+        // Find recurrent connections
+        FindRecurrence();
+    }
+
+    /// <summary>
+    /// Calculates the depth of each neuron, and also removes all orphan and useless neurons (prunes the network)
+    /// </summary>
+    public void CalculateDepth()
+    {
+        List<int> to_be_pruned = new List<int>();
+        bool cont = true;
+        int iterations = 0;
+        int max_depth = 0;
+        while (cont)
+        {
+            cont = false;
+            iterations++;
+            foreach (KeyValuePair<int, NEATNeuron> pair in neurons)
+            {
+                if (pair.Value.GetDepth() != int.MinValue || pair.Value.GetOutputIDs().Count == 0)
+                {
+                    // Check to see if we update the max depth value
+                    if (pair.Value.GetDepth() > max_depth)
+                    {
+                        max_depth = pair.Value.GetDepth();
+                    }
+
+                    foreach (int output_id in pair.Value.GetOutputIDs())
+                    {
+                        if (neurons[output_id].GetDepth() == int.MinValue)
+                        {
+                            neurons[output_id].SetDepth(pair.Value.GetDepth() + 1);
+                        }
+                    }
+                }
+                else
+                {
+                    cont = true;
+                }
+
+                // Check to see if the neuron has any outputs and it is hidden, if not, it must be pruned
+                bool is_hidden = inputs.Contains(pair.Value.GetNeuronID()) == false && outputs.Contains(pair.Value.GetNeuronID()) == false;
+                if (pair.Value.GetOutputIDs().Count == 0 && is_hidden)
+                {
+                    to_be_pruned.Add(pair.Value.GetNeuronID());
+                }
+            }
+
+            // Check to see if the neuron has any outputs and it is hidden, if not, we must recompile
+            if (to_be_pruned.Count > 0)
+            {
+                // Remove each node from the genome
+                foreach (int id in to_be_pruned)
+                {
+                    // Remove neuron from genome
+                    genome.RemoveNode(id);
+                }
+                // Recompile the network
+                Recompile(genome);
+            }
+
+
+            if (iterations > neurons.Count * 2)
+            {
+                // Get every single neuron that does not have a proper path to the output
+                foreach (KeyValuePair<int, NEATNeuron> pair in neurons)
+                {
+                    // Remove any neuron that does not have a depth value assigned, as long as it is not an input or output neuron
+                    bool is_hidden = inputs.Contains(pair.Value.GetNeuronID()) == false && outputs.Contains(pair.Value.GetNeuronID()) == false;
+                    if (pair.Value.GetDepth() == int.MinValue && is_hidden)
+                    {
+                        // Remove neuron from genome
+                        genome.RemoveNode(pair.Value.GetNeuronID());
+                    }
+                }
+                // Recompile the network
+                cont = false;
+                Recompile(genome);
+            }
+        }
+
+        // Set each output neuron to the highest depth if it has not been set already
+        foreach (int id in outputs)
+        {
+            neurons[id].ForceSetDepth(max_depth + 1);
         }
     }
 
@@ -92,14 +274,8 @@ public class NEATNetwork : Model.BaseModel
     /// </summary>
     /// <param name="inputs"></param>
     /// <returns></returns>
-    public void FindRecurrence(List<float> inputs)
+    public void FindRecurrence()
     {
-        // Check the input size
-        if (inputs.Count != this.inputs.Count)
-        {
-            throw new System.Exception("Number of inputs must match number of input neurons! Expected: " + this.inputs.Count + ", Received: " + inputs.Count);
-        }
-
         // Clear the unprocessed list and add all neurons to it
         unprocessed_neurons.Clear();
         unprocessed_neurons.AddRange(neurons.Values);
@@ -112,7 +288,8 @@ public class NEATNetwork : Model.BaseModel
             NEATNeuron input_neuron = neurons[this.inputs[i]];
 
             // Give the input neuron its value
-            input_neuron.FeedInput(inputs[i]);
+            // Again, -1 represents an input neuron (an ID that does not truly exist)
+            input_neuron.FeedInput(-1, 1);
 
             // Calculate the output
             input_neuron.Calculate();
@@ -124,7 +301,7 @@ public class NEATNetwork : Model.BaseModel
                 NEATNeuron receiver = neurons[input_neuron.GetOutputIDs()[r]];
 
                 // Get the product of the input's value and its weight (forward propogate)
-                receiver.FeedInput(input_neuron.GetOutput() * input_neuron.GetWeights()[r]);
+                receiver.FeedInput(input_neuron.GetNeuronID(), input_neuron.GetOutput() * input_neuron.GetWeights()[r]);
             }
 
             // Remove the input neuron from the unprocessed neurons (since we just processed it)
@@ -138,37 +315,36 @@ public class NEATNetwork : Model.BaseModel
             num_iterations++;
             if (num_iterations > 2 * neurons.Count)
             {
+                // Setup values to determine the recurrence
+                int input_id, current_id, input_depth, current_depth;
+
                 // Could not propogate the network (too many iterations)
-                List<bool> rec_inputs = new List<bool>();
                 foreach (NEATNeuron neuron in unprocessed_neurons)
                 {
-                    // Clear the input bool array
-                    rec_inputs.Clear();
-
                     // Populate the array
-                    foreach (float f in neuron.GetInputs())
+                    foreach (KeyValuePair<int, NEATInputContainer> pair in neuron.GetInputs())
                     {
-                        // Check if the connection is recurrent
-                        bool is_recurrent = float.IsNaN(f);
+                        // Get input values
+                        input_id = pair.Key;
+                        input_depth = neurons[input_id].GetDepth();
 
-                        // Add to bool array
-                        rec_inputs.Add(is_recurrent);
+                        // Get output values
+                        current_id = neuron.GetNeuronID();
+                        current_depth = neuron.GetDepth();
 
-                        // Add a new key-value pair to the hidden state
-                        if (is_recurrent)
+                        // If the current depth is less than where the input came from, it must be recurrent since it is moving backwards
+                        if (input_depth >= current_depth)
                         {
-                            neuron.SetHiddenState(neuron.GetNeuronID(), 0.0f);
+                            // Set input type as recurrent :)
+                            pair.Value.SetInputType(NEATInputContainer.NEATInputType.Recurrent);
                         }
                     }
-
-                    // Setup certain inputs as recurrent
-                    neuron.SetRecurrentInputs(rec_inputs);
                 }
                 break;
             }
 
             // Loop through the unprocessed nodes
-            NEATNeuron n;
+            NEATNeuron n; int receiverID;
             for (int x = unprocessed_neurons.Count - 1; x >= 0; x--)
             {
 
@@ -185,15 +361,10 @@ public class NEATNetwork : Model.BaseModel
                     for (int i = 0; i < n.GetOutputIDs().Count; i++)
                     {
                         // Get the ith output for n
-                        int receiverID = n.GetOutputIDs()[i];
-                        // Perform the product calculation
-                        float receiver_value = n.GetOutput() * n.GetWeights()[i];
-                        // Give the neuron the input value calculated above
-                        // TODO use dictionary to store inputs or pass the input neurons ID to store
-                        neurons[receiverID].FeedInput(receiver_value);
+                        receiverID = n.GetOutputIDs()[i];
 
-                        // Set the reciever neuron with a depth
-                        neurons[receiverID].SetDepth(n.GetDepth() + 1);
+                        // Perform the product calculation and give the neuron the input value calculated.
+                        neurons[receiverID].FeedInput(n.GetNeuronID(), n.GetOutput() * n.GetWeights()[i]);
                     }
 
                     // If the calculation is done, we can remove this node from the unprocessed list
@@ -242,7 +413,7 @@ public class NEATNetwork : Model.BaseModel
             NEATNeuron input_neuron = neurons[this.inputs[i]];
 
             // Give the input neuron its value
-            input_neuron.FeedInput(inputs[i]);
+            input_neuron.FeedInput(-1, inputs[i]);
 
             // Calculate the output
             input_neuron.Calculate();
@@ -254,7 +425,7 @@ public class NEATNetwork : Model.BaseModel
                 NEATNeuron receiver = neurons[input_neuron.GetOutputIDs()[r]];
 
                 // Get the product of the input's value and its weight (forward propogate)
-                receiver.FeedInput(input_neuron.GetOutput() * input_neuron.GetWeights()[r]);
+                receiver.FeedInput(input_neuron.GetNeuronID(), input_neuron.GetOutput() * input_neuron.GetWeights()[r]);
             }
 
             // Remove the input neuron from the unprocessed neurons (since we just processed it)
@@ -299,17 +470,8 @@ public class NEATNetwork : Model.BaseModel
                         // Perform the product calculation
                         float receiver_value = n.GetOutput() * n.GetWeights()[i];
 
-                        // Now, we look at the input and check if it is recurrent
-                        if (neurons[receiverID].InputRecurrent(receiverID))
-                        {
-                            // Set the hidden state :)
-                            neurons[receiverID].SetHiddenState(n.GetNeuronID(), receiver_value);
-                        }
-                        else
-                        {
-                            // Give the neuron the input value calculated above
-                            neurons[receiverID].FeedInput(receiver_value);
-                        }
+                        // Give the neuron the input value calculated above
+                        neurons[receiverID].FeedInput(n.GetNeuronID(), receiver_value);
                     }
 
                     // If the calculation is done, we can remove this node from the unprocessed list
@@ -320,7 +482,7 @@ public class NEATNetwork : Model.BaseModel
         }
 
         // Gather all outputs..
-        List<float> output_values = new List<float>();
+        output_values.Clear();
         for (int i = 0; i < outputs.Count; i++)
         {
             output_values.Add(neurons[outputs[i]].GetOutput());
@@ -348,6 +510,11 @@ public class NEATNetwork : Model.BaseModel
     {
         return inputs;
     }
+
+    public List<int> GetOutputs()
+    {
+        return outputs;
+    }
 }
 
 public class NEATNeuron
@@ -362,7 +529,8 @@ public class NEATNeuron
     private int network_depth = int.MinValue;
 
     // The input values going into this neuron
-    private List<float> inputs;
+    private Dictionary<int, NEATInputContainer> inputs;
+
     // Indicates if an input is recurrent or not
     private List<bool> recurrent_inputs;
     // The hidden values that are stored by the recurrent connections
@@ -373,6 +541,7 @@ public class NEATNeuron
 
     // The IDs of the output nodes
     private List<int> output_ids;
+
     // The output weights
     private List<float> output_weights;
 
@@ -382,7 +551,8 @@ public class NEATNeuron
     public NEATNeuron(Activation activation, int id)
     {
         this.id = id;
-        inputs = new List<float>();
+        //inputs = new List<float>();
+        inputs = new Dictionary<int, NEATInputContainer>();
         output_ids = new List<int>();
         output_weights = new List<float>();
         recurrent_inputs = new List<bool>();
@@ -435,10 +605,19 @@ public class NEATNeuron
     /// <param name="new_depth"></param>
     public void SetDepth(int new_depth)
     {
-        if (network_depth != int.MinValue)
+        // Get the actual depth (closest)
+        if (network_depth == int.MinValue)
         {
-            throw new System.Exception("Cannot set a neuron's depth twice.");
+            network_depth = new_depth;
         }
+    }
+
+    /// <summary>
+    /// Forces the depth setting (overrides the set depth limitation)
+    /// </summary>
+    /// <param name="new_depth"></param>
+    public void ForceSetDepth(int new_depth)
+    {
         network_depth = new_depth;
     }
 
@@ -449,6 +628,15 @@ public class NEATNeuron
     public int GetDepth()
     {
         return network_depth;
+    }
+
+    /// <summary>
+    /// Returns the activation object
+    /// </summary>
+    /// <returns></returns>
+    public Activation GetActivation()
+    {
+        return activation;
     }
 
     /// <summary>
@@ -468,10 +656,10 @@ public class NEATNeuron
     /// <summary>
     /// Add an input from another neuron
     /// </summary>
-    public void AddInput()
+    public void AddInput(int in_id, NEATInputContainer input_container)
     {
         // Add a new input
-        inputs.Add(float.NaN);
+        inputs[in_id] = input_container;
         recurrent_inputs.Add(false);
     }
 
@@ -483,20 +671,20 @@ public class NEATNeuron
     {
         // Get the sum of the inputs
         float sum = 0;
-        for (int i = 0; i < inputs.Count; i++)
+        // Look at each key value pair and sum all values
+        foreach (KeyValuePair<int, NEATInputContainer> pair in inputs)
         {
-            if (recurrent_inputs[i] == false)
-                sum += inputs[i];
-        }
-
-        // If we have any hidden states, they should be included in the summation
-        if (hidden_states.Count > 0)
-        {
-            // Sum up the values in the hidden state
-            foreach (float hidden_value in hidden_states.Values)
+            if (pair.Value.GetInputType() == NEATInputContainer.NEATInputType.Recurrent)
             {
-                sum += hidden_value;
+                // Add up each value
+                sum += (float)System.Math.Tanh(pair.Value.GetInputValue());
             }
+            else
+            {
+                // Add up each value
+                sum += pair.Value.GetInputValue();
+            }
+
         }
 
         // Activate the sum
@@ -513,57 +701,33 @@ public class NEATNeuron
     public bool IsReady()
     {
         // Ready means that there is no non-recurrent connections waiting
-        for (int i = 0; i < inputs.Count; i++)
+        foreach (KeyValuePair<int, NEATInputContainer> pair in inputs)
         {
-            if (float.IsNaN(inputs[i]) && recurrent_inputs[i] == false)
+            // If a single input container is not ready, we return false
+            if (!pair.Value.IsReady())
             {
                 return false;
             }
         }
+        // If we get through every input without any non-ready issues, we are ready!
         return true;
     }
 
     /// <summary>
-    /// Adds an input to the first neuron available
+    /// Updates the input from the 'from_id' neuron with the value 'input'
     /// </summary>
     /// <param name="input"></param>
-    public void FeedInput(float input)
+    public void FeedInput(int from_id, float input)
     {
         // Assign the input to the first available input slot
         bool found = false;
-        for (int i = 0; i < inputs.Count; i++)
+        // If we have the input...
+        if (inputs.ContainsKey(from_id))
         {
-            if (float.IsNaN(inputs[i]) && recurrent_inputs[i] == false)
-            {
-                inputs[i] = input;
-                found = true;
-                break;
-            }
-        }
-
-        // If nothing was found, raise exception
-        if (!found)
-        {
-            throw new System.Exception("Shape Mismatch: Too Many Inputs");
-        }
-    }
-
-    /// <summary>
-    /// Adds an input to the first neuron available
-    /// </summary>
-    /// <param name="input"></param>
-    public void FeedInput(float input, int input_id)
-    {
-        // Assign the input to the first available input slot
-        bool found = false;
-        for (int i = 0; i < inputs.Count; i++)
-        {
-            if (float.IsNaN(inputs[i]) && recurrent_inputs[i] == false)
-            {
-                inputs[i] = input;
-                found = true;
-                break;
-            }
+            // We have found an input matching the ID
+            found = true;
+            // Set the input value
+            inputs[from_id].SetValue(input);
         }
 
         // If nothing was found, raise exception
@@ -601,14 +765,23 @@ public class NEATNeuron
     }
 
     /// <summary>
+    /// Returns the weight of the output with the ID 'id'
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public float GetSpecifiedWeight(int id)
+    {
+        return output_weights[output_ids.IndexOf(id)];
+    }
+
+    /// <summary>
     /// Get the input values of this neuron
     /// </summary>
     /// <returns></returns>
-    public List<float> GetInputs()
+    public Dictionary<int, NEATInputContainer> GetInputs()
     {
         return inputs;
     }
-
 
     /// <summary>
     /// Get the id of this neuron
@@ -642,11 +815,11 @@ public class NEATNeuron
     public void Reset()
     {
         // Set each input to NaN
-        for (int i = 0; i < inputs.Count; i++)
+        foreach (KeyValuePair<int, NEATInputContainer> pair in inputs)
         {
-            // Keep recurrent input (hidden value)
-            inputs[i] = float.NaN;
+            pair.Value.ResetValue();
         }
+
         // Reset the ouput
         output = 0;
     }

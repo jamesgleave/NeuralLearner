@@ -1,24 +1,17 @@
 ﻿<Properties StartupConfiguration="{B3AF31EC-A24B-61DB-F2F2-AC2579EB55ED}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Models/NeatNetwork/NEATInputContainer.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/UI/AgentUIController.cs">
     <Files>
-      <File FileName="Assets/Scripts/Models/NeatNetwork/NEATNetwork.cs" Line="572" Column="75" />
-      <File FileName="Assets/Scripts/Models/NeatNetwork/TestNEAT.cs" Line="125" Column="88" />
-      <File FileName="Assets/Scripts/Models/NeatNetwork/ConnectionGene.cs" Line="32" Column="1" />
-      <File FileName="Assets/Scripts/Models/NeatNetwork/Genome.cs" Line="530" Column="70" />
-      <File FileName="Assets/Scripts/Models/NeatNetwork/NodeGene.cs" Line="16" Column="1" />
-      <File FileName="Assets/Scripts/Models/NeatNetwork/NEATInputContainer.cs" Line="7" Column="1" />
+      <File FileName="Assets/Scripts/UI/AgentUIController.cs" Line="225" Column="1" />
+      <File FileName="Assets/Scripts/Managers/Manager.cs" Line="191" Column="27" />
+      <File FileName="Assets/Scripts/Inanimates/FoodPellet.cs" Line="28" Column="18" />
+      <File FileName="Assets/Scripts/UserControl/UserControllerEvoSim.cs" Line="20" Column="32" />
+      <File FileName="Assets/Scripts/Managers/Saving.cs" Line="23" Column="30" />
+      <File FileName="Assets/Scripts/UI/SaveAgentGUI.cs" Line="16" Column="51" />
     </Files>
-    <Pads>
-      <Pad Id="MonoDevelop.UnitTesting.TestPad">
-        <State name="__root__">
-          <Node name="neural_learner" expanded="True" selected="True" />
-        </State>
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="d6024f95-a70e-47d7-9a67-9342ffd2d3d6" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="8abcba85-5c39-46aa-8f27-9780413ced67" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

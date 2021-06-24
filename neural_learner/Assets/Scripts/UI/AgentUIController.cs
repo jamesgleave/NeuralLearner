@@ -19,6 +19,12 @@ public class AgentUIController : MonoBehaviour
     public Button to_brain;
     public Button to_tree;
 
+    // Buttons to save and load
+    public Button save_agent;
+    public Button load_agent;
+    public GameObject save_agent_gui;
+    public GameObject load_agent_gui;
+
     // The bar chart for the genes
     public GameObject bar_chart;
 
@@ -31,6 +37,10 @@ public class AgentUIController : MonoBehaviour
         to_brain.onClick.AddListener(OnClickBrain);
         // Setup the tree button
         to_tree.onClick.AddListener(OnClickTree);
+
+        // Setup load and save
+        save_agent.onClick.AddListener(SaveAgent);
+        load_agent.onClick.AddListener(LoadAgent);
     }
 
     // Update is called once per frame
@@ -117,7 +127,14 @@ public class AgentUIController : MonoBehaviour
 
         // Energy
         int display_size = Mathf.Min(agent.energy.ToString().Length, 5);
-        state_display_values.Add(agent.energy.ToString().Substring(0, display_size) + "/" + (agent.max_energy * 2f).ToString().Substring(0, display_size));
+        try
+        {
+            state_display_values.Add(agent.energy.ToString().Substring(0, display_size) + "/" + (agent.max_energy * 2f).ToString().Substring(0, display_size));
+        }
+        catch
+        {
+            state_display_values.Add(agent.energy.ToString() + "/" + (agent.max_energy * 2f).ToString());
+        }
         state_display_values.Add(agent.true_metabolic_cost.ToString());
 
         // Setup the diet
@@ -194,5 +211,21 @@ public class AgentUIController : MonoBehaviour
         gl.Add("Colour-G");
         gl.Add("Colour-B");
         bar_chart.GetComponent<GeneBarChart>().Setup(gl.ToArray(), agent.genes.GetGeneList());
+    }
+
+    public void SaveAgent()
+    {
+        save_agent_gui.gameObject.SetActive(true);
+        this.gameObject.SetActive(false);
+        save_agent_gui.gameObject.SetActive(true);
+    }
+
+    public void LoadAgent()
+    {
+
+        load_agent.gameObject.SetActive(true);
+        this.gameObject.SetActive(false);
+        load_agent.gameObject.SetActive(true);
+
     }
 }

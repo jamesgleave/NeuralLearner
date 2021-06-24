@@ -40,6 +40,18 @@ namespace Activations
             }
             return values;
         }
+
+        public float Derivative(float value)
+        {
+            if (value <= 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return 1;
+            }
+        }
     }
 
     public class Linear : Activation
@@ -57,6 +69,11 @@ namespace Activations
         public override List<float> activate(List<float> values)
         {
             return values;
+        }
+
+        public float Derivative(float value)
+        {
+            return 1;
         }
     }
 
@@ -112,6 +129,12 @@ namespace Activations
             }
             return values;
         }
+
+        public float Derivative(float value)
+        {
+            // 1-tanh(x)^2
+            return 1 - Mathf.Pow(activate(value), 2);
+        }
     }
 
     public class Softmax : Activation
@@ -164,6 +187,22 @@ namespace Activations
             }
             return values;
         }
+
+        public float Derivative(float value)
+        {
+            if (value == 0)
+            {
+                return 0;
+            }
+            else if (value > 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return -1;
+            }
+        }
     }
 
     public class Sigmoid : Activation
@@ -185,6 +224,11 @@ namespace Activations
                 values[i] = activate(values[i]);
             }
             return values;
+        }
+
+        public float Derivative(float value)
+        {
+            return activate(value) - (1 - activate(value));
         }
     }
 

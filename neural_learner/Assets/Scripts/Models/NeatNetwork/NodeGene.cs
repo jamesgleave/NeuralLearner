@@ -14,12 +14,25 @@ public class NodeGene
 	/// </summary>
     private int id;
 
-    private int input_distance;
+    /// <summary>
+    /// The string encoding of the activation function
+    /// </summary>
+    /// <param name="type"></param>
+    /// <param name="id"></param>
+    private string activation;
 
-    public NodeGene(NodeGeneType type, int id)
+    public NodeGene(NodeGeneType type, int id, string activation = "Tanh")
     {
         this.type = type;
         this.id = id;
+
+        // Set as sigmoid if it is an output node
+        if (IsOutput())
+        {
+            activation = "Tanh";
+        }
+        this.activation = activation;
+
     }
 
     /// <summary>
@@ -29,6 +42,14 @@ public class NodeGene
     public int GetID()
     {
         return id;
+    }
+
+    /// <summary>
+    /// Increment a nodes ID value by one
+    /// </summary>
+    public void IncrementID()
+    {
+        id++;
     }
 
     /// <summary>
@@ -73,7 +94,17 @@ public class NodeGene
     /// <returns></returns>
     public NodeGene Copy()
     {
-        return new NodeGene(type, id);
+        return new NodeGene(type, id, activation);
+    }
+
+    public string GetActivationString()
+    {
+        return activation;
+    }
+
+    public void SetActivationString(string activ)
+    {
+        activation = activ;
     }
 
 

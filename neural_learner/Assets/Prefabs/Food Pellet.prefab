@@ -107,6 +107,7 @@ MonoBehaviour:
   manager: {fileID: 0}
   cooldown_time: 0
   ready: 0
+  time_since_eaten: 0
 --- !u!50 &3829854075992685053
 Rigidbody2D:
   serializedVersion: 4

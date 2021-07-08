@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Model;
 using UnityEngine;
+using System.Threading;
 
 public class EvolutionaryNEATLearner : Brain
 {
@@ -10,6 +11,8 @@ public class EvolutionaryNEATLearner : Brain
 
     // The genome that creates the model
     public Genome genome;
+
+    public BaseAgent agent;
 
     /// <summary>
     /// The input size of the NEAT network
@@ -34,6 +37,9 @@ public class EvolutionaryNEATLearner : Brain
     public bool mutate_on_load;
 
     public string gcode;
+
+    Thread t;
+    public bool use_threading_model_creation;
 
     // Start is called before the first frame update
     void Start()
@@ -97,18 +103,25 @@ public class EvolutionaryNEATLearner : Brain
 
         if (mutate_on_load)
         {
-            for (int i = 0; i < 25; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Mutate();
             }
         }
 
         // Parse the model code and set the model
-        model = new NEATNetwork(genome);
+        if (model == null)
+        {
+            model = new NEATNetwork(genome);
+        }
     }
 
     public override void Setup(BaseModel nn)
     {
+        //// Setup and mutate the model
+        //model = (NEATNetwork)nn;
+        //Mutate();
+
         // Setup and mutate the model
         model = (NEATNetwork)nn;
         Mutate();
@@ -137,17 +150,36 @@ public class EvolutionaryNEATLearner : Brain
 
     public override void Mutate()
     {
-        if (TryGetComponent<BaseAgent>(out BaseAgent a))
+        if (agent != null)
         {
             Genome new_genome = model.CopyGenome();
-            log = Genome.Mutate(new_genome, a.genes.base_mutation_rate, a.genes.weight_mutation_prob, a.genes.neuro_mutation_prob, a.genes.bias_mutation_prob, a.genes.dropout_prob);
-            model = new NEATNetwork(new_genome);
+            log = Genome.Mutate(new_genome, agent.genes.base_mutation_rate, agent.genes.weight_mutation_prob, agent.genes.neuro_mutation_prob, agent.genes.bias_mutation_prob, agent.genes.dropout_prob);
             genome = new_genome;
+
+            // Set the model using multi threading or not
+            if (use_threading_model_creation)
+            {
+                t = new Thread(SetNewModel);
+                t.Start();
+            }
+            else
+            {
+                SetNewModel();
+            }
+
         }
         else
         {
             log = Genome.Mutate(genome, 1, 0.8f, 0.8f, 0.8f, 0.8f);
             model = new NEATNetwork(genome);
         }
+    }
+
+    /// <summary>
+    /// Sets the new model with the new genome
+    /// </summary>
+    private void SetNewModel()
+    {
+        model = new NEATNetwork(genome);
     }
 }

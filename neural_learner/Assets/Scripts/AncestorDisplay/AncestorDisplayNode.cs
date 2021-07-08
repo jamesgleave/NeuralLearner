@@ -10,9 +10,9 @@ public class AncestorDisplayNode : MonoBehaviour
     public AncestorNode node;
 
     /// <summary>
-    ///   <para>The sprite attatched to the agent</para>
+    /// The display associaded with the agent
     /// </summary>
-    public GameObject sprite;
+    public DisplayWobbit display_wobbit;
 
     /// <summary>
     ///   <para>The 'parent' of this node</para>
@@ -84,23 +84,23 @@ public class AncestorDisplayNode : MonoBehaviour
         // The line drawer
         artist = Instantiate<LineDrawer>(artist, transform);
 
-        // Set up the way that the sprite looks!
-        // Colour:
-        GetComponentInChildren<SpriteRenderer>().color = new Color(n.original_genes.colour_r, n.original_genes.colour_g, n.original_genes.colour_b);
-        // Size:
-        sprite.transform.localScale *= n.original_genes.size;
-
         // Now setup the line width
         GetComponentInChildren<LineDrawer>().Setup();
+
+        // Setup the display wobbit
+        display_wobbit = GetComponent<DisplayWobbit>();
+        display_wobbit.sprite_manager = StateManager.manager.GetComponent<SpriteManager>();
 
         // If there is no parent, we have no line to this point... so we do not deal with the incomming size
         if (parent == null)
         {
             GetComponentInChildren<LineDrawer>().SetFeatures(n.original_genes.size / 25, n.original_genes.size / 25);
+            display_wobbit.Setup(n.original_genes);
         }
         else
         {
             GetComponentInChildren<LineDrawer>().SetFeatures(n.parent.original_genes.size / 25, n.original_genes.size / 25);
+            display_wobbit.Setup(n.parent.original_genes);
         }
 
         // Get the population size

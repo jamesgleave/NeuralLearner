@@ -48,10 +48,10 @@ PolygonCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1, y: 1}
+    newSize: {x: 1, y: 1}
+    adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
@@ -161,10 +161,10 @@ PolygonCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 0.64, y: 0.64}
+    newSize: {x: 0.64, y: 0.64}
+    adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
@@ -308,11 +308,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 892780e2703af4a79b8af89064e0f6cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  agent: {fileID: 8284897868176631410}
   input_size: 25
   output_size: 9
   log: 
   mutate_on_load: 0
   gcode: 
+  use_threading_model_creation: 0
 --- !u!114 &8284897868176631410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -328,11 +330,11 @@ MonoBehaviour:
   col: {fileID: 0}
   body: {fileID: 4515336051089251106}
   head: {fileID: 1875585346857730294}
-  base_health: 85
-  base_attack: 25
-  base_defense: 25
-  base_speed: 75
-  base_rotation_speed: 35
+  base_health: 100
+  base_attack: 3
+  base_defense: 3
+  base_speed: 50
+  base_rotation_speed: 50
   base_perception: 15
   base_gestation_time: 6.5
   base_lifespan: 600

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 public class Egg : Interactable
@@ -50,15 +51,17 @@ public class Egg : Interactable
     /// <summary>
     /// If the egg was created by the manager instead of another agent
     /// </summary>
-    private bool initial_population;
+    public bool initial_population;
 
-    protected Genes genes = null;
+    public Genes genes = null;
 
     /// <summary>
     /// True if the egg was produced using sexual reproduction, false otherwise.
     /// </summary>
     private bool sexually_produced;
     private BaseAgent p1, p2;
+
+    public float time_spent_building = 0;
 
     public void Setup(int id, float e, Genes genes, Manager m, BaseAgent a)
     {
@@ -146,7 +149,7 @@ public class Egg : Interactable
         genes.species = full_name.Split(' ')[1];
 
         // Setup the parent node & generation
-        parent_node = new AncestorNode(parent: null, genes: agent.genes, name: full_name); ;
+        parent_node = new AncestorNode(parent: null, genes: genes, name: full_name); ;
         generation = 0;
 
         // To track the ancestory, we use an ancestor manager object which is a tree like structure using nodes
@@ -160,7 +163,6 @@ public class Egg : Interactable
 
         // Setup as an interactable
         base.Setup(id);
-
     }
 
     public void Update()
@@ -170,13 +172,15 @@ public class Egg : Interactable
         {
             // Remove from this list of all agents
             manager.agents.Remove(this);
-            Destroy(gameObject);
+            manager.GetComponent<EntityPoolManager>().Destroy(this);
         }
 
         gestation_time -= Time.deltaTime;
         if (gestation_time <= 0)
         {
-            BaseAgent a = Instantiate(agent, transform.localPosition, transform.rotation, manager.transform);
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            //BaseAgent a = Instantiate(agent, transform.localPosition, transform.rotation, manager.transform);
+            BaseAgent a = manager.GetComponent<EntityPoolManager>().InstantiateAgent(agent, transform.localPosition, transform.rotation, manager.transform);
             a.transform.Rotate(new Vector3(0, 0, Random.Range(0, 180f)));
 
             // If created by manager, we want to randomize is body
@@ -191,7 +195,8 @@ public class Egg : Interactable
             else
             {
                 // Set the genetic drift of the agent by checking againts its parent's node. The parent's node contains the genes of the original.
-                genes.genetic_drift = manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).CalculateGeneticDrift(genes);
+                //genes.genetic_drift = manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).CalculateGeneticDrift(genes);
+                genes.genetic_drift = 1;
             }
 
             // Add the agent object to the manager's list
@@ -239,10 +244,12 @@ public class Egg : Interactable
             manager.agents.Remove(this);
 
             // Update the population in the ancestor manager
-            manager.anc_manager.UpdatePopulation(a);
+            //manager.anc_manager.UpdatePopulation(a);
+
+            time_spent_building = watch.ElapsedMilliseconds / 1000f;
 
             // Kill the egg!
-            Destroy(gameObject);
+            manager.GetComponent<EntityPoolManager>().Destroy(this);
         }
     }
 
@@ -257,11 +264,10 @@ public class Egg : Interactable
             Color c1 = new Color(p1.genes.colour_r, p1.genes.colour_g, p1.genes.colour_b);
             Color c2 = new Color(p2.genes.colour_r, p1.genes.colour_g, p1.genes.colour_b);
             manager.SetSprite(a, c1, c2);
-            print(c1 + ", " + c2);
         }
     }
 
-    public void SetupBrain(BaseAgent a)
+    private void SetupBrain(BaseAgent a)
     {
         // Give the brain
         if (initial_population)

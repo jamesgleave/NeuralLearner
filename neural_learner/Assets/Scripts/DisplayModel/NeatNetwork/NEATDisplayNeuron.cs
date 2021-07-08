@@ -36,6 +36,11 @@ public class NEATDisplayNeuron : Interactable
     /// </summary>
     public NEATNeuron neuron;
 
+    /// <summary>
+    /// The NEAT neuron's calculation method
+    /// </summary>
+    public NodeCalculationMethod calc_method;
+
     // We need a line renderer to create show the weights and neurons
     public List<LineDrawer> artists;
     public LineDrawer artist;
@@ -64,6 +69,11 @@ public class NEATDisplayNeuron : Interactable
     /// </summary>
     public bool weights_faded = false;
 
+    /// <summary>
+    /// The seed for its position
+    /// </summary>
+    public int seed;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -90,6 +100,9 @@ public class NEATDisplayNeuron : Interactable
         line_scaler = display.sigma;
         min_line_width = display.sigma_prime;
 
+        // set the method
+        calc_method = n.GetMethod();
+
         // Set up the neuron as an interactable
         Setup((int)ID.Neuron);
         OnSetup();
@@ -100,7 +113,7 @@ public class NEATDisplayNeuron : Interactable
     /// </summary>
     public virtual void OnSetup()
     {
-
+        seed = Random.Range(0, 10000);
     }
 
     public void UpdateSize()
@@ -136,45 +149,40 @@ public class NEATDisplayNeuron : Interactable
         // Draw a line for each child
         for (int i = 0; i < children.Count; i++)
         {
-            // Draw only when moving or when child is moving
-            if (moving || children[i].moving || forced)
+            // Set the thickness of the line
+            if (weights.Count > 0)
             {
-                // Set the thickness of the line
-                if (weights.Count > 0)
+                // Get the scale of the weight
+                float scale = Mathf.Abs(weights[i]) * line_scaler;
+
+                //Clamp the scale 
+                if (Mathf.Approximately(scale, 0))
                 {
-                    // Get the scale of the weight
-                    float scale = Mathf.Abs(weights[i]) * line_scaler;
-
-                    //Clamp the scale 
-                    if (Mathf.Approximately(scale, 0))
-                    {
-                        scale = 0;
-                    }
-                    else
-                    {
-                        scale = Mathf.Clamp(scale, min_line_width, line_scaler);
-                    }
-
-                    // Set the features of the artist
-                    artists[i].SetFeatures(scale, scale);
-
-                    // Set the colour
-                    artists[i].SetColour(weights[i]);
-                }
-
-                // Draw blue lines for recurrent connections
-                if (children[i].neuron.GetInputs()[neuron.GetNeuronID()].GetInputType() == NEATInputContainer.NEATInputType.Recurrent)
-                {
-                    artists[i].clow = Color.magenta;
-                    artists[i].chigh = Color.cyan;
-                    artists[i].SetColour(weights[i]);
-                    artists[i].DrawRecurrentConnection(transform.position, children[i].transform.position, 1.5f);
+                    scale = 0;
                 }
                 else
                 {
-                    artists[i].Draw(transform.position, children[i].transform.position);
+                    scale = Mathf.Clamp(scale, min_line_width, line_scaler);
                 }
 
+                // Set the features of the artist
+                artists[i].SetFeatures(scale, scale);
+
+                // Set the colour
+                artists[i].SetColour(weights[i]);
+            }
+
+            // Draw blue lines for recurrent connections
+            if (children[i].neuron.GetInputs()[neuron.GetNeuronID()].GetInputType() == NEATInputContainer.NEATInputType.Recurrent)
+            {
+                artists[i].clow = Color.magenta;
+                artists[i].chigh = Color.cyan;
+                artists[i].SetColour(weights[i]);
+                artists[i].DrawRecurrentConnection(transform.position, children[i].transform.position, 1.5f);
+            }
+            else
+            {
+                artists[i].Draw(transform.position, children[i].transform.position);
             }
         }
     }
@@ -195,6 +203,13 @@ public class NEATDisplayNeuron : Interactable
         line_scaler = display.sigma;
         min_line_width = display.sigma_prime;
         depth_count = display.depth_counter[layer];
+
+        // Set the colour
+        if (neuron.GetMethod() == NodeCalculationMethod.Latch)
+        {
+            sprite.color = Color.blue;
+            //neuron.SetMethod(NodeCalculationMethod.Latch);
+        }
     }
 
     /// <summary>
@@ -273,9 +288,25 @@ public class NEATDisplayNeuron : Interactable
                 connected.Add(p.artists[index]);
                 connected.AddRange(p.GetAllConnectedArtists(calls++));
             }
+        }
+        return connected;
+    }
 
+    public List<LineDrawer> GetAllChilren(int calls = 0)
+    {
+        // Create new list for all connected neurons
+        List<LineDrawer> connected_children = new List<LineDrawer>();
+        connected_children.AddRange(artists);
+
+        // Return if too many runs
+        if (calls > display.GetAllNeurons().Count) return connected_children;
+
+        // Look at and add each child artist
+        foreach (var child in children)
+        {
+            //connected_children.AddRange(child.GetAllChilren(calls++));
         }
 
-        return connected;
+        return connected_children;
     }
 }

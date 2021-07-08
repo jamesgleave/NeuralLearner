@@ -1,17 +1,21 @@
 ﻿<Properties StartupConfiguration="{B3AF31EC-A24B-61DB-F2F2-AC2579EB55ED}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/UI/AgentUIController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/AncestorDisplay/AncestorDisplay.cs">
     <Files>
-      <File FileName="Assets/Scripts/UI/AgentUIController.cs" Line="225" Column="1" />
-      <File FileName="Assets/Scripts/Managers/Manager.cs" Line="191" Column="27" />
-      <File FileName="Assets/Scripts/Inanimates/FoodPellet.cs" Line="28" Column="18" />
-      <File FileName="Assets/Scripts/UserControl/UserControllerEvoSim.cs" Line="20" Column="32" />
-      <File FileName="Assets/Scripts/Managers/Saving.cs" Line="23" Column="30" />
-      <File FileName="Assets/Scripts/UI/SaveAgentGUI.cs" Line="16" Column="51" />
+      <File FileName="Assets/Scripts/Agent/BaseAgent.cs" Line="730" Column="25" />
+      <File FileName="Assets/Scripts/Inanimates/Egg.cs" Line="247" Column="42" />
+      <File FileName="Assets/Scripts/Models/NeatNetwork/NEATNetwork.cs" Line="461" Column="1" />
+      <File FileName="Assets/Scripts/Brains/EvolutionaryNEATLearner.cs" Line="123" Column="20" />
+      <File FileName="Assets/Scripts/Managers/Saving.cs" Line="92" Column="44" />
+      <File FileName="Assets/Scripts/Managers/AncestorManager.cs" Line="124" Column="17" />
+      <File FileName="Assets/Scripts/Managers/Manager.cs" Line="87" Column="1" />
+      <File FileName="Assets/Scripts/Models/NeatNetwork/Genome.cs" Line="629" Column="21" />
+      <File FileName="Assets/Scripts/Managers/SimulationSceneManager.cs" Line="34" Column="48" />
+      <File FileName="Assets/Scripts/AncestorDisplay/AncestorDisplay.cs" Line="51" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="8abcba85-5c39-46aa-8f27-9780413ced67" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="b8fcc3ce-9b0a-4726-9069-ef875e7cc4da" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

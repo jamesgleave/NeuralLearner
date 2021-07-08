@@ -16,8 +16,11 @@ public class NEATDisplayNeuron2D : NEATDisplayNeuron
         // Add force to neuron rb
         rb.AddForce(force, ForceMode2D.Impulse);
 
-        // Clamp the velocity
-        rb.velocity = Vector3.ClampMagnitude(rb.velocity, speed);
+        if (!grabbed)
+        {
+            // Clamp the velocity if not grabbed
+            rb.velocity = Vector3.ClampMagnitude(rb.velocity, speed);
+        }
 
         // If we are pretty much not moving then stop completely
         if (Mathf.Approximately(rb.velocity.magnitude, 0.0f) || rb.velocity.magnitude < 0)
@@ -45,6 +48,7 @@ public class NEATDisplayNeuron2D : NEATDisplayNeuron
         float x, y, z;
         if (children.Count > 0 && parents.Count > 0)
         {
+            int i = 0;
             foreach (var p in parents)
             {
                 average_y += p.transform.localPosition.y;
@@ -53,21 +57,36 @@ public class NEATDisplayNeuron2D : NEATDisplayNeuron
 
             foreach (var c in children)
             {
-                average_y += c.transform.localPosition.y;
-                average_x += c.transform.localPosition.x;
+                average_y += c.transform.localPosition.y + weights[i] / Mathf.Max(weights.ToArray());
+                average_x += c.transform.localPosition.x + weights[i] / Mathf.Max(weights.ToArray());
+                i++;
+
             }
 
             average_y /= parents.Count + children.Count;
             average_x /= parents.Count + children.Count;
+
             // Set up the basic coords
             // Set up the basic coords
             x = -neuron.GetDepth() * display.lambda;
             y = (position - depth_count / 2) * display.alpha + even_odd_offset;
             x += average_x;
             y += average_y;
-            x /= 2;
-            y /= 2;
+
+            x /= display.display_x_seperation_scaler;
+            y /= display.display_y_seperation_scaler;
             z = 0;
+
+            y -= display.vert_offset;
+            x -= display.hori_offset;
+
+            //foreach (Collider2D cols in Physics2D.OverlapCircleAll(transform.position, 2))
+            //{
+            //    var shift_dir = cols.transform.position - transform.position;
+            //    y -= shift_dir.y * Vector2.Distance(transform.position.normalized, desired_position.normalized);
+            //    x -= shift_dir.x * Vector2.Distance(transform.position.normalized, desired_position.normalized);
+            //}
+
         }
         else
         {
@@ -87,10 +106,13 @@ public class NEATDisplayNeuron2D : NEATDisplayNeuron
     public override void UpdateInternalState()
     {
         base.UpdateInternalState();
-
-        UpdateMovement(display.gamma, display.phi);
-        CalculateDesiredPosition();
         DrawLine(false);
         UpdateSize();
+        UpdateMovement(display.gamma, display.phi);
+
+        if (grabbed == false)
+        {
+            CalculateDesiredPosition();
+        }
     }
 }

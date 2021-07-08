@@ -25,6 +25,7 @@ public class UserControllerEvoNEAT : MonoBehaviour
 
     // The neuron we have currently selected
     public GameObject selected;
+    public int selected_ID;
 
     void Update()
     {
@@ -90,7 +91,18 @@ public class UserControllerEvoNEAT : MonoBehaviour
         {
             // If we have something selected clicked we can drag it around lol
             float distance_to_screen = Camera.main.WorldToScreenPoint(selected.transform.position).z;
-            selected.transform.position = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance_to_screen));
+
+            //selected.transform.position = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance_to_screen));
+            Vector3 new_target = Camera.main.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance_to_screen));
+
+            // Transform the target position to the local position of the display and indicate grabbed = true
+            selected.GetComponent<NEATDisplayNeuron>().desired_position = selected.transform.parent.InverseTransformPoint(new_target);
+            selected.GetComponent<NEATDisplayNeuron>().grabbed = true;
+        }
+        else if (!Input.GetMouseButton(0) && selected != null)
+        {
+            // Set grabbed false
+            selected.GetComponent<NEATDisplayNeuron>().grabbed = false;
         }
 
         //Zoom in and out with Mouse Wheel
@@ -124,9 +136,12 @@ public class UserControllerEvoNEAT : MonoBehaviour
                 // Select the neuron
                 n.Select();
 
+                // Set the selected ID
+                selected_ID = n.neuron.GetNeuronID();
 
                 // Get every artist and fade the ones not connected
                 var to_not_fade = n.GetAllConnectedArtists();
+                to_not_fade.AddRange(n.GetAllChilren());
                 foreach (var x in nn.GetAllNeurons())
                 {
                     foreach (var a in x.artists)

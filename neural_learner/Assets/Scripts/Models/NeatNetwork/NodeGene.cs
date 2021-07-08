@@ -10,6 +10,11 @@ public class NodeGene
     private NodeGeneType type;
 
     /// <summary>
+    /// The method which the node uses to calculate its output value
+    /// </summary>
+    private NodeCalculationMethod method;
+
+    /// <summary>
 	/// The ID of the connection
 	/// </summary>
     private int id;
@@ -21,7 +26,7 @@ public class NodeGene
     /// <param name="id"></param>
     private string activation;
 
-    public NodeGene(NodeGeneType type, int id, string activation = "Tanh")
+    public NodeGene(NodeGeneType type, int id, string activation = "Tanh", NodeCalculationMethod method = NodeCalculationMethod.LinComb)
     {
         this.type = type;
         this.id = id;
@@ -32,7 +37,7 @@ public class NodeGene
             activation = "Tanh";
         }
         this.activation = activation;
-
+        this.method = method;
     }
 
     /// <summary>
@@ -94,7 +99,7 @@ public class NodeGene
     /// <returns></returns>
     public NodeGene Copy()
     {
-        return new NodeGene(type, id, activation);
+        return new NodeGene(type, id, activation, method);
     }
 
     public string GetActivationString()
@@ -105,6 +110,16 @@ public class NodeGene
     public void SetActivationString(string activ)
     {
         activation = activ;
+    }
+
+    public NodeCalculationMethod GetCalculationMethod()
+    {
+        return method;
+    }
+
+    public void SetCalculationMethod(NodeCalculationMethod new_method)
+    {
+        method = new_method;
     }
 
 

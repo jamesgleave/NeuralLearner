@@ -44,7 +44,7 @@ public class NEATNetwork : Model.BaseModel
             NodeGene node = genome.GetNodes()[id];
 
             // TODO Make sure we have the ability to mutate activation in the genome
-            NEATNeuron neuron = new NEATNeuron(Parse.Parser.ReadActivation(node.GetActivationString()), node.GetID());
+            NEATNeuron neuron = new NEATNeuron(Parse.Parser.ReadActivation(node.GetActivationString()), node.GetID(), node.GetCalculationMethod());
 
             // Look at each key (id)
             if (node.IsInput())
@@ -126,7 +126,7 @@ public class NEATNetwork : Model.BaseModel
         {
             // Get the node with the id
             NodeGene node = genome.GetNodes()[id];
-            NEATNeuron neuron = new NEATNeuron(Parse.Parser.ReadActivation(node.GetActivationString()), node.GetID());
+            NEATNeuron neuron = new NEATNeuron(Parse.Parser.ReadActivation(node.GetActivationString()), node.GetID(), node.GetCalculationMethod());
 
             // Look at each key (id)
             if (node.IsInput())
@@ -176,8 +176,8 @@ public class NEATNetwork : Model.BaseModel
         // Calculate each neurons depth (distance from an input)
         CalculateDepth();
 
-        // Find recurrent connections
-        FindRecurrence();
+        //// Find recurrent connections
+        //FindRecurrence();
     }
 
     /// <summary>
@@ -193,18 +193,23 @@ public class NEATNetwork : Model.BaseModel
         {
             cont = false;
             iterations++;
+            // Look at each neuron in the dict
             foreach (KeyValuePair<int, NEATNeuron> pair in neurons)
             {
+                // If the neuron's depth is not the min value
                 if (pair.Value.GetDepth() != int.MinValue || pair.Value.GetOutputIDs().Count == 0)
                 {
                     // Check to see if we update the max depth value
                     if (pair.Value.GetDepth() > max_depth)
                     {
+                        // If the max depth is less than the depth of this neuron, we update max depth
                         max_depth = pair.Value.GetDepth();
                     }
 
+                    // Loop through the outputs of the neuron in pair
                     foreach (int output_id in pair.Value.GetOutputIDs())
                     {
+                        // If the output has not been assigned a depth then assign it this neurons depth + 1
                         if (neurons[output_id].GetDepth() == int.MinValue)
                         {
                             neurons[output_id].SetDepth(pair.Value.GetDepth() + 1);
@@ -262,11 +267,6 @@ public class NEATNetwork : Model.BaseModel
         {
             neurons[id].ForceSetDepth(max_depth + 1);
         }
-    }
-
-    public string GetInfo()
-    {
-        return "Input: " + inputs.Count + ", " + "Output: " + outputs.Count;
     }
 
     /// <summary>
@@ -378,6 +378,11 @@ public class NEATNetwork : Model.BaseModel
         {
             n.Reset();
         }
+    }
+
+    public string GetInfo()
+    {
+        return "Input: " + inputs.Count + ", " + "Output: " + outputs.Count;
     }
 
     /// <summary>
@@ -548,10 +553,14 @@ public class NEATNeuron
     // The activation funciton
     private Activation activation;
 
+    /// <summary>
+    /// The method for calculation
+    /// </summary>
+    private NodeCalculationMethod method;
+
     public NEATNeuron(Activation activation, int id)
     {
         this.id = id;
-        //inputs = new List<float>();
         inputs = new Dictionary<int, NEATInputContainer>();
         output_ids = new List<int>();
         output_weights = new List<float>();
@@ -559,6 +568,20 @@ public class NEATNeuron
         hidden_states = new Dictionary<int, float>();
 
         this.activation = activation;
+        this.method = NodeCalculationMethod.LinComb;
+    }
+
+    public NEATNeuron(Activation activation, int id, NodeCalculationMethod method)
+    {
+        this.id = id;
+        inputs = new Dictionary<int, NEATInputContainer>();
+        output_ids = new List<int>();
+        output_weights = new List<float>();
+        recurrent_inputs = new List<bool>();
+        hidden_states = new Dictionary<int, float>();
+
+        this.activation = activation;
+        this.method = method;
     }
 
     /// <summary>
@@ -684,14 +707,52 @@ public class NEATNeuron
                 // Add up each value
                 sum += pair.Value.GetInputValue();
             }
-
         }
 
-        // Activate the sum
-        output = activation.activate(sum);
+        switch (method)
+        {
+            // check to see if this is a LinComb neuron
+            case NodeCalculationMethod.LinComb:
+                // Activate the sum
+                output = activation.activate(sum);
+                break;
+
+            // check to see if this is a latch neuron
+            case NodeCalculationMethod.Latch:
+                // A latch neuron will always return 1 if output is one (latched) and input is greater than zero.
+                // If the output is less than or equal to zero, output zero
+                if (output == 1 && activation.activate(sum) > 0 || activation.activate(sum) >= 0.9f)
+                {
+                    output = 1;
+                }
+                else
+                {
+                    output = 0;
+                }
+                break;
+        }
+
 
         // return the final value
         return output;
+    }
+
+    /// <summary>
+    /// Returns the calculation method
+    /// </summary>
+    /// <returns></returns>
+    public NodeCalculationMethod GetMethod()
+    {
+        return method;
+    }
+
+    /// <summary>
+    /// Set the method of the neuron's output calculation
+    /// </summary>
+    /// <param name="new_method"></param>
+    public void SetMethod(NodeCalculationMethod new_method)
+    {
+        this.method = new_method;
     }
 
     /// <summary>

@@ -26,13 +26,13 @@ public class SimulationSceneManager : MonoBehaviour
         DontDestroyOnLoad(manager);
 
         // Move the gui to the "Do not destroy scene"
-        DontDestroyOnLoad(gui);
+        //DontDestroyOnLoad(gui);
 
         // Move scenes
         SceneManager.LoadScene("TestAncestory");
 
         // Set the manager to inactive for now 
-        StateManager.manager.gameObject.SetActive(false);
+        //StateManager.manager.gameObject.SetActive(false);
     }
 
     public void ToNeural(GameObject agent_obj, BaseAgent agent, Manager manager, GameObject gui)

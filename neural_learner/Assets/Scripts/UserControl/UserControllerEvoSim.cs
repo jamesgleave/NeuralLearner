@@ -23,19 +23,8 @@ public class UserControllerEvoSim : MonoBehaviour
     // Thx :)
     void Update()
     {
-
-        if (selected != null && Input.GetKeyDown(KeyCode.S))
-        {
-            Saving.SaveAgent(selected.transform.parent.GetComponent<BaseAgent>(), "./Assets/SaveData/Agent");
-        }
-
-        if (selected != null && Input.GetKeyDown(KeyCode.L))
-        {
-            Saving.LoadAgent(selected.transform.parent.GetComponent<BaseAgent>(), "./Assets/SaveData/Agent");
-        }
-
         // Check to see if we transition a scene
-        if (Input.GetKeyDown(KeyCode.Return))
+        if (Input.GetKeyDown(KeyCode.Return) && load_gui.activeInHierarchy == false)
         {
             // Check the type of interactable we have selected
             if (selected != null && selected.transform.parent.TryGetComponent<BaseAgent>(out BaseAgent a) && !gui.activeInHierarchy)
@@ -70,7 +59,7 @@ public class UserControllerEvoSim : MonoBehaviour
         }
 
         // If the gui is open, return after this point
-        if (gui != null && (gui.activeInHierarchy || save_gui.activeInHierarchy))
+        if (gui != null && (gui.activeInHierarchy || save_gui.activeInHierarchy || load_gui.activeInHierarchy))
         {
             return;
         }

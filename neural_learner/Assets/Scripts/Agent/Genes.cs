@@ -459,6 +459,22 @@ public class Genes
             maturity_time += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
             maturity_time = Mathf.Max(maturity_time, 0.1f);
         }
+
+        // There is a small change that a body component will mutate
+        if (GetProb(base_mutation_rate * attribute_mutation_rate * colour_mutation_prob))
+        {
+            if (GetProb(1f / 3f))
+            {
+                int head_components = GameObject.FindGameObjectWithTag("manager").GetComponent<SpriteManager>().head_components.Count;
+                spritemap["head"] = Random.Range(0, head_components);
+            }
+            else
+            {
+                int body_components = GameObject.FindGameObjectWithTag("manager").GetComponent<SpriteManager>().body_components.Count;
+                spritemap["body"] = Random.Range(0, body_components);
+            }
+
+        }
     }
 
     /// <summary>

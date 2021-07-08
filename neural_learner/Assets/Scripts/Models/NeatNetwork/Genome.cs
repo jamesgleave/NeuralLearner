@@ -125,6 +125,39 @@ public class Genome
     }
 
     /// <summary>
+    /// Mutate the calculation method
+    /// </summary>
+    /// <returns></returns>
+    public bool ChangeCalculationMethodMutation()
+    {
+        // Create a list of all keys in the nodes list
+        List<int> keys = new List<int>(nodes.Count);
+        foreach (var item in nodes)
+        {
+            keys.Add(item.Key);
+        }
+
+        // Create a new random variable
+        System.Random r = new System.Random();
+
+        // Grab the node that we will be changing
+        NodeGene node = nodes[keys[r.Next(keys.Count)]];
+
+        // Only change method of hidden nodes
+        if (!node.IsHidden())
+        {
+            return false;
+        }
+
+        // Change the calculation method
+        node.SetCalculationMethod(MethodHelp.GetRandomMethod());
+
+        //throw new System.Exception(node.GetCalculationMethod().ToString());
+
+        return true;
+    }
+
+    /// <summary>
     /// Adds a connection between two random nodes. Returns true if successful
     /// </summary>
     public bool AddConnectionMutation()
@@ -148,9 +181,20 @@ public class Genome
             }
         }
 
-        // Grab the two nodes that we will be connecting
-        NodeGene node1 = nodes[keys[Random.Range(0, keys.Count)]];
-        NodeGene node2 = nodes[keys[Random.Range(0, keys.Count)]];
+        // If we have no connections, there is a 75% chance that the first connection formed will be to the movement neuron
+        NodeGene node1, node2;
+        if (connections.Count == 0 && 0.85f > Random.value)
+        {
+            // Grab the two nodes that we will be connecting
+            node1 = nodes[keys[Random.Range(0, keys.Count)]];
+            node2 = nodes[25]; // 25 is the index of the movement neuron
+        }
+        else
+        {
+            // Grab the two nodes that we will be connecting
+            node1 = nodes[keys[Random.Range(0, keys.Count)]];
+            node2 = nodes[keys[Random.Range(0, keys.Count)]];
+        }
 
         // If we fail and have an input connecting to an input or an output connecting to an output we search and find all outputs/inputs and select one at random that works
         if (node1.IsInput() && node2.IsInput())
@@ -223,7 +267,11 @@ public class Genome
         return true;
     }
 
-    public bool DropConnectionMutation()
+    /// <summary>
+    /// Drops an active connection and reactivates a dropped connection
+    /// </summary>
+    /// <returns></returns>
+    public bool InvertConnectionMutation()
     {
         // Get a random connection and disable it
         // Create a list of all keys in the connections list
@@ -253,6 +301,7 @@ public class Genome
         }
         else
         {
+            connection.SetExpressedStatus(true);
             return false;
         }
     }
@@ -437,7 +486,7 @@ public class Genome
         foreach (NodeGene node in nodes.Values)
         {
             id = node.GetID();
-            method = "lin_comb";
+            method = node.GetCalculationMethod().ToString();
             type = node.GetNodeType();
             activation = node.GetActivationString();
             code += id + "," + method + "," + type + "," + activation + "; ";
@@ -447,7 +496,7 @@ public class Genome
         code += "Connections: ";
         foreach (ConnectionGene conneciton in connections.Values)
         {
-            code += conneciton.GetInnovation() + "," + conneciton.getInNode() + "," + conneciton.getOutNode() + "," + conneciton.GetWeight() + "; ";
+            code += conneciton.GetInnovation() + "," + conneciton.getInNode() + "," + conneciton.getOutNode() + "," + conneciton.GetWeight() + "," + conneciton.IsExpressed() + "; ";
         }
 
         ///
@@ -523,9 +572,19 @@ public class Genome
                     }
                     // Get the activation code
                     activation = node_data[3];
+                    NodeCalculationMethod calc_method = NodeCalculationMethod.LinComb;
+                    switch (method)
+                    {
+                        case "LinComb":
+                            calc_method = NodeCalculationMethod.LinComb;
+                            break;
+                        case "Latch":
+                            calc_method = NodeCalculationMethod.Latch;
+                            break;
+                    }
 
                     // Add node to genome
-                    new_genome.AddNode(new NodeGene(type, id, activation));
+                    new_genome.AddNode(new NodeGene(type, id, activation, calc_method));
                 }
             }
             else if (line.Contains("Connections:"))
@@ -537,6 +596,7 @@ public class Genome
                 // Look at each node
                 int innovation, in_node_id, out_node_id;
                 float weight;
+                bool is_expressed;
                 foreach (string comp in data.Split(';'))
                 {
 
@@ -552,7 +612,8 @@ public class Genome
                     in_node_id = int.Parse(c_data[1]);
                     out_node_id = int.Parse(c_data[2]);
                     weight = float.Parse(c_data[3]);
-                    new_genome.AddConnection(new ConnectionGene(in_node_id, out_node_id, weight, true, innovation));
+                    is_expressed = bool.Parse(c_data[4]);
+                    new_genome.AddConnection(new ConnectionGene(in_node_id, out_node_id, weight, is_expressed, innovation));
                 }
             }
         }
@@ -583,6 +644,15 @@ public class Genome
             {
                 log += "Changed Activation: " + ", ";
                 model.ChangeActivationMutation();
+            }
+
+            // Mutate neuron types
+            prob_trigger = Random.Range(0f, 1f);
+            trigger = (bias_mutation_prob > prob_trigger);
+            if (trigger)
+            {
+                log += "Changed Neuron Type: " + ", ";
+                model.ChangeCalculationMethodMutation();
             }
 
             // Mutate the connections by adding a few more
@@ -635,7 +705,7 @@ public class Genome
             if (trigger)
             {
                 // Drop the connection
-                model.DropConnectionMutation();
+                model.InvertConnectionMutation();
                 log += "Dropped connection, ";
             }
         }

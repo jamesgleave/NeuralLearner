@@ -52,6 +52,9 @@ public class AgentUIController : MonoBehaviour
             // First, we setup again
             Setup(agent);
 
+            // Set the position of the render camera
+            rendercam.transform.position = agent.transform.position + Vector3.forward * agent.max_size.x;
+
             // Update all values
             int i = 0;
             foreach (var t in display_box.GetComponentsInChildren<Text>())
@@ -94,9 +97,6 @@ public class AgentUIController : MonoBehaviour
                 // We take the first 5 chars
                 t.text = feild;
                 i++;
-
-                // Set the position of the render camera
-                rendercam.transform.position = agent.transform.position + Vector3.forward * agent.max_size.x;
             }
         }
     }
@@ -223,9 +223,8 @@ public class AgentUIController : MonoBehaviour
     public void LoadAgent()
     {
 
-        load_agent.gameObject.SetActive(true);
+        load_agent_gui.gameObject.SetActive(true);
         this.gameObject.SetActive(false);
-        load_agent.gameObject.SetActive(true);
-
+        load_agent_gui.gameObject.SetActive(true);
     }
 }

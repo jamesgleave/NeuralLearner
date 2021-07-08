@@ -108,34 +108,6 @@ public class Saving : MonoBehaviour
     {
         return null;
     }
-
-    public static bool Save(GameObject obj)
-    {
-        PlayerPrefs.Save();
-        return true;
-    }
-
-
-    public static object Load()
-    {
-        if (File.Exists(path))
-        {
-            BinaryFormatter formatter = new BinaryFormatter();
-            FileStream stream = new FileStream(path, FileMode.Open);
-
-
-            string data = formatter.Deserialize(stream) as string;
-            SavedGameObject = (GameObject)AssetDatabase.LoadAssetAtPath(path, typeof(GameObject));
-
-            stream.Close();
-        }
-        else
-        {
-            Debug.LogWarning("Save file not found.");
-            return null;
-        }
-        return null;
-    }
 }
 
 

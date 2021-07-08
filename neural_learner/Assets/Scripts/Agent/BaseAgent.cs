@@ -354,7 +354,7 @@ public class BaseAgent : Interactable
         // How fast can the consume food?
         consumption_rate = (base_consumption_rate / Mathf.Exp(-genes.size)) * 0.5f;
 
-        // Find the attack and defense of the agent
+        // Find the   and defense of the agent
         // The attack and defense starts lower
         attack = genes.attack * base_attack * 0.25f;
         defense = genes.defense * base_defense * 0.25f;
@@ -408,7 +408,7 @@ public class BaseAgent : Interactable
 
         // Finally, set up the brain!!
         brain = GetComponent<Brain>();
-        brain.Setup();
+        //brain.Setup();
 
         // Setup the joint for grabbing!
         GetComponent<RelativeJoint2D>().maxForce = (1 + genes.vitality) * 5;
@@ -463,6 +463,11 @@ public class BaseAgent : Interactable
             if (Input.GetKey(KeyCode.K))
             {
                 Die();
+            }
+
+            if (Input.GetKey(KeyCode.L))
+            {
+                LayEgg();
             }
 
             // If we do not want to grab, we should get rid of anything we are trying to grab
@@ -806,9 +811,7 @@ public class BaseAgent : Interactable
         energy -= cost_of_movement;
         manager.RecycleEnergy(cost_of_movement);
         true_metabolic_cost += cost_of_movement;
-
     }
-
 
     /// <summary>
     ///   <para>Sexual reproduction</para>
@@ -826,7 +829,7 @@ public class BaseAgent : Interactable
         {
             // Spawn in the egg object
             Vector2 pos = egg_location.position;
-            var x = Instantiate(egg, pos, transform.rotation, manager.transform);
+            var x = manager.GetComponent<EntityPoolManager>().InstantiateEgg(egg, pos, transform.rotation, manager.transform);
 
             // Add this agent as the parent to the egg
             x.parent = this;
@@ -841,6 +844,8 @@ public class BaseAgent : Interactable
 
             // Give the egg a copy of this brain's model
             x.brain = brain.GetModel().Copy();
+
+            // TODO Implement crossover
 
             // An egg requres 50% of the agents max energy or just the remaining amount of energy they have
             energy -= energy_to_child;
@@ -870,7 +875,8 @@ public class BaseAgent : Interactable
 
         // Spawn in the egg object
         Vector2 pos = egg_location.position;
-        var x = Instantiate(egg, pos, transform.rotation, manager.transform);
+        //var x = Instantiate(egg, pos, transform.rotation, manager.transform);
+        var x = manager.GetComponent<EntityPoolManager>().InstantiateEgg(egg, pos, transform.rotation, manager.transform);
 
         // Add this agent as the parent to the egg
         x.parent = this;
@@ -898,6 +904,10 @@ public class BaseAgent : Interactable
         egg_formation_cooldown = 0;
     }
 
+    /// <summary>
+    /// Eats some or all of the other interactable
+    /// </summary>
+    /// <param name="other"></param>
     public virtual void Eat(Interactable other)
     {
         // The agent recieves less and less energy when they get too full
@@ -961,6 +971,10 @@ public class BaseAgent : Interactable
         }
     }
 
+    /// <summary>
+    /// Grabs the other interactable i
+    /// </summary>
+    /// <param name="i"></param>
     public virtual void Grab(Interactable i)
     {
         // Grab something if we havnt got one already
@@ -974,6 +988,9 @@ public class BaseAgent : Interactable
         }
     }
 
+    /// <summary>
+    /// Releases a grab
+    /// </summary>
     public virtual void ReleaseGrab()
     {
         if (grabbed != null)
@@ -985,16 +1002,25 @@ public class BaseAgent : Interactable
         }
     }
 
-
+    /// <summary>
+    /// Attacks the 'other' base agent
+    /// </summary>
+    /// <param name="other"></param>
     public virtual void Attack(BaseAgent other)
     {
         other.Damage(attack * transform.localScale.x);
+        ReleaseGrab();
+        other.GetRB().AddForce((transform.position - other.transform.position).normalized * -100);
     }
 
+    /// <summary>
+    /// Damage this agent
+    /// </summary>
+    /// <param name="damage"></param>
     public virtual void Damage(float damage)
     {
         float total_damage = Mathf.Max(damage - (defense * transform.localScale.x), 0.5f);
-        health -= total_damage * Time.deltaTime;
+        health -= total_damage;
     }
 
     public virtual void Die()
@@ -1024,7 +1050,8 @@ public class BaseAgent : Interactable
             }
         }
 
-        Destroy(gameObject);
+        manager.GetComponent<EntityPoolManager>().Destroy(this);
+        //Destroy(gameObject);
     }
 
     public virtual void OnCollisionStay2D(Collision2D collision)
@@ -1037,6 +1064,12 @@ public class BaseAgent : Interactable
             if (wants_to_eat)
             {
                 Eat(i);
+            }
+
+            // If we want to attack then attack!
+            if (wants_to_attack && collision.gameObject.TryGetComponent(out BaseAgent a))
+            {
+                Attack(a);
             }
         }
     }
@@ -1053,6 +1086,12 @@ public class BaseAgent : Interactable
                 if (wants_to_grab)
                 {
                     Grab(i);
+                }
+
+                // If we want to attack then attack!
+                if (wants_to_attack && collision.gameObject.TryGetComponent(out BaseAgent a))
+                {
+                    Attack(a);
                 }
             }
         }

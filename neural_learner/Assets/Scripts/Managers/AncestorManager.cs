@@ -97,6 +97,7 @@ public class PopulationContainer
     {
         // setup the list
         agents = new List<BaseAgent>();
+        average = null;
     }
 
     public void CheckExtinct()
@@ -125,6 +126,13 @@ public class PopulationContainer
 
         // Remove all null values (agents which have died)
         agents = agents.Where(BaseAgent => BaseAgent != null).ToList();
+        //for (int i = agents.Count - 1; i >= 0; i--)
+        //{
+        //    if (agents[i] == null)
+        //    {
+        //        agents.RemoveAt(i);
+        //    }
+        //}
 
         // Add the agent to the list
         agents.Add(a);

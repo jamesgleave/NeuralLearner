@@ -33,6 +33,16 @@ public class DisplayEvoNEAT : Display
     public List<float> x = new List<float>();
     public float cooldown;
 
+    // The ID of the selected neuron
+    public int selected_id;
+
+    // Scalers for display
+    [Space]
+    public float display_x_seperation_scaler;
+    public float display_y_seperation_scaler;
+    public float vert_offset;
+    public float hori_offset;
+
     // Start is called before the first frame update
     public override void Activate()
     {
@@ -215,17 +225,17 @@ public class DisplayEvoNEAT : Display
                 input_index++;
 
             }
-            if (output_index < output_neurons.Count)
-            {
-                output_neurons[output_index].position = output_index;
-                output_neurons[output_index].UpdateInternalState();
-                output_index++;
-            }
             if (hidden_index < hidden_neurons.Count)
             {
                 hidden_neurons[hidden_index].position = hidden_index % depth_counter[hidden_neurons[hidden_index].neuron.GetDepth()];
                 hidden_neurons[hidden_index].UpdateInternalState();
                 hidden_index++;
+            }
+            if (output_index < output_neurons.Count)
+            {
+                output_neurons[output_index].position = output_index;
+                output_neurons[output_index].UpdateInternalState();
+                output_index++;
             }
         }
     }

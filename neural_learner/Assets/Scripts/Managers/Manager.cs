@@ -94,6 +94,8 @@ public class Manager : MonoBehaviour
     // List of all activate agents 
     private List<BaseAgent> all_agents = new List<BaseAgent>();
 
+    public int num_active_food = 0;
+
     public void Setup()
     {
         // Create clusters for the spawning
@@ -180,6 +182,7 @@ public class Manager : MonoBehaviour
         percent_energy_in_pellets = 0;
 
         // Look at each pellet
+        num_active_food = food_pellets.Count;
         foreach (FoodPellet pellet in food_pellets)
         {
             // If the pellet has been eaten then respawn if we have enough energy
@@ -189,6 +192,7 @@ public class Manager : MonoBehaviour
                 Vector2 center = cluster_pos[Random.Range(0, pellet_clusters)];
                 Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
                 pellet.Respawn(center + offset, food_pellet_energy, food_growth_rate, food_pellet_size);
+                num_active_food--;
             }
 
             // Add the energy in that pellet

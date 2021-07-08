@@ -53,12 +53,15 @@ public class Senses : MonoBehaviour
         SetupNames();
 
         // Create the buffer
-        buffer = new RaycastHit2D[20];
+        buffer = new RaycastHit2D[10];
         filter = new ContactFilter2D();
     }
 
     public void SetupNames()
     {
+        // Clear the names
+        observation_names.Clear();
+
         // Add observation names for the pellets
         observation_names.Add("Distance To Closest Pellet");
         observation_names.Add("Number Of Pellets Seen");
@@ -131,12 +134,18 @@ public class Senses : MonoBehaviour
         }
 
         // We normalize the num_* proportionally to each value (min max scaling)
-        float max = Mathf.Max(num_agents, num_eggs, num_meats, num_pellets);
-        float min = Mathf.Min(num_agents, num_eggs, num_meats, num_pellets);
-        float scaled_num_agents = (num_agents - min) / Mathf.Max(max - min, 1);
-        float scaled_num_eggs = (num_eggs - min) / Mathf.Max(max - min, 1);
-        float scaled_num_meats = (num_meats - min) / Mathf.Max(max - min, 1);
-        float scaled_num_pellets = (num_pellets - min) / Mathf.Max(max - min, 1);
+        //float max = Mathf.Max(num_agents, num_eggs, num_meats, num_pellets);
+        //float min = Mathf.Min(num_agents, num_eggs, num_meats, num_pellets);
+        //float scaled_num_agents = (num_agents - min) / Mathf.Max(max - min, 1);
+        //float scaled_num_eggs = (num_eggs - min) / Mathf.Max(max - min, 1);
+        //float scaled_num_meats = (num_meats - min) / Mathf.Max(max - min, 1);
+        //float scaled_num_pellets = (num_pellets - min) / Mathf.Max(max - min, 1);
+
+        // The max number of this seen is the size of the buffer array used to store the collisions from the overlap circle and therefore we can use its lenght to normalize each value
+        float scaled_num_agents = num_agents / (float)buffer.Length;
+        float scaled_num_eggs = num_eggs / (float)buffer.Length;
+        float scaled_num_meats = num_meats / (float)buffer.Length;
+        float scaled_num_pellets = num_pellets / (float)buffer.Length;
 
         // Add the values found with Sense()
         // The first 8 values will be to do with sight
@@ -152,7 +161,6 @@ public class Senses : MonoBehaviour
         // The next 3 are all about the closest agent seen
         if (closest_agent != null)
         {
-            // Add the code of the other agent
             // 13, 14, 15
             // Note: I have changed this to the colour of the agent for testing
             observations.Add(closest_agent.genes.colour_r);
@@ -259,7 +267,7 @@ public class Senses : MonoBehaviour
         num_pellets = num_meats = num_eggs = num_agents = 0;
 
         // Look at stuff!
-        Physics2D.CircleCast(origin: transform.position + transform.up * vision_width / 1.5f, radius: vision_width, direction: transform.up, distance: vision_distance, results: buffer, contactFilter: filter.NoFilter());
+        Physics2D.CircleCast(origin: transform.position + transform.up * vision_width, radius: vision_width, direction: transform.up, distance: vision_distance, results: buffer, contactFilter: filter.NoFilter());
         foreach (RaycastHit2D c in buffer)
         {
             // If we have a null value, skip!
@@ -268,7 +276,20 @@ public class Senses : MonoBehaviour
                 continue;
             }
 
-            if (c.collider.TryGetComponent<Interactable>(out Interactable obj) && obj.gameObject != this.gameObject)
+            // Define the game object we are looking at
+            GameObject g;
+            if (c.collider.CompareTag("Body") || c.collider.CompareTag("Head"))
+            {
+                // Check if we have collided with an agent's body component and if so we must look at the parent (the agent)
+                g = c.collider.transform.parent.gameObject;
+            }
+            else
+            {
+                // If not, then it is something else and we close with g just being equal to the colliders game object
+                g = c.collider.gameObject;
+            }
+
+            if (g.TryGetComponent<Interactable>(out Interactable obj) && obj.gameObject != this.gameObject)
             {
                 // Now update the closest values
                 // Use a switch case cuz it be faster
@@ -392,9 +413,15 @@ public class Senses : MonoBehaviour
         }
     }
 
+    public void ClearDetection()
+    {
+        detected.Clear();
+        observations.Clear();
+    }
+
     public void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(transform.position + transform.up * vision_width / 1.5f, vision_width);
+        Gizmos.DrawWireSphere(transform.position + transform.up * vision_width, vision_width);
         Gizmos.DrawWireSphere(transform.position + transform.up * vision_distance, vision_width);
 
         foreach (Interactable i in detected)

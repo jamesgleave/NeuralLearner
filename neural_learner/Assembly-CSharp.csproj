@@ -108,6 +108,7 @@
     <Compile Include="Assets/Scripts/Agent/PheromoneGland.cs" />
     <Compile Include="Assets/Scripts/Agent/NameGenerator.cs" />
     <Compile Include="Assets/Scripts/UI/AgentUIController.cs" />
+    <Compile Include="Assets/Scripts/Managers/FoodPelletManager.cs" />
     <Compile Include="Assets/Scripts/Models/NeatNetwork/TestNEAT.cs" />
     <Compile Include="Assets/Scripts/DisplayModel/NeatNetwork/NEATDisplayNeuron.cs" />
     <Compile Include="Assets/Scripts/Brains/EvolutionaryNeuralLearner.cs" />
@@ -120,10 +121,12 @@
     <Compile Include="Assets/Scripts/UI/UILineRenderer.cs" />
     <Compile Include="Assets/Scripts/UI/GeneBarChart.cs" />
     <Compile Include="Assets/Scripts/Inanimates/Egg.cs" />
+    <Compile Include="Assets/Scripts/UserControl/UserControllerEvoAncestory.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets/SaveData/Speedster/genome.txt" />
      <None Include="Assets/SaveData/ggg/genome.txt" />
+     <None Include="Assets/SaveData/Smart/genome.txt" />
      <None Include="Assets/SaveData/ggg/genes.txt" />
      <None Include="Assets/SaveData/Poo/genome.txt" />
      <None Include="Assets/SaveData/SNUSNU/genome.txt" />
@@ -131,6 +134,7 @@
      <None Include="Assets/SaveData/Poo/genes.txt" />
      <None Include="Assets/Scripts/Agent/names.txt" />
      <None Include="Assets/SaveData/SNUSNU/genes.txt" />
+     <None Include="Assets/SaveData/Smart/genes.txt" />
     <Reference Include="UnityEngine">
       <HintPath>/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

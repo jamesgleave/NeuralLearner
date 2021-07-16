@@ -336,7 +336,7 @@ MonoBehaviour:
   base_speed: 50
   base_rotation_speed: 50
   base_perception: 15
-  base_gestation_time: 6.5
+  base_gestation_time: 10
   base_lifespan: 600
   base_mass: 2
   base_consumption_rate: 20

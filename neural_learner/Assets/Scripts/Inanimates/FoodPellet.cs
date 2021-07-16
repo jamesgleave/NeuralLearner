@@ -120,7 +120,7 @@ public class FoodPellet : Interactable
             // If we are ready, set a respawn timer equal to the proportion of max_agents
             {
                 // The cooldown time exponentially increases as the number of agents reach the max threshold
-                cooldown_time = Mathf.Min(manager.CalculatePelletRespawnTime(), 300);
+                cooldown_time = 0;
                 ready = true;
             }
         }

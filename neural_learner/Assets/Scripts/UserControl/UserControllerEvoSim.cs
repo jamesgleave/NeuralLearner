@@ -64,7 +64,7 @@ public class UserControllerEvoSim : MonoBehaviour
             return;
         }
 
-        if (Input.GetMouseButtonDown(0) && gui.activeInHierarchy == false)
+        if (Input.GetMouseButtonDown(0) && gui != null && gui.activeInHierarchy == false)
         {
             CheckSelect();
         }

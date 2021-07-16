@@ -22,6 +22,7 @@ public class AncestorDisplayNode : MonoBehaviour
 
     // The line drawer for this node
     public LineDrawer artist;
+    public Material artist_material;
 
     /// <summary>
     ///   <para>The display for callbacks</para>
@@ -67,10 +68,18 @@ public class AncestorDisplayNode : MonoBehaviour
     public float population_size;
 
     /// <summary>
+    /// The time when the ancestor node was created
+    /// </summary>
+    public float node_time;
+
+    /// <summary>
     ///   <para>Setup the node with an ancestor</para>
     /// </summary>
     public void Setup(AncestorNode n, AncestorDisplay disp, float p, float d)
     {
+        // Grab the time created
+        node_time = disp.manager.population[n.genus + " " + n.species].time_created;
+
         // Assign basic identifiers
         fullname = n.FullName();
         this.display = disp;
@@ -94,12 +103,12 @@ public class AncestorDisplayNode : MonoBehaviour
         // If there is no parent, we have no line to this point... so we do not deal with the incomming size
         if (parent == null)
         {
-            GetComponentInChildren<LineDrawer>().SetFeatures(n.original_genes.size / 25, n.original_genes.size / 25);
+            GetComponentInChildren<LineDrawer>().SetFeatures(n.original_genes.size / 10, n.original_genes.size / 10);
             display_wobbit.Setup(n.original_genes);
         }
         else
         {
-            GetComponentInChildren<LineDrawer>().SetFeatures(n.parent.original_genes.size / 25, n.original_genes.size / 25);
+            GetComponentInChildren<LineDrawer>().SetFeatures(n.parent.original_genes.size / 10, n.original_genes.size / 10);
             display_wobbit.Setup(n.parent.original_genes);
         }
 
@@ -115,6 +124,10 @@ public class AncestorDisplayNode : MonoBehaviour
 
     public void CalculateDesiredPosition()
     {
+        // Set the artists material
+        artist.SetMaterial(artist_material);
+
+        // Set position
         switch (display.arrangement)
         {
             case AncestorDisplay.ArrangementMethod.fiberoptic:
@@ -184,6 +197,22 @@ public class AncestorDisplayNode : MonoBehaviour
                     target_positon = new Vector3(0, 0, 0);
                 }
                 break;
+            case AncestorDisplay.ArrangementMethod.time_based:
+                if (node.parent != null)
+                {
+                    num_siblings = node.parent.children.Count;
+                    Random.InitState((int)node_time);
+                    //Vector3 p3d = new Vector3((position * display.spacing.x - (num_siblings / 2 * display.spacing.x)), Mathf.Min((node_time / parent.node_time) * display.spacing.y, 10), Random.onUnitSphere.x * parent.num_children);
+                    Vector3 p3d = new Vector3(Random.onUnitSphere.x * parent.num_children * display.spacing.y, Mathf.Min((node_time / parent.node_time) * display.spacing.y, 10), Random.onUnitSphere.x * parent.num_children);
+                    target_positon = p3d;
+
+                    // Set the rotation
+                }
+                else
+                {
+                    target_positon = new Vector3(0, 0, 0);
+                }
+                break;
         }
     }
 
@@ -198,10 +227,11 @@ public class AncestorDisplayNode : MonoBehaviour
         }
 
         // Check if parent and artist is null
+        artist.transform.LookAt(Camera.main.transform);
         if (parent != null)
         {
             // Draw line to parent
-            artist.GetComponent<LineDrawer>().Draw(parent.transform.position, transform.position, "tree");
+            artist.GetComponent<LineDrawer>().Draw(parent.transform.position + parent.transform.up, transform.position - transform.up, "line");
         }
         else
         {

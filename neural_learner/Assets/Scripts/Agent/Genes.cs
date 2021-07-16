@@ -527,16 +527,20 @@ public class Genes
     {
         // Calculate the euclidian distance between these genes and the passed genes g
         float dist = 0;
-        List<float> g1 = gl;
+        List<float> g1 = GetGeneList();
         List<float> g2 = g.GetGeneList();
         for (int i = 0; i < g1.Count; i++)
         {
             dist += Mathf.Pow(g1[i] - g2[i], 2);
         }
 
+        // Add the body parts
+        dist += spritemap["head"] == g.spritemap["head"] ? 0 : 1;
+        dist += spritemap["body"] == g.spritemap["body"] ? 0 : 1;
+
         // The colours should make a significant difference in speciation
         // We want it to make enough of a difference so we use the function: f(c) = abs(e^(2c)) - 1 and with all 3 colours we have g(r, g, b) = f(r) + f(g) + f(b)
-        dist += Mathf.Exp(2 * Mathf.Abs(colour_r - g.colour_r)) + Mathf.Exp(2 * Mathf.Abs(colour_g - g.colour_g)) + Mathf.Exp(2 * Mathf.Abs(colour_b - g.colour_b)) - 3;
+        //dist += Mathf.Exp(2 * Mathf.Abs(colour_r - g.colour_r)) + Mathf.Exp(2 * Mathf.Abs(colour_g - g.colour_g)) + Mathf.Exp(2 * Mathf.Abs(colour_b - g.colour_b)) - 3;
 
         return dist;
     }

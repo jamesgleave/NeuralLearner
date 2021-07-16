@@ -1010,7 +1010,7 @@ public class BaseAgent : Interactable
     {
         other.Damage(attack * transform.localScale.x);
         ReleaseGrab();
-        other.GetRB().AddForce((transform.position - other.transform.position).normalized * -100);
+        other.GetRB().AddForce((transform.position - other.transform.position).normalized * -100 * attack);
     }
 
     /// <summary>

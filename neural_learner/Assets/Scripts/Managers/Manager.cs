@@ -27,6 +27,9 @@ public class Manager : MonoBehaviour
     [Tooltip("The food pellet prefab")]
     public FoodPellet pellet;
 
+    [Tooltip("The manager for the food pellets")]
+    public FoodPelletManager food_pellet_manager;
+
     [Tooltip("The list of all food pelletes present")]
     public List<Interactable> food_pellets = new List<Interactable>();     // The list of food pellets
 
@@ -176,32 +179,45 @@ public class Manager : MonoBehaviour
         }
     }
 
+    public List<Vector2> GetClusters()
+    {
+        return cluster_pos;
+    }
+    public bool use_adaptive;
     public void ManageFoodPellets()
     {
-        // Reset the energy in pellets to recalculate
-        percent_energy_in_pellets = 0;
 
-        // Look at each pellet
-        num_active_food = food_pellets.Count;
-        foreach (FoodPellet pellet in food_pellets)
+        if (use_adaptive)
         {
-            // If the pellet has been eaten then respawn if we have enough energy
-            // As the number of agents increase, the probability of a food pellet respawning drops
-            if (pellet.eaten) //  && Random.value < max_agents / (1 + stat_manager.num_agents)
+            food_pellet_manager.UpdatePellets();
+        }
+        else
+        {
+            // Reset the energy in pellets to recalculate
+            percent_energy_in_pellets = 0;
+
+            // Look at each pellet
+            num_active_food = food_pellets.Count;
+            foreach (FoodPellet pellet in food_pellets)
             {
-                Vector2 center = cluster_pos[Random.Range(0, pellet_clusters)];
-                Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
-                pellet.Respawn(center + offset, food_pellet_energy, food_growth_rate, food_pellet_size);
-                num_active_food--;
+                // If the pellet has been eaten then respawn if we have enough energy
+                // As the number of agents increase, the probability of a food pellet respawning drops
+                if (pellet.eaten) //  && Random.value < max_agents / (1 + stat_manager.num_agents)
+                {
+                    Vector2 center = cluster_pos[Random.Range(0, pellet_clusters)];
+                    Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
+                    pellet.Respawn(center + offset, food_pellet_energy, food_growth_rate, food_pellet_size);
+                    num_active_food--;
+                }
+
+                // Add the energy in that pellet
+                percent_energy_in_pellets += pellet.energy;
             }
 
-            // Add the energy in that pellet
-            percent_energy_in_pellets += pellet.energy;
+            // Get the ratio of total energy in the system and the energy in the pellets
+            energy_in_pellets = percent_energy_in_pellets;
+            percent_energy_in_pellets /= initial_energy;
         }
-
-        // Get the ratio of total energy in the system and the energy in the pellets
-        energy_in_pellets = percent_energy_in_pellets;
-        percent_energy_in_pellets /= initial_energy;
     }
 
     /// <summary>

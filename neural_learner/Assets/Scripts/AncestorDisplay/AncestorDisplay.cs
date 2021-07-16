@@ -25,7 +25,8 @@ public class AncestorDisplay : MonoBehaviour
         circlular = 2,
         circular_drift = 3,
         tree = 4,
-        parabolic = 5
+        parabolic = 5,
+        time_based = 6
     }
     public ArrangementMethod arrangement = ArrangementMethod.fiberoptic;
 

@@ -92,10 +92,16 @@ public class PopulationContainer
     /// </summary>
     public bool extinct = false;
 
+    /// <summary>
+    /// The time created
+    /// </summary>
+    public float time_created;
+
 
     public PopulationContainer()
     {
         // setup the list
+        time_created = Time.realtimeSinceStartup;
         agents = new List<BaseAgent>();
         average = null;
     }
@@ -124,15 +130,25 @@ public class PopulationContainer
     public void AddAgent(BaseAgent a)
     {
 
+        // Set average to the passed agent to start recalculating the average genes
+        average = a.genes;
+
         // Remove all null values (agents which have died)
-        agents = agents.Where(BaseAgent => BaseAgent != null).ToList();
-        //for (int i = agents.Count - 1; i >= 0; i--)
-        //{
-        //    if (agents[i] == null)
-        //    {
-        //        agents.RemoveAt(i);
-        //    }
-        //}
+        for (int i = agents.Count - 1; i >= 0; i--)
+        {
+            if (agents[i] == null)
+            {
+                agents.RemoveAt(i);
+            }
+            else
+            {
+                // Add all of the genes
+                average += agents[i].genes;
+            }
+        }
+
+        // Now that the average is the sum of all genes, we divided it by the number of agents to find the average
+        average /= agents.Count + 1;
 
         // Add the agent to the list
         agents.Add(a);
@@ -142,34 +158,6 @@ public class PopulationContainer
 
         // Set the name
         pop_name = a.genes.genus + " " + a.genes.species;
-
-        // Recalculate the average genes
-        CalculateAverageGenes();
-    }
-
-    public void CalculateAverageGenes()
-    {
-
-        // Set average to null to start
-        average = null;
-
-        // Loop through every agent
-        foreach (BaseAgent a in agents)
-        {
-            // If the average is null, then set it equal to a clone of the first genes we see
-            if (average == null)
-            {
-                average = a.genes.Clone();
-            }
-            else
-            {
-                // Add all of the genes
-                average += a.genes;
-            }
-        }
-
-        // Now that the average is the sum of all genes, we divided it by the number of agents to find the average
-        average /= agents.Count;
     }
 }
 

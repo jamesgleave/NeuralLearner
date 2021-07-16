@@ -182,4 +182,9 @@ public class LineDrawer : MonoBehaviour
     {
         return line.endWidth;
     }
+
+    public void SetMaterial(Material mat)
+    {
+        line.material = mat;
+    }
 }

@@ -8,6 +8,13 @@ public class SimulationSceneManager : MonoBehaviour
     public void ToSim()
     {
         SceneManager.LoadScene("TestInteractables + UI");
+
+        // Activate the manager if it is not active 
+        if (!StateManager.manager.gameObject.activeInHierarchy)
+        {
+            // Set the manager to inactive for now 
+            StateManager.manager.gameObject.SetActive(true);
+        }
     }
 
     public void ToAncestory(GameObject agent_obj, BaseAgent agent, Manager manager, GameObject gui)
@@ -26,13 +33,12 @@ public class SimulationSceneManager : MonoBehaviour
         DontDestroyOnLoad(manager);
 
         // Move the gui to the "Do not destroy scene"
-        //DontDestroyOnLoad(gui);
 
         // Move scenes
         SceneManager.LoadScene("TestAncestory");
 
         // Set the manager to inactive for now 
-        //StateManager.manager.gameObject.SetActive(false);
+        StateManager.manager.gameObject.SetActive(false);
     }
 
     public void ToNeural(GameObject agent_obj, BaseAgent agent, Manager manager, GameObject gui)

@@ -110,10 +110,7 @@ public class EvolutionaryNEATLearner : Brain
         }
 
         // Parse the model code and set the model
-        if (model == null)
-        {
-            model = new NEATNetwork(genome);
-        }
+        model = new NEATNetwork(genome);
     }
 
     public override void Setup(BaseModel nn)

@@ -444,6 +444,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2047405930}
   - component: {fileID: 2047405929}
+  - component: {fileID: 2047405934}
   - component: {fileID: 2047405931}
   - component: {fileID: 2047405932}
   - component: {fileID: 2047405933}
@@ -473,6 +474,7 @@ MonoBehaviour:
   food_pellet_size: 2
   food_pellet_energy: 20
   pellet: {fileID: 3829854075992685049, guid: 72416a997ceb74010b84d5ace9c7462e, type: 3}
+  food_pellet_manager: {fileID: 2047405934}
   food_pellets: []
   update_rate: 0.1
   gridsize: 175
@@ -536,6 +538,7 @@ MonoBehaviour:
     counts: []
   use_auto_manual_collection: 0
   num_active_food: 0
+  use_adaptive: 1
 --- !u!4 &2047405930
 Transform:
   m_ObjectHideFlags: 0
@@ -619,6 +622,24 @@ MonoBehaviour:
   agent_pool: []
   egg_pool: []
   pheromone_pool: []
+--- !u!114 &2047405934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047405928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d5cf02df88564ef595ff7496862cbc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tick_pointer: 0
+  feed_rate: 4938
+  retention: 0.79
+  intensity: 396
+  calculated_pellets: 0
+  general_manager: {fileID: 2047405929}
 --- !u!1001 &3638946739586988900
 PrefabInstance:
   m_ObjectHideFlags: 0

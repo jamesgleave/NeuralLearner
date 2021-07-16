@@ -14,7 +14,29 @@ public class DisplayWobbit : MonoBehaviour
         head_id = g.spritemap["head"];
         body_id = g.spritemap["body"];
 
-        head.GetComponent<Image>().sprite = sprite_manager.head_components[head_id].GetComponent<SpriteRenderer>().sprite;
-        body.GetComponent<Image>().sprite = sprite_manager.body_components[body_id].GetComponent<SpriteRenderer>().sprite;
+        try
+        {
+            head.GetComponent<Image>().sprite = sprite_manager.head_components[head_id].GetComponent<SpriteRenderer>().sprite;
+            head.GetComponent<Image>().color = new Color(g.colour_r, g.colour_g, g.colour_b);
+
+            body.GetComponent<Image>().sprite = sprite_manager.body_components[body_id].GetComponent<SpriteRenderer>().sprite;
+            body.GetComponent<Image>().color = new Color(g.colour_r, g.colour_g, g.colour_b);
+        }
+        catch
+        {
+            head.GetComponent<SpriteRenderer>().sprite = sprite_manager.head_components[head_id].GetComponent<SpriteRenderer>().sprite;
+            head.GetComponent<SpriteRenderer>().color = new Color(g.colour_r, g.colour_g, g.colour_b);
+
+            body.GetComponent<SpriteRenderer>().sprite = sprite_manager.body_components[body_id].GetComponent<SpriteRenderer>().sprite;
+            body.GetComponent<SpriteRenderer>().color = new Color(g.colour_r, g.colour_g, g.colour_b);
+            transform.localScale *= (1 + g.size);
+        }
+
+    }
+
+    public void Update()
+    {
+        head.transform.LookAt(Camera.main.transform.position);
+        body.transform.LookAt(Camera.main.transform.position);
     }
 }

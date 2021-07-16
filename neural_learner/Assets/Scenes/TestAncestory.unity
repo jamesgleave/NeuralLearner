@@ -227,6 +227,7 @@ GameObject:
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
   - component: {fileID: 963194229}
+  - component: {fileID: 963194230}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -306,13 +307,39 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 68fc71c8e157d44c3afdcc01751ab9aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   drag_speed: 2
   selected: {fileID: 0}
+  most_recently_selected_agent: {fileID: 0}
+  gui: {fileID: 0}
+  save_gui: {fileID: 0}
+  load_gui: {fileID: 0}
+--- !u!114 &963194230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47931056143104ddf8890409d7ef0fdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  accelerationMod: 1
+  xAxisSensitivity: 1
+  yAxisSensitivity: 1
+  deccelerationMod: 1
+  forwards: w
+  backwards: s
+  left: a
+  right: d
+  up: z
+  down: x
 --- !u!850595691 &989715783
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -434,37 +461,8 @@ MonoBehaviour:
   manager:
     genus_names: []
     names: []
-    display_container:
-      size: 0
-      pop_name: 
-      agents: []
-      average:
-        base_mutation_rate: 0
-        attribute_mutation_rate: 0
-        colour_mutation_prob: 0
-        neuro_mutation_prob: 0
-        dropout_prob: 0
-        weight_mutation_prob: 0
-        bias_mutation_prob: 0
-        speed: 0
-        diet: 0
-        attack: 0
-        defense: 0
-        vitality: 0
-        size: 0
-        perception: 0
-        clockrate: 0
-        gestation_time: 0
-        maturity_time: 0
-        colour_r: 0
-        colour_g: 0
-        colour_b: 0
-        genus: 
-        species: 
-        genetic_drift: 0
-      extinct: 0
     counts: []
   line_drawer: {fileID: -7057261122737326771, guid: 2e56b0a8bc0524f7ca2433cb5d9811cc, type: 3}
   nodes_sorted: []
   spacing: {x: 2, y: 2}
-  arrangement: 4
+  arrangement: 6

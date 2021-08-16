@@ -84,6 +84,9 @@ public class Meat : Interactable
         // Set the energy of this pellet to zero since it has been eaten
         energy = 0;
 
+        // Remove this agent from the manager's list
+        manager.agents.Remove(this);
+
         return temp_energy;
     }
 

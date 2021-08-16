@@ -43,6 +43,12 @@ public class Senses : MonoBehaviour
     public RaycastHit2D[] buffer;
     ContactFilter2D filter;
 
+    /// <summary>
+    /// The list of agents seen (used for behaviour)
+    /// </summary>
+    [Space]
+    public List<GameObject> agent_context;
+
     public void Setup(float dist, int id, Transform t)
     {
         // Set the vision radius 
@@ -53,7 +59,7 @@ public class Senses : MonoBehaviour
         SetupNames();
 
         // Create the buffer
-        buffer = new RaycastHit2D[10];
+        buffer = new RaycastHit2D[20];
         filter = new ContactFilter2D();
     }
 
@@ -125,7 +131,6 @@ public class Senses : MonoBehaviour
                 //observations.Add((1 - Vector3.Dot(transform.up, (i.transform.position - transform.position).normalized)) / 2);
                 // Add the normalized angle (between -1 and 1)
                 observations.Add(Vector3.SignedAngle(transform.up, i.transform.position - transform.position, transform.forward) / 180f);
-
             }
             else
             {
@@ -248,6 +253,9 @@ public class Senses : MonoBehaviour
         // Clear the list of detected game objects
         detected.Clear();
 
+        // Clear the agents seen
+        agent_context.Clear();
+
         // Clear the buffer
         System.Array.Clear(buffer, 0, buffer.Length);
 
@@ -339,6 +347,9 @@ public class Senses : MonoBehaviour
                             closest_agent = (BaseAgent)obj;
                             closest_agent_dist_magnitude = dist;
                         }
+                        // Add the gameobject to the list
+                        agent_context.Add(obj.gameObject);
+                        // Increment the number of agents seen
                         num_agents++;
                         break;
                     case ID.red_pharomone:

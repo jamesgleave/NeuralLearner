@@ -318,6 +318,10 @@ MonoBehaviour:
   gui: {fileID: 0}
   save_gui: {fileID: 0}
   load_gui: {fileID: 0}
+  idle_time_threshold: 30
+  idle_time: 0
+  control_mode: 0
+  enable_idle: 0
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -330,16 +334,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47931056143104ddf8890409d7ef0fdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  accelerationMod: 1
-  xAxisSensitivity: 1
-  yAxisSensitivity: 1
-  deccelerationMod: 1
-  forwards: w
-  backwards: s
-  left: a
-  right: d
-  up: z
-  down: x
+  cameraSensitivity: 90
+  climbSpeed: 4
+  normalMoveSpeed: 10
+  slowMoveFactor: 0.25
+  fastMoveFactor: 3
 --- !u!850595691 &989715783
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -464,5 +463,5 @@ MonoBehaviour:
     counts: []
   line_drawer: {fileID: -7057261122737326771, guid: 2e56b0a8bc0524f7ca2433cb5d9811cc, type: 3}
   nodes_sorted: []
-  spacing: {x: 2, y: 2}
+  spacing: {x: 8, y: 12, z: 8}
   arrangement: 6

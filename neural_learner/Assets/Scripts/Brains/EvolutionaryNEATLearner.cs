@@ -115,10 +115,6 @@ public class EvolutionaryNEATLearner : Brain
 
     public override void Setup(BaseModel nn)
     {
-        //// Setup and mutate the model
-        //model = (NEATNetwork)nn;
-        //Mutate();
-
         // Setup and mutate the model
         model = (NEATNetwork)nn;
         Mutate();
@@ -133,7 +129,6 @@ public class EvolutionaryNEATLearner : Brain
     {
         return model;
     }
-
 
     /// <summary>
     /// Sets the model and genome

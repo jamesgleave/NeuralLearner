@@ -19,9 +19,113 @@ public class UserControllerEvoSim : MonoBehaviour
     public GameObject save_gui;
     public GameObject load_gui;
 
+    /// <summary>
+    /// The time before idle movements begin to play
+    /// </summary>
+    public int idle_time_threshold = 30;
+
+    /// <summary>
+    /// The current idle time
+    /// </summary>
+    public float idle_time;
+
+    // The control mode of the controller
+    public enum ControlMode
+    {
+        manual, animated
+    }
+    public ControlMode control_mode = ControlMode.manual;
+
+    /// <summary>
+    /// If true, then after 30 seconds (idle_time_threshold) the user goes into idle control
+    /// </summary>
+    public bool enable_idle;
+
+    /// <summary>
+    /// The manager of the scene
+    /// </summary>
+    private Manager manager;
+
+
     // Help from: https://forum.unity.com/threads/click-drag-camera-movement.39513/
     // Thx :)
     void Update()
+    {
+
+        // Manage idle time
+        ManageIdleTime();
+
+        // If the manager is null, find it!
+        if (manager == null)
+        {
+            manager = GameObject.FindGameObjectWithTag("manager").GetComponent<Manager>();
+        }
+
+        // Takes care of everything if we have an interactable selected
+        HandleSelection();
+
+        // If the gui is open, return after this point
+        if (gui != null && (gui.activeInHierarchy || save_gui.activeInHierarchy || load_gui.activeInHierarchy))
+        {
+            return;
+        }
+
+        // Check to see if we have selected anything new
+        if (Input.GetMouseButtonDown(0) && gui != null && gui.activeInHierarchy == false)
+        {
+            CheckSelect();
+        }
+
+        // Follow the selected interactable
+        FollowSelected();
+
+        // Takes care of user movement
+        HandleUserMovement();
+
+        // Check if we should be automatically controlling
+        if (control_mode == ControlMode.animated)
+        {
+            HandleAutomaticControl();
+        }
+
+        // Take care of hotkeys
+        HandleHotKeys();
+    }
+
+    void HandleHotKeys()
+    {
+        // Select the fastest agent
+        if (Input.GetKeyDown(KeyCode.V) && manager.stat_manager.num_agents > 0)
+        {
+            selected = manager.GetAgent('v').head;
+        }
+
+        // Select the oldest agent
+        if (Input.GetKeyDown(KeyCode.O) && manager.stat_manager.num_agents > 0)
+        {
+            selected = manager.GetAgent('o').head;
+        }
+
+        // Select the youngest agent
+        if (Input.GetKeyDown(KeyCode.Y) && manager.stat_manager.num_agents > 0)
+        {
+            selected = manager.GetAgent('y').head;
+        }
+
+        // Select the agent with most eggs layed 
+        if (Input.GetKeyDown(KeyCode.E) && manager.stat_manager.num_agents > 0)
+        {
+            selected = manager.GetAgent('e').head;
+        }
+
+        // Select random agent
+        if (Input.GetKeyDown(KeyCode.R) && manager.stat_manager.num_agents > 0)
+        {
+            selected = manager.GetAgent('r').head;
+        }
+    }
+
+    void HandleSelection()
     {
         // Check to see if we transition a scene
         if (Input.GetKeyDown(KeyCode.Return) && load_gui.activeInHierarchy == false)
@@ -49,7 +153,10 @@ public class UserControllerEvoSim : MonoBehaviour
                 gui.SetActive(false);
             }
         }
+    }
 
+    void FollowSelected()
+    {
         // If the selected thing is not null then follow it
         if (selected != null)
         {
@@ -57,24 +164,22 @@ public class UserControllerEvoSim : MonoBehaviour
             float z = transform.position.z;
             transform.position = Vector3.MoveTowards(transform.position, new Vector3(selected.transform.position.x, selected.transform.position.y, z), (Vector2.Distance(transform.position, selected.transform.position) + drag_speed) * Time.deltaTime);
         }
+    }
 
-        // If the gui is open, return after this point
-        if (gui != null && (gui.activeInHierarchy || save_gui.activeInHierarchy || load_gui.activeInHierarchy))
-        {
-            return;
-        }
-
-        if (Input.GetMouseButtonDown(0) && gui != null && gui.activeInHierarchy == false)
-        {
-            CheckSelect();
-        }
-
+    void HandleUserMovement()
+    {
         // Zoom in and out with Mouse Wheel
         transform.Translate(0, 0, Input.GetAxis("Mouse ScrollWheel") * drag_speed, Space.Self);
 
         if (Input.GetMouseButtonDown(0))
         {
+            // Set the drag origin
             dragOrigin = Input.mousePosition;
+
+            // Upon clicken the mouse button, reset from idle
+            ResetFromIdle();
+
+            // Return from the func
             return;
         }
 
@@ -110,6 +215,44 @@ public class UserControllerEvoSim : MonoBehaviour
     public void MoveToAncestory()
     {
         GetComponent<SimulationSceneManager>().ToAncestory(selected, most_recently_selected_agent, most_recently_selected_agent.manager, gui);
+    }
+
+    void ManageIdleTime()
+    {
+        // Incrememnt idle time
+        idle_time += Time.deltaTime;
+
+        // If we have been idle for longer than the threshold
+        if (idle_time > idle_time_threshold && enable_idle)
+        {
+            control_mode = ControlMode.animated;
+        }
+        else
+        {
+            control_mode = ControlMode.manual;
+        }
+    }
+
+    void ResetFromIdle()
+    {
+        // If we were idle and click then deselect whatever we had selected
+        if (idle_time > idle_time_threshold)
+        {
+            selected = null;
+        }
+        idle_time = 0;
+        control_mode = ControlMode.manual;
+    }
+
+    void HandleAutomaticControl()
+    {
+        // Check if selected is null or is dead, and if it is, then choose a new one
+        bool trigger = 0.01f * Random.value * idle_time > 0.5f;
+        if ((selected == null || selected.TryGetComponent<BaseAgent>(out BaseAgent agent) && agent.energy < 0 || trigger) && control_mode != ControlMode.manual)
+        {
+            selected = manager.GetAgent('r').head;
+            idle_time = idle_time_threshold;
+        }
     }
 
     private void OnDrawGizmos()

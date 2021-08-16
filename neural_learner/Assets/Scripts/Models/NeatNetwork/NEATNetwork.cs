@@ -26,6 +26,11 @@ public class NEATNetwork : Model.BaseModel
     // The list of output values
     private List<float> output_values = new List<float>();
 
+    /// <summary>
+    /// The complexity of the neat network
+    /// </summary>
+    private float network_complexity;
+
     public NEATNetwork(Genome genome)
     {
         // Set the genome
@@ -96,6 +101,9 @@ public class NEATNetwork : Model.BaseModel
 
         // Find recurrent connections
         FindRecurrence();
+
+        // Calculate the complexity of the netwok
+        CalculateComplexity();
     }
 
     /// <summary>
@@ -176,8 +184,8 @@ public class NEATNetwork : Model.BaseModel
         // Calculate each neurons depth (distance from an input)
         CalculateDepth();
 
-        //// Find recurrent connections
-        //FindRecurrence();
+        // Calculate the complexity of the netwok
+        CalculateComplexity();
     }
 
     /// <summary>
@@ -519,6 +527,31 @@ public class NEATNetwork : Model.BaseModel
     public List<int> GetOutputs()
     {
         return outputs;
+    }
+
+    /// <summary>
+    /// Returns the complexity of the brain
+    /// </summary>
+    /// <returns></returns>
+    public override float GetComplexity()
+    {
+        return network_complexity;
+    }
+
+    /// <summary>
+    /// Calculates the complexity of the brain
+    /// </summary>
+    private void CalculateComplexity()
+    {
+        // Tally up the expressed connections
+        int num_connections = 0;
+        foreach (ConnectionGene con in genome.GetConnections().Values)
+        {
+            num_connections += con.IsExpressed() ? 1 : 0;
+        }
+
+        // the number of connections + the number of hidden neurons
+        network_complexity = num_connections + (neurons.Count - inputs.Count - outputs.Count);
     }
 }
 

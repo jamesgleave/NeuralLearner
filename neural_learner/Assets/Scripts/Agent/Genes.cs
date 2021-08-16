@@ -131,6 +131,27 @@ public class Genes
     /// </summary>
     private List<float> gl = new List<float>();
 
+    [Header("Behavioural:")]
+    /// <summary>
+    /// The cohesion factor for boids
+    /// </summary>
+    public float cohesion_factor;
+
+    /// <summary>
+    /// The separation factor for boids
+    /// </summary>
+    public float separation_factor;
+
+    /// <summary>
+    /// The allignment factor for boids
+    /// </summary>
+    public float allignment_factor;
+
+    /// <summary>
+    /// The velocity matching factor for boids
+    /// </summary>
+    public float matching_factor;
+
     /// <summary>
     ///   <para>The agent's genes</para>
     /// </summary>
@@ -154,7 +175,11 @@ public class Genes
         float maturity_time,
         float colour_r,
         float colour_g,
-        float colour_b
+        float colour_b,
+        float cohesion_factor,
+        float separation_factor,
+        float allignment_factor,
+        float matching_factor
         )
     {
         this.base_mutation_rate = base_mutation_rate;
@@ -177,6 +202,10 @@ public class Genes
         this.colour_r = colour_r;
         this.colour_g = colour_g;
         this.colour_b = colour_b;
+        this.cohesion_factor = cohesion_factor;
+        this.separation_factor = separation_factor;
+        this.allignment_factor = allignment_factor;
+        this.matching_factor = matching_factor;
         spritemap = new Dictionary<string, int>();
         ClampMutationRates();
     }
@@ -206,7 +235,11 @@ public class Genes
          maturity_time,
          colour_r,
          colour_g,
-         colour_b
+         colour_b,
+         cohesion_factor,
+         separation_factor,
+         allignment_factor,
+         matching_factor
         );
 
         g.species = species;
@@ -266,17 +299,48 @@ public class Genes
          maturity_time: 0.5f + Random.value / 10,
          colour_r: Mathf.Clamp(Random.value, 0.0f, 1f),
          colour_g: Mathf.Clamp(Random.value, 0.0f, 1f),
-         colour_b: Mathf.Clamp(Random.value, 0.0f, 1f)
+         colour_b: Mathf.Clamp(Random.value, 0.0f, 1f),
+         cohesion_factor: 0,
+         separation_factor: 0,
+         allignment_factor: 0,
+         matching_factor: 0
         );
     }
 
     public void Mutate()
     {
-
         TryMutateColour();
         TryMutateAttributes();
         TryMutateMutationRates();
+        TryMutateBehaviour();
         ClampMutationRates();
+    }
+
+    private void TryMutateBehaviour()
+    {
+        if (GetProb(base_mutation_rate))
+        {
+            allignment_factor += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            allignment_factor = Mathf.Clamp(allignment_factor, 0, 1);
+        }
+
+        if (GetProb(base_mutation_rate))
+        {
+            separation_factor += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            separation_factor = Mathf.Clamp(separation_factor, 0, 1);
+        }
+
+        if (GetProb(base_mutation_rate))
+        {
+            cohesion_factor += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            cohesion_factor = Mathf.Clamp(cohesion_factor, 0, 1);
+        }
+
+        if (GetProb(base_mutation_rate))
+        {
+            matching_factor += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+            matching_factor = Mathf.Clamp(matching_factor, 0, 1);
+        }
     }
 
     private void TryMutateColour()
@@ -463,7 +527,7 @@ public class Genes
         // There is a small change that a body component will mutate
         if (GetProb(base_mutation_rate * attribute_mutation_rate * colour_mutation_prob))
         {
-            if (GetProb(1f / 3f))
+            if (GetProb(1f / 5f))
             {
                 int head_components = GameObject.FindGameObjectWithTag("manager").GetComponent<SpriteManager>().head_components.Count;
                 spritemap["head"] = Random.Range(0, head_components);
@@ -487,7 +551,11 @@ public class Genes
 
     public List<float> GetGeneList()
     {
+        // Clear the list
         gl.Clear();
+
+        // Add..
+        // Attributes
         gl.Add(base_mutation_rate);
         gl.Add(colour_mutation_prob);
         gl.Add(attribute_mutation_rate);
@@ -508,6 +576,12 @@ public class Genes
         gl.Add(colour_r);
         gl.Add(colour_g);
         gl.Add(colour_b);
+
+        // Behavioural
+        //gl.Add(cohesion_factor);
+        //gl.Add(allignment_factor);
+        //gl.Add(separation_factor);
+        //gl.Add(matching_factor);
         return gl;
     }
 
@@ -534,13 +608,13 @@ public class Genes
             dist += Mathf.Pow(g1[i] - g2[i], 2);
         }
 
-        // Add the body parts
-        dist += spritemap["head"] == g.spritemap["head"] ? 0 : 1;
-        dist += spritemap["body"] == g.spritemap["body"] ? 0 : 1;
-
         // The colours should make a significant difference in speciation
         // We want it to make enough of a difference so we use the function: f(c) = abs(e^(2c)) - 1 and with all 3 colours we have g(r, g, b) = f(r) + f(g) + f(b)
-        //dist += Mathf.Exp(2 * Mathf.Abs(colour_r - g.colour_r)) + Mathf.Exp(2 * Mathf.Abs(colour_g - g.colour_g)) + Mathf.Exp(2 * Mathf.Abs(colour_b - g.colour_b)) - 3;
+        dist += Mathf.Exp(2 * Mathf.Abs(colour_r - g.colour_r)) + Mathf.Exp(2 * Mathf.Abs(colour_g - g.colour_g)) + Mathf.Exp(2 * Mathf.Abs(colour_b - g.colour_b)) - 3;
+
+        // Add the body parts
+        dist *= spritemap["head"] == g.spritemap["head"] ? 1 : 3.0f;
+        dist *= spritemap["body"] == g.spritemap["body"] ? 1 : 2.0f;
 
         return dist;
     }
@@ -628,7 +702,11 @@ public class Genes
          maturity_time = 0,
          colour_r = 0,
          colour_g = 0,
-         colour_b = 0;
+         colour_b = 0,
+         cohesion = 0,
+         allignment = 0,
+         separation = 0,
+         matching = 0;
 
         // The name
         string species = null;
@@ -668,6 +746,10 @@ public class Genes
                 colour_r = float.Parse(values[i++]);
                 colour_g = float.Parse(values[i++]);
                 colour_b = float.Parse(values[i++]);
+                cohesion = float.Parse(values[i++]);
+                allignment = float.Parse(values[i++]);
+                separation = float.Parse(values[i++]);
+                matching = float.Parse(values[i++]);
 
                 // The name
                 genus = values[i++];
@@ -679,6 +761,7 @@ public class Genes
             }
         }
         Genes loaded = new Genes(
+         // Attributes
          base_mutation_rate,
          colour_mutation_prob,
          attribute_mutation_rate,
@@ -698,7 +781,12 @@ public class Genes
          maturity_time,
          colour_r,
          colour_g,
-         colour_b);
+         colour_b,
+
+         // Behavioural Genes (Boids, etc)
+         cohesion_factor: cohesion, separation_factor: separation, allignment_factor: allignment, matching_factor: matching
+         );
+
 
         loaded.species = species;
         loaded.genus = genus;
@@ -741,6 +829,52 @@ public class Genes
         g1.colour_g += g2.colour_g;
         g1.colour_b += g2.colour_b;
         g1.genetic_drift += g2.genetic_drift;
+
+        g1.cohesion_factor += g2.cohesion_factor;
+        g1.allignment_factor += g2.allignment_factor;
+        g1.separation_factor += g2.separation_factor;
+        g1.matching_factor += g2.matching_factor;
+
+
+        // Return the clone
+        return g1;
+    }
+
+    /// <summary>
+    ///   <para>Override the + operator</para>
+    /// </summary>
+    public static Genes operator -(Genes g, Genes g2)
+    {
+        // Create a clone of g
+        Genes g1 = g.Clone();
+
+        // Add all attributes
+        g1.base_mutation_rate -= g2.base_mutation_rate;
+        g1.colour_mutation_prob -= g2.colour_mutation_prob;
+        g1.attribute_mutation_rate -= g2.attribute_mutation_rate;
+        g1.neuro_mutation_prob -= g2.neuro_mutation_prob;
+        g1.weight_mutation_prob -= g2.weight_mutation_prob;
+        g1.bias_mutation_prob -= g2.bias_mutation_prob;
+        g1.dropout_prob -= g2.dropout_prob;
+        g1.speed -= g2.speed;
+        g1.diet -= g2.diet;
+        g1.attack -= g2.attack;
+        g1.defense -= g2.defense;
+        g1.vitality -= g2.vitality;
+        g1.size -= g2.size;
+        g1.perception -= g2.perception;
+        g1.clockrate -= g2.clockrate;
+        g1.gestation_time -= g2.gestation_time;
+        g1.maturity_time -= g2.maturity_time;
+        g1.colour_r -= g2.colour_r;
+        g1.colour_g -= g2.colour_g;
+        g1.colour_b -= g2.colour_b;
+        g1.genetic_drift -= g2.genetic_drift;
+
+        g1.cohesion_factor -= g2.cohesion_factor;
+        g1.allignment_factor -= g2.allignment_factor;
+        g1.separation_factor -= g2.separation_factor;
+        g1.matching_factor -= g2.matching_factor;
 
         // Return the clone
         return g1;
@@ -817,6 +951,19 @@ public class Genes
 
         g1.genetic_drift /= denom;
         g1.genetic_drift = Mathf.Clamp01(g1.genetic_drift);
+
+        g1.cohesion_factor /= denom;
+        g1.cohesion_factor = Mathf.Clamp(g1.cohesion_factor, 0, 1);
+
+        g1.allignment_factor /= denom;
+        g1.allignment_factor = Mathf.Clamp(g1.allignment_factor, 0, 1);
+
+        g1.separation_factor /= denom;
+        g1.separation_factor = Mathf.Clamp(g1.separation_factor, 0, 1);
+
+        g1.matching_factor /= denom;
+        g1.matching_factor = Mathf.Clamp(g1.matching_factor, 0, 1);
+
 
         // Return the clone
         return g1;

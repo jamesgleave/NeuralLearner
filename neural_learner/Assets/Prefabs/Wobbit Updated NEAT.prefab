@@ -333,9 +333,9 @@ MonoBehaviour:
   base_health: 100
   base_attack: 3
   base_defense: 3
-  base_speed: 50
+  base_speed: 25
   base_rotation_speed: 50
-  base_perception: 15
+  base_perception: 20
   base_gestation_time: 10
   base_lifespan: 600
   base_mass: 2
@@ -374,6 +374,10 @@ MonoBehaviour:
     species: trispeculare
     genetic_drift: 0
     code: {x: 0, y: 0, z: 0}
+    cohesion_factor: 0
+    separation_factor: 0
+    allignment_factor: 0
+    matching_factor: 0
   manager: {fileID: 0}
   meat: {fileID: 4058128813785644151, guid: 70565dae98084450eaaf14c20f28fea9, type: 3}
   egg: {fileID: 798380245572057900, guid: 147dc55d0b0304c8cbf8fc3ae99ab8ce, type: 3}
@@ -407,6 +411,9 @@ MonoBehaviour:
   egg_gestation_time: 0
   metabolism: 0
   true_metabolic_cost: 0
+  brain_cost: 1
+  brain_cost_reduction_factor: 125
+  cost_comparison: {x: 0, y: 0}
   time_to_die: 0
   control: 2
   node:
@@ -438,11 +445,16 @@ MonoBehaviour:
       species: 
       genetic_drift: 0
       code: {x: 0, y: 0, z: 0}
+      cohesion_factor: 0
+      separation_factor: 0
+      allignment_factor: 0
+      matching_factor: 0
   generation: 0
   god: 0
   grabbed_force: 0
   strength: 0
   obs: []
+  torque_for_boids: 0
 --- !u!114 &7000150729006972410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -478,6 +490,7 @@ MonoBehaviour:
   green_distance: 0
   observations: []
   observation_names: []
+  agent_context: []
 --- !u!50 &8284897868176631420
 Rigidbody2D:
   serializedVersion: 4
@@ -492,7 +505,7 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 5
   m_LinearDrag: 3
-  m_AngularDrag: 5
+  m_AngularDrag: 15
   m_GravityScale: 0
   m_Material: {fileID: 6200000, guid: b92e7d08455324b7f8717cd538a1f6d8, type: 2}
   m_Interpolate: 1

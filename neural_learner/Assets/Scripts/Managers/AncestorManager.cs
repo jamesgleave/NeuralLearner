@@ -93,29 +93,41 @@ public class PopulationContainer
     public bool extinct = false;
 
     /// <summary>
+    /// If true, then this species has had enough agents to be considered a true new species
+    /// </summary>
+    public bool is_proper_population;
+
+    /// <summary>
     /// The time created
     /// </summary>
     public float time_created;
 
 
-    public PopulationContainer()
+    /// <summary>
+    /// The genes of the first agent of the population
+    /// </summary>
+    public Genes initial_genes;
+
+
+    public PopulationContainer(Genes initial_genes)
     {
         // setup the list
         time_created = Time.realtimeSinceStartup;
         agents = new List<BaseAgent>();
         average = null;
+
+        // Store the initial genes of the population
+        this.initial_genes = initial_genes;
     }
 
     public void CheckExtinct()
     {
-        // Remove all null values (agents which have died)
-        agents = agents.Where(BaseAgent => BaseAgent != null).ToList();
 
         // Set the size
         size = agents.Count;
 
         // If there are no agents in the population, they are extinct!
-        if (agents.Count == 0)
+        if (size == 0)
         {
             // Get rid of extra baggage
             extinct = true;
@@ -127,28 +139,53 @@ public class PopulationContainer
         }
     }
 
-    public void AddAgent(BaseAgent a)
+    public void AddAgent(BaseAgent a, string full_name)
     {
 
-        // Set average to the passed agent to start recalculating the average genes
-        average = a.genes;
+        // Check to see if species is developed
+        if (max_size > 3 || a.node.children.Count != 0 || a.node.parent == null)
+        {
+            is_proper_population = true;
+        }
 
         // Remove all null values (agents which have died)
         for (int i = agents.Count - 1; i >= 0; i--)
         {
-            if (agents[i] == null)
+            if (agents[i].isActiveAndEnabled == false || agents[i] == null)
             {
                 agents.RemoveAt(i);
             }
-            else
-            {
-                // Add all of the genes
-                average += agents[i].genes;
-            }
         }
 
-        // Now that the average is the sum of all genes, we divided it by the number of agents to find the average
-        average /= agents.Count + 1;
+        // If we do not have an average genes value yet, calculate it from scratch
+        // TODO Fix this
+        if (average == null || true)
+        {
+            //// Set average to the passed agent to start recalculating the average genes
+            average = a.genes;
+            //int c = 1;
+            //for (int i = 0; i < agents.Count; i++)
+            //{
+            //    if (agents[i] != null)
+            //    {
+            //        // Add all of the genes
+            //        average += agents[i].genes;
+            //        c++;
+            //    }
+            //}
+
+            //// Now that the average is the sum of all genes, we divided it by the number of agents to find the average
+            ////average /= agents.Count + 1;
+            //average /= c;
+
+        }
+        // If we do, we can iteravely calculate it
+        else
+        {
+            // To calculate the average without having to redefine and count the whole group is:
+            // new_mean = old_mean + (x - old_mean)/n
+            average = average + (a.genes - average) / (agents.Count + 1);
+        }
 
         // Add the agent to the list
         agents.Add(a);
@@ -156,8 +193,11 @@ public class PopulationContainer
         // Update the population size
         size = agents.Count;
 
+        // Update the largest population value
+        max_size = (size > max_size ? size : max_size);
+
         // Set the name
-        pop_name = a.genes.genus + " " + a.genes.species;
+        pop_name = full_name;
     }
 }
 
@@ -209,13 +249,13 @@ public class AncestorManager
         if (population.ContainsKey(fullname))
         {
             // Add the agent 
-            population[fullname].AddAgent(agent);
+            population[fullname].AddAgent(agent, fullname);
         }
         else
         {
             // Create a new population container and add the agent
-            population[fullname] = new PopulationContainer();
-            population[fullname].AddAgent(agent);
+            population[fullname] = new PopulationContainer(agent.genes);
+            population[fullname].AddAgent(agent, fullname);
         }
 
         // Update the max size

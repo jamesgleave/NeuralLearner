@@ -32,6 +32,11 @@ namespace Model
 
         }
 
+        public override float GetComplexity()
+        {
+            throw new System.NotImplementedException();
+        }
+
         private void CalculateTotalNeurons()
         {
             int total = 0;

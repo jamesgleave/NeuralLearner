@@ -286,6 +286,18 @@ public class BaseAgent : Interactable
     ///   <para>The actual cost with all factors included.</para>
     /// </summary>
     public float true_metabolic_cost;
+    /// <summary>
+    /// If true, having a large brain will require more energy
+    /// </summary>
+    public bool brain_cost;
+    /// <summary>
+    /// Increasing this value decreases the amount of energy is used by the agents brain
+    /// </summary>
+    public float brain_cost_reduction_factor;
+    /// <summary>
+    /// TODO DELETE LATER
+    /// </summary>
+    public Vector2 cost_comparison;
 
     [Space()]
     /// <summary>
@@ -328,6 +340,8 @@ public class BaseAgent : Interactable
 
     public List<float> obs;
 
+    public float torque_for_boids;
+
     public virtual void Setup(int id, Genes genes)
     {
 
@@ -349,7 +363,9 @@ public class BaseAgent : Interactable
         max_energy = energy;
 
         // The cost of movement and stuff (starts small and increases as it grows
-        metabolism = (Mathf.Pow(genes.size, 2) * genes.speed + genes.perception) * 0.25f;
+        metabolism = (Mathf.Pow(genes.size, 2) * genes.speed + genes.perception + Mathf.Pow((genes.attack * genes.defense), 2)) * 0.25f;
+        //print(GetRawName() + ": " + genes.size + "^2 * " + genes.speed + " + " + genes.perception + " + " + genes.attack * genes.defense + "^2");
+
 
         // How fast can the consume food?
         consumption_rate = (base_consumption_rate / Mathf.Exp(-genes.size)) * 0.5f;
@@ -414,6 +430,8 @@ public class BaseAgent : Interactable
         GetComponent<RelativeJoint2D>().maxForce = (1 + genes.vitality) * 5;
         GetComponent<RelativeJoint2D>().maxTorque = (1 + genes.vitality) * 5;
 
+        // Reset number of eggs layed and other things since we reuse these objects
+        eggs_layed = 0;
     }
 
     public virtual void Setup(int id, Genes g, Manager m)
@@ -479,11 +497,12 @@ public class BaseAgent : Interactable
                 grabbed_force = Vector2.Distance(c1, c2);
 
                 // This value is like the agent's strength, it is how well they can hold onto things TODO Make the max force and torque equal to the strength!
-                strength = ((1 + genes.vitality) * transform.localScale.sqrMagnitude) / 100;
+                strength = ((1 + genes.vitality) * transform.localScale.sqrMagnitude) / 50;
 
                 if (grabbed_force > strength)
                 {
                     ReleaseGrab();
+                    //print("Grab force too high: " + strength.ToString() + " < " + grabbed_force.ToString());
                 }
             }
 
@@ -545,9 +564,10 @@ public class BaseAgent : Interactable
 
     protected virtual void ExistentialCost()
     {
-        // The cost of existing with the cost of moving
-        //float cost = ((metabolism * Time.deltaTime / 2) / manager.metabolism_scale_rate) * (1 + kenetic_energy);
-        float cost = (metabolism * Time.deltaTime) / manager.metabolism_scale_rate;
+        // The cost of existing with the cost of moving and the cost of having a large brain
+        float brain_cost = this.brain_cost ? (brain.GetModel().GetComplexity() / brain_cost_reduction_factor) : 0;
+        float cost = ((metabolism + brain_cost) * Time.deltaTime) / manager.metabolism_scale_rate;
+        cost_comparison.Set((metabolism + brain_cost), metabolism);
         energy -= cost;
         manager.RecycleEnergy(cost);
 
@@ -737,6 +757,11 @@ public class BaseAgent : Interactable
         inf.Clear();
         inf.AddRange(brain.GetModel().Infer(senses.GetObservations(this)));
 
+        // Behavioural traits
+        //BoidWrap wrap = BehaviouralNeuron.Boid(8, 10, 14, 4, genes.matching_factor, senses.agent_context, gameObject, torque_force: 0.001f);
+        //BoidWrap wrap = BehaviouralNeuron.Boid(genes.cohesion_factor * 10, genes.separation_factor * 10, genes.allignment_factor * 10, genes.separation_factor * genes.perception * base_perception, genes.matching_factor, senses.agent_context, gameObject, degree: manager.herding_multiplier);
+        //torque_for_boids = (wrap.torque * rotation_speed) / 35;
+
         // Allow the agent to move 
         Move(inf[0] * movement_speed, 0, inf[1] * rotation_speed, 0);
 
@@ -748,19 +773,12 @@ public class BaseAgent : Interactable
 
         // Pheromones
         if (inf[6] > 0.5f)
-        {
             GetComponent<PheromoneGland>().SpawnRed();
-        }
-
         if (inf[7] > 0.5f)
-        {
             GetComponent<PheromoneGland>().SpawnGreen();
-        }
-
         if (inf[8] > 0.5f)
-        {
             GetComponent<PheromoneGland>().SpawnBlue();
-        }
+
 
         // TODO Give the agent the ability to decide whether it wants to just lay an egg or breed (sexual vs asexual reproduction)
         // If the agent wants to breed and has grabbed another agent, check if that agent is close enough genetically or if it has the same name (meaning it is the same species)
@@ -1008,7 +1026,10 @@ public class BaseAgent : Interactable
     /// <param name="other"></param>
     public virtual void Attack(BaseAgent other)
     {
+        // Damage the other agent (relative to its size)
         other.Damage(attack * transform.localScale.x);
+
+        // Release grab and add attack force to other agent
         ReleaseGrab();
         other.GetRB().AddForce((transform.position - other.transform.position).normalized * -100 * attack);
     }
@@ -1019,13 +1040,13 @@ public class BaseAgent : Interactable
     /// <param name="damage"></param>
     public virtual void Damage(float damage)
     {
-        float total_damage = Mathf.Max(damage - (defense * transform.localScale.x), 0.5f);
+        // The total damage delt to the agent (again, relative to its size)
+        float total_damage = Mathf.Max(damage - (defense * transform.localScale.x), 1f);
         health -= total_damage;
     }
 
     public virtual void Die()
     {
-
         // Remove this agent from the manager's list
         manager.agents.Remove(this);
 

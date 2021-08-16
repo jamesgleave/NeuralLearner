@@ -119,6 +119,8 @@ public class Egg : Interactable
         p1 = parent_1;
         p2 = parent_2;
 
+        // TODO implement crossover (it already exists in the genome!)
+
         // Setup as an interactable
         base.Setup(id);
     }
@@ -211,7 +213,17 @@ public class Egg : Interactable
                 // Set the genetic drift of the agent by checking againts its parent's node. The parent's node contains the genes of the original.
                 genes.genetic_drift = manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).CalculateGeneticDrift(genes);
                 //print(genes.genus + " " + genes.species + ": " + s + ", " + j + " : " + genes.genetic_drift + " -> " + manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).CalculateGeneticDrift(genes) + manager.anc_manager.population[genes.genus + " " + genes.species].agents.Count);
-
+                //string v = "";
+                //float sum = 0;
+                //int count = 0;
+                //foreach (BaseAgent ag in manager.anc_manager.population[genes.genus + " " + genes.species].agents)
+                //{
+                //    v += ag.genes.speed + "+";
+                //    sum += ag.genes.speed;
+                //    count++;
+                //}
+                //sum = sum / count;
+                //print(genes.genus + " " + genes.species + ": " + sum + " -> " + v + " >>> " + manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).speed);
                 //genes.genetic_drift = 1;
             }
 
@@ -225,9 +237,9 @@ public class Egg : Interactable
 
 
             // TODO This is a temporary step to create new agents in new species to test its funcitonality!
-            if (genes.genetic_drift > 3f && parent_node != null)
+            if (genes.genetic_drift > 5f && parent_node != null)
             {
-                string t = "<" + Random.Range(1000, 10000).ToString() + ">";
+                string t = "<" + Random.Range(100000, 1000000).ToString() + ">";
                 string new_name = NameGenerator.GenerateFullName() + t;
                 genes.species = new_name.Split(' ')[1];
                 genes.genetic_drift = 0;
@@ -238,12 +250,6 @@ public class Egg : Interactable
 
                 // Add a new node to the familial tree
                 parent_node.AddChild(new_node);
-            }
-            else if (genes.genetic_drift > 3f)
-            {
-                print("There was an error with: " + a.genus + " " + a.species);
-                print(parent);
-                print("");
             }
 
             // Setup the agent

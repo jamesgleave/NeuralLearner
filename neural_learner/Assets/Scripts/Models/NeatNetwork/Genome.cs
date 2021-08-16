@@ -972,4 +972,5 @@ public class Genome
         float weight_difference = Genome.AverageWeightDifference(g1, g2);
         return excess * c1 + disjoint * c2 + weight_difference * c3;
     }
+
 }

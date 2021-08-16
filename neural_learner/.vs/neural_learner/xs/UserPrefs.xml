@@ -1,26 +1,20 @@
 ﻿<Properties StartupConfiguration="{B3AF31EC-A24B-61DB-F2F2-AC2579EB55ED}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Util/LineDrawer.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Managers/SpawnManager.cs">
     <Files>
-      <File FileName="Assets/Scripts/Agent/BaseAgent.cs" Line="359" Column="24" />
-      <File FileName="Assets/Scripts/Inanimates/Egg.cs" Line="242" Column="47" />
-      <File FileName="Assets/Scripts/Agent/Genes.cs" Line="515" Column="61" />
-      <File FileName="Assets/Scripts/Managers/AncestorManager.cs" Line="111" Column="14" />
-      <File FileName="Assets/Scripts/AncestorDisplay/AncestorDisplay.cs" Line="33" Column="9" />
-      <File FileName="Assets/Scripts/AncestorDisplay/AncestorDisplayNode.cs" Line="98" Column="42" />
-      <File FileName="Assets/Scripts/Models/NeatNetwork/Genome.cs" Line="629" Column="21" />
-      <File FileName="Assets/Scripts/Managers/SimulationSceneManager.cs" Line="12" Column="53" />
-      <File FileName="Assets/Scripts/Managers/Manager.cs" Line="212" Column="1" />
-      <File FileName="Assets/Scripts/Managers/FoodPelletManager.cs" Line="103" Column="51" />
-      <File FileName="Assets/Scripts/Inanimates/FoodPellet.cs" Line="69" Column="17" />
-      <File FileName="Assets/Scripts/Agent/DisplayWobbit.cs" Line="40" Column="63" />
-      <File FileName="Assets/Scripts/UserControl/UserControllerEvoSim.cs" Line="27" Column="57" />
-      <File FileName="Assets/Scripts/UserControl/UserControllerEvoAncestory.cs" Line="41" Column="77" />
-      <File FileName="Assets/Scripts/Util/LineDrawer.cs" Line="8" Column="11" />
+      <File FileName="Assets/Scripts/Managers/FoodPelletManager.cs" Line="108" Column="1" />
+      <File FileName="Assets/Scripts/Managers/TestFood.cs" Line="75" Column="10" />
+      <File FileName="Assets/Scripts/Agent/Senses.cs" Line="64" Column="6" />
+      <File FileName="Assets/Scripts/Managers/Manager.cs" Line="110" Column="29" />
+      <File FileName="Assets/Scripts/Managers/SpawnManager.cs" Line="56" Column="1" />
+      <File FileName="Assets/Scripts/Inanimates/Meat.cs" Line="89" Column="1" />
+      <File FileName="Assets/Scripts/Managers/SimulationInitializer.cs" Line="12" Column="21" />
+      <File FileName="Assets/Scripts/Managers/SimulationSceneManager.cs" Line="10" Column="59" />
+      <File FileName="Assets/Scripts/UserControl/UserControllerEvoSim.cs" Line="253" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="d6a5ebf9-9d51-496c-9364-e7d1dffdef0b" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="0ef7a5e0-91a4-4dbe-a7fd-b0851a504689" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

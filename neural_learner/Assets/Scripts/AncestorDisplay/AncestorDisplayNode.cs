@@ -73,6 +73,11 @@ public class AncestorDisplayNode : MonoBehaviour
     public float node_time;
 
     /// <summary>
+    /// True if this node is a proper populationx
+    /// </summary>
+    public bool proper;
+
+    /// <summary>
     ///   <para>Setup the node with an ancestor</para>
     /// </summary>
     public void Setup(AncestorNode n, AncestorDisplay disp, float p, float d)
@@ -203,7 +208,11 @@ public class AncestorDisplayNode : MonoBehaviour
                     num_siblings = node.parent.children.Count;
                     Random.InitState((int)node_time);
                     //Vector3 p3d = new Vector3((position * display.spacing.x - (num_siblings / 2 * display.spacing.x)), Mathf.Min((node_time / parent.node_time) * display.spacing.y, 10), Random.onUnitSphere.x * parent.num_children);
-                    Vector3 p3d = new Vector3(Random.onUnitSphere.x * parent.num_children * display.spacing.y, Mathf.Min((node_time / parent.node_time) * display.spacing.y, 10), Random.onUnitSphere.x * parent.num_children);
+                    //Vector3 p3d = new Vector3(Random.Range(-1, 1) * parent.num_children * display.spacing.x, Mathf.Min(Mathf.Pow(node_time / parent.node_time, display.spacing.y), 10), Random.Range(-1, 1) * parent.num_children);
+
+                    Vector3 p3d = Random.onUnitSphere * Mathf.Min(node_time / parent.node_time, 10);
+                    p3d.Set(p3d.x * display.spacing.x, Mathf.Abs(p3d.y) * display.spacing.y, p3d.z * display.spacing.z);
+
                     target_positon = p3d;
 
                     // Set the rotation
@@ -240,6 +249,12 @@ public class AncestorDisplayNode : MonoBehaviour
         }
 
         CalculateDesiredPosition();
+
+        // Check if we have a proper population
+        proper = display.manager.population[node.FullName()].is_proper_population;
+        // 
+        display_wobbit.SetCross(!proper || display.manager.population[node.FullName()].extinct);
+
     }
 
     Vector3 SampleParabola(Vector3 start, Vector3 end, float height, float t, Vector3 out_direction)

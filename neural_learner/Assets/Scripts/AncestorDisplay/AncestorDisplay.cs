@@ -16,7 +16,7 @@ public class AncestorDisplay : MonoBehaviour
 
     [Space]
     [Header("Settings")]
-    public Vector2 spacing;
+    public Vector3 spacing;
 
     public enum ArrangementMethod
     {
@@ -131,16 +131,18 @@ public class AncestorDisplay : MonoBehaviour
                 Search(node.children[child], depth + 1);
 
                 // Create the node -> instantiate it lol
-                CreateNode(position, depth, node.children[child], node);
-
-                // Increment the position
-                position += 1;
+                if (CreateNode(position, depth, node.children[child], node))
+                {
+                    // Increment the position
+                    position += 1;
+                }
             }
         }
     }
 
-    void CreateNode(float position, float depth, AncestorNode n, AncestorNode parent)
+    bool CreateNode(float position, float depth, AncestorNode n, AncestorNode parent)
     {
+
         // Create a node
         AncestorDisplayNode a;
         if (parent != null && nodes.ContainsKey(parent.FullName()))
@@ -159,5 +161,8 @@ public class AncestorDisplay : MonoBehaviour
         // Setup the node
         a.Setup(n, this, position, depth);
         a.name = a.node.FullName();
+
+        // Success
+        return true;
     }
 }

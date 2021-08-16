@@ -13,13 +13,13 @@ public class FoodPelletManager : MonoBehaviour
     public int feed_rate;
 
     /// <summary>
-    /// The threshold for desired pellets
+    /// The higher this value, the less food will respawn
     /// </summary>
     [Range(0.0f, 1)]
     public float retention;
 
     /// <summary>
-    /// The threshold for desired pellets
+    /// The lower this value, the less food will respawn
     /// </summary>
     [Range(0f, 1000f)]
     public float intensity;
@@ -29,16 +29,28 @@ public class FoodPelletManager : MonoBehaviour
     /// </summary>
     public int calculated_pellets;
 
+    /// <summary>
+    /// The number of pellets we have calculated
+    /// </summary>
+    public int target_pellets;
+
     // This manager has a reference to the main manager (to access the food list)
     public Manager general_manager;
 
     private float percent;
-
     private int storage;
+
+
+    public void Start()
+    {
+
+    }
+
 
     // Start is called before the first frame update
     void Update()
     {
+        // Update all of the pellets
         UpdatePellets();
     }
 
@@ -46,6 +58,7 @@ public class FoodPelletManager : MonoBehaviour
     {
         // Calculate the new value 
         float calculated = Mathf.Max((int)((general_manager.total_food / (general_manager.stat_manager.num_agents / (1 - retention))) * intensity), 0);
+        target_pellets = (int)calculated;
 
         // Increment the old value based on the new one
         if (calculated > calculated_pellets)
@@ -97,9 +110,7 @@ public class FoodPelletManager : MonoBehaviour
             // As the number of agents increase, the probability of a food pellet respawning dr
             if (pellet.eaten && general_manager.num_active_food < calculated_pellets)
             {
-                Vector2 center = general_manager.GetClusters()[Random.Range(0, general_manager.pellet_clusters)];
-                Vector2 offset = Random.insideUnitCircle * general_manager.pellet_distrobution;
-                pellet.Respawn(center + offset, general_manager.food_pellet_energy, general_manager.food_growth_rate, general_manager.food_pellet_size);
+                pellet.Respawn(general_manager.spawn_manager.GetFoodSpawnLocation(), general_manager.food_pellet_energy, general_manager.food_growth_rate, general_manager.food_pellet_size);
                 general_manager.num_active_food++;
             }
             else if (pellet.eaten)

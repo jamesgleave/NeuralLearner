@@ -226,6 +226,10 @@ MonoBehaviour:
   gui: {fileID: 1430260685}
   save_gui: {fileID: 882143788}
   load_gui: {fileID: 1368819697}
+  idle_time_threshold: 30
+  idle_time: 0
+  control_mode: 0
+  enable_idle: 1
 --- !u!114 &555443584
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -290,6 +294,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee77eea48c5f64fa8adfb8991c0b4429, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cursor: {fileID: 2800000, guid: e045e7aeb519c4075ab2efd427efdc8f, type: 3}
 --- !u!114 &912915721
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -468,16 +473,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   total_food: 5000
-  food_growth_rate: 15
-  pellet_distrobution: 15
-  pellet_clusters: 100
+  food_growth_rate: 3
+  pellet_distrobution: 25
+  pellet_clusters: 60
   food_pellet_size: 2
   food_pellet_energy: 20
   pellet: {fileID: 3829854075992685049, guid: 72416a997ceb74010b84d5ace9c7462e, type: 3}
   food_pellet_manager: {fileID: 2047405934}
   food_pellets: []
   update_rate: 0.1
-  gridsize: 175
+  gridsize: 160
   adaptive_grid: 0
   adaptive_gridsize: 150
   adaptive_grid_agent_threshold: 0
@@ -485,7 +490,7 @@ MonoBehaviour:
   agent_pellet_threshold: 200
   agent: {fileID: 8284897868176631410, guid: fbd032cd3431242748fe08f4ef324252, type: 3}
   egg: {fileID: 798380245572057900, guid: 147dc55d0b0304c8cbf8fc3ae99ab8ce, type: 3}
-  starting_agents: 500
+  starting_agents: 100
   min_agents: 50
   metabolism_scale_rate: 12.5
   agents: []
@@ -536,9 +541,10 @@ MonoBehaviour:
     genus_names: []
     names: []
     counts: []
+  spawn_manager: {fileID: 0}
   use_auto_manual_collection: 0
+  herding_multiplier: 1
   num_active_food: 0
-  use_adaptive: 1
 --- !u!4 &2047405930
 Transform:
   m_ObjectHideFlags: 0
@@ -591,6 +597,12 @@ MonoBehaviour:
   - {fileID: 8514239754903042255, guid: 205ba4e8097454004b29ea6fb4a89681, type: 3}
   - {fileID: 3390545587248724441, guid: e3ac1c0d1db40498db455a3b082f2654, type: 3}
   - {fileID: 2595063354670958442, guid: 0b83a31e1168d40d0a6d773fe593ebe4, type: 3}
+  - {fileID: 2595063354670958442, guid: ba851f15e5d0e4006b971a2663f7681e, type: 3}
+  - {fileID: 2595063354670958442, guid: 3aa23a91c4f5c4adbb49b24cbfdfa36f, type: 3}
+  - {fileID: 2595063354670958442, guid: 7e706a270a56449ceb7e3276f44400e7, type: 3}
+  - {fileID: 2595063354670958442, guid: 6863ee2b239364d289873d0b7c20e8e4, type: 3}
+  - {fileID: 2595063354670958442, guid: 5db16552eded94042b9c409a08cc4dcc, type: 3}
+  - {fileID: 2595063354670958442, guid: 995d73da632994078bc54f899424a6ad, type: 3}
 --- !u!114 &2047405932
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -639,6 +651,7 @@ MonoBehaviour:
   retention: 0.79
   intensity: 396
   calculated_pellets: 0
+  target_pellets: 0
   general_manager: {fileID: 2047405929}
 --- !u!1001 &3638946739586988900
 PrefabInstance:

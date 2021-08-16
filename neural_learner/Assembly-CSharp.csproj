@@ -67,6 +67,7 @@
     <Compile Include="Assets/Scripts/Managers/TimeManager.cs" />
     <Compile Include="Assets/Scripts/Brains/EvolutionaryNEATLearner.cs" />
     <Compile Include="Assets/Scripts/Models/NeatNetwork/NodeGeneType.cs" />
+    <Compile Include="Assets/Scripts/Testing/Boids.cs" />
     <Compile Include="Assets/Scripts/Models/NeatNetwork/NEATInputContainer.cs" />
     <Compile Include="Assets/Scripts/Inanimates/Interactable.cs" />
     <Compile Include="Assets/Scripts/Models/NeatNetwork/InnovationGenerator.cs" />
@@ -81,9 +82,11 @@
     <Compile Include="Assets/Scripts/UI/SaveAgentGUI.cs" />
     <Compile Include="Assets/Scripts/Managers/AncestorManager.cs" />
     <Compile Include="Assets/Scripts/DisplayModel/NeatNetwork/NEATDisplayNeuronForceDirected.cs" />
+    <Compile Include="Assets/Scripts/UserControl/UserControllerEvoAncestory.cs" />
     <Compile Include="Assets/Scripts/Models/NeatNetwork/NEATNetwork.cs" />
     <Compile Include="Assets/Scripts/Models/NeatNetwork/NodeGeneAction.cs" />
     <Compile Include="Assets/Scripts/DisplayModel/NeuralNetwork/DisplayEvoNN.cs" />
+    <Compile Include="Assets/Scripts/Agent/BehaviouralNeuron.cs" />
     <Compile Include="Assets/Scripts/Inanimates/FoodPellet.cs" />
     <Compile Include="Assets/Scripts/DisplayModel/NeatNetwork/NEATDisplayNeuron2D.cs" />
     <Compile Include="Assets/Scripts/Models/NeuralNetwork/NeuralNet.cs" />
@@ -115,26 +118,26 @@
     <Compile Include="Assets/Scripts/Models/Callback.cs" />
     <Compile Include="Assets/Scripts/Models/NeatNetwork/Genome.cs" />
     <Compile Include="Assets/Scripts/Util/testing.cs" />
+    <Compile Include="Assets/Scripts/Testing/BoidController.cs" />
     <Compile Include="Assets/Scripts/Models/NeuralNetwork/Activations.cs" />
     <Compile Include="Assets/Scripts/AncestorDisplay/AncestorDisplayNode.cs" />
     <Compile Include="Assets/Scripts/UI/NEATNetworkUIController.cs" />
     <Compile Include="Assets/Scripts/UI/UILineRenderer.cs" />
     <Compile Include="Assets/Scripts/UI/GeneBarChart.cs" />
     <Compile Include="Assets/Scripts/Inanimates/Egg.cs" />
-    <Compile Include="Assets/Scripts/UserControl/UserControllerEvoAncestory.cs" />
+    <Compile Include="Assets/Scripts/Managers/TestFood.cs" />
+    <Compile Include="Assets/Scripts/Managers/SpawnManager.cs" />
   </ItemGroup>
   <ItemGroup>
-     <None Include="Assets/SaveData/Speedster/genome.txt" />
-     <None Include="Assets/SaveData/ggg/genome.txt" />
-     <None Include="Assets/SaveData/Smart/genome.txt" />
-     <None Include="Assets/SaveData/ggg/genes.txt" />
-     <None Include="Assets/SaveData/Poo/genome.txt" />
-     <None Include="Assets/SaveData/SNUSNU/genome.txt" />
-     <None Include="Assets/SaveData/Speedster/genes.txt" />
-     <None Include="Assets/SaveData/Poo/genes.txt" />
+     <None Include="Assets/SaveData/fffd/genes.txt" />
+     <None Include="Assets/SaveData/fffd/genome.txt" />
+     <None Include="Assets/SaveData/fff/genome.txt" />
+     <None Include="Assets/SaveData/CrayCray/genome.txt" />
      <None Include="Assets/Scripts/Agent/names.txt" />
-     <None Include="Assets/SaveData/SNUSNU/genes.txt" />
-     <None Include="Assets/SaveData/Smart/genes.txt" />
+     <None Include="Assets/SaveData/CrayCray/genes.txt" />
+     <None Include="Assets/SaveData/test/genome.txt" />
+     <None Include="Assets/SaveData/test/genes.txt" />
+     <None Include="Assets/SaveData/fff/genes.txt" />
     <Reference Include="UnityEngine">
       <HintPath>/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

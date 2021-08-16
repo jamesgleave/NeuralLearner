@@ -210,6 +210,7 @@ public class AgentUIController : MonoBehaviour
         gl.Add("Colour-R");
         gl.Add("Colour-G");
         gl.Add("Colour-B");
+
         bar_chart.GetComponent<GeneBarChart>().Setup(gl.ToArray(), agent.genes.GetGeneList());
     }
 

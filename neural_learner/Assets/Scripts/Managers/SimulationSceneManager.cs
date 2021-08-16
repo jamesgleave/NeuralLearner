@@ -7,7 +7,7 @@ public class SimulationSceneManager : MonoBehaviour
 {
     public void ToSim()
     {
-        SceneManager.LoadScene("TestInteractables + UI");
+        SceneManager.LoadScene("TestInteractables + UI 1+ food system");
 
         // Activate the manager if it is not active 
         if (!StateManager.manager.gameObject.activeInHierarchy)

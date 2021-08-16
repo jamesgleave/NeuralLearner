@@ -142,6 +142,8 @@ public class DisplayEvoNEAT : Display
 
         // Run the base activate method
         base.Activate();
+
+        print(model.GetComplexity());
     }
 
     private void SetupChildren()

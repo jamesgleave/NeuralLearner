@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Manager : MonoBehaviour
 {
+
     [Header("Food Settings")]
 
     [Tooltip("Max amount of food to spawn in")]
@@ -88,8 +89,13 @@ public class Manager : MonoBehaviour
     [Header("Ancesory")]
     public AncestorManager anc_manager = new AncestorManager();
 
+    [Header("Spawner")]
+    public SpawnManager spawn_manager;
+
     [Header("Garbage Collection")]
     public bool use_auto_manual_collection;
+
+    public float herding_multiplier = 1;
 
     // These are values the manager uses to manage the simulation (does not need to be seen)
     // The cluster pos is the center positions of all the clusters 
@@ -101,6 +107,9 @@ public class Manager : MonoBehaviour
 
     public void Setup()
     {
+        // Setup the spawner
+        spawn_manager.Setup();
+
         // Create clusters for the spawning
         CreateClusters();
 
@@ -123,7 +132,6 @@ public class Manager : MonoBehaviour
         {
             clock = update_rate;
             ManageFoodPellets();
-            ManageClusters();
             ManageAgents();
             CalculateEnergyInEth();
             combined = energy_in_agents + energy_in_ether + energy_in_pellets;
@@ -135,35 +143,6 @@ public class Manager : MonoBehaviour
         else
         {
             clock -= Time.deltaTime;
-        }
-    }
-
-    public void ManageClusters()
-    {
-        // If we are using the adaptive grid, perform these calculations
-        if (adaptive_grid)
-        {
-            // Calculate the ratio of agents to max agents
-            float adaption_factor = stat_manager.num_agents / (float)adaptive_grid_agent_threshold;
-
-            // Get a temp gridsize for comparison
-            float potential_gridsize = Mathf.Max(adaption_factor * ((float)gridsize), gridsize);
-
-            // If we pretty much have the same grid, dont bother updating anything
-            if (!Mathf.Approximately(potential_gridsize, adaptive_gridsize) && potential_gridsize > adaptive_gridsize || stat_manager.num_agents < (float)adaptive_grid_agent_threshold)
-            {
-                // update the gridsize
-                adaptive_gridsize += ((potential_gridsize - adaptive_gridsize) / 30) * Time.deltaTime;
-
-                if (Mathf.Abs(potential_gridsize - adaptive_gridsize) > 5)
-                {
-                    // Move the clusters
-                    for (int i = 0; i < cluster_pos.Count; i++)
-                    {
-                        cluster_pos[i] = Random.insideUnitCircle * adaptive_gridsize;
-                    }
-                }
-            }
         }
     }
 
@@ -183,50 +162,13 @@ public class Manager : MonoBehaviour
     {
         return cluster_pos;
     }
-    public bool use_adaptive;
-    public void ManageFoodPellets()
-    {
-
-        if (use_adaptive)
-        {
-            food_pellet_manager.UpdatePellets();
-        }
-        else
-        {
-            // Reset the energy in pellets to recalculate
-            percent_energy_in_pellets = 0;
-
-            // Look at each pellet
-            num_active_food = food_pellets.Count;
-            foreach (FoodPellet pellet in food_pellets)
-            {
-                // If the pellet has been eaten then respawn if we have enough energy
-                // As the number of agents increase, the probability of a food pellet respawning drops
-                if (pellet.eaten) //  && Random.value < max_agents / (1 + stat_manager.num_agents)
-                {
-                    Vector2 center = cluster_pos[Random.Range(0, pellet_clusters)];
-                    Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
-                    pellet.Respawn(center + offset, food_pellet_energy, food_growth_rate, food_pellet_size);
-                    num_active_food--;
-                }
-
-                // Add the energy in that pellet
-                percent_energy_in_pellets += pellet.energy;
-            }
-
-            // Get the ratio of total energy in the system and the energy in the pellets
-            energy_in_pellets = percent_energy_in_pellets;
-            percent_energy_in_pellets /= initial_energy;
-        }
-    }
 
     /// <summary>
-    /// Returns the time each pellet has to wait before it may respawn. If adaptive food is not on, it will return zero
+    /// Runs the UpdatePellets() method in the food_pellet_manager
     /// </summary>
-    /// <returns></returns>
-    public float CalculatePelletRespawnTime()
+    public void ManageFoodPellets()
     {
-        return adaptive_food ? Mathf.Lerp(10, 500, stat_manager.num_agents / agent_pellet_threshold) : 0;
+        food_pellet_manager.UpdatePellets();
     }
 
     public void SpawnFoodPellets()
@@ -238,9 +180,9 @@ public class Manager : MonoBehaviour
         // Spawn in the pellets
         for (int i = 0; i < total_food; i++)
         {
-            Vector2 center = cluster_pos[Random.Range(0, cluster_pos.Count)];
-            Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
-            FoodPellet p = Instantiate(pellet, center + offset, Quaternion.identity, transform);
+            //Vector2 center = cluster_pos[Random.Range(0, cluster_pos.Count)];
+            //Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
+            FoodPellet p = Instantiate(pellet, spawn_manager.GetFoodSpawnLocation(), Quaternion.identity, transform);
 
             p.Setup((int)ID.FoodPellet, food_pellet_energy, food_growth_rate, food_pellet_size, this);
             p.energy_consumed = food_pellet_energy;
@@ -257,11 +199,11 @@ public class Manager : MonoBehaviour
         // Spawn in the agents
         for (int i = 0; i < starting_agents; i++)
         {
-            // Spawn in the egg object
-            Vector2 center = cluster_pos[Random.Range(0, cluster_pos.Count)];
-            Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
-            Vector2 pos = center + offset;
-            var e = Instantiate(egg, pos, transform.rotation, transform);
+            // Spawn an agent and set it up
+            //Vector2 center = cluster_pos[Random.Range(0, cluster_pos.Count)];
+            //Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
+            //print(spawn_manager.GetRandomSpawnLocation());
+            var e = Instantiate(egg, spawn_manager.GetRandomSpawnLocation(), transform.rotation, transform);
             e.Setup(this, (int)ID.WobbitEgg);
         }
 
@@ -290,10 +232,7 @@ public class Manager : MonoBehaviour
             float energy_required = agent.base_health * Mathf.Pow(Genes.GetBaseGenes().size, 2);
             if (energy >= energy_required)
             {
-                Vector2 center = cluster_pos[Random.Range(0, cluster_pos.Count)];
-                Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
-                Vector2 pos = center + offset;
-                var e = Instantiate(egg, pos, transform.rotation, transform);
+                var e = Instantiate(egg, spawn_manager.GetRandomSpawnLocation(), transform.rotation, transform);
                 e.Setup(this, (int)ID.WobbitEgg);
             }
         }
@@ -400,19 +339,44 @@ public class Manager : MonoBehaviour
         GetComponent<SpriteManager>().SetBiChromaticAgent(a, c1, c2);
     }
 
-    public void ToggleRender()
+    /// <summary>
+    /// Returns a certain agent depending on the mode.
+    /// The current modes are as follows: {'o' -> Oldest Agent, 'v' -> highest velocity Agent, 'r' -> Random Agent, 'y' -> Youngest Agent, 'e' -> Agent With Most Eggs Layed}
+    /// </summary>
+    /// <param name="mode"></param>
+    public BaseAgent GetAgent(char mode)
     {
+        BaseAgent to_be_returned = null;
+        foreach (BaseAgent a in all_agents)
+        {
+            switch (mode)
+            {
+                case 'o':
+                    to_be_returned = (to_be_returned == null || to_be_returned.age < a.age) ? a : to_be_returned;
+                    break;
+                case 'r':
+                    return all_agents[Random.Range(0, all_agents.Count)];
+                case 'e':
+                    to_be_returned = (to_be_returned == null || to_be_returned.eggs_layed < a.eggs_layed) ? a : to_be_returned;
+                    break;
+                case 'y':
+                    to_be_returned = (to_be_returned == null || to_be_returned.age > a.age) ? a : to_be_returned;
+                    break;
+                case 'v':
+                    to_be_returned = (to_be_returned == null || to_be_returned.GetRB().velocity.magnitude < a.GetRB().velocity.magnitude) ? a : to_be_returned;
+                    break;
+            }
+        }
 
+        return to_be_returned;
     }
 
     public void OnDrawGizmos()
     {
         foreach (var c in cluster_pos)
         {
-            Gizmos.DrawSphere(c, 0.1f);
+            Gizmos.DrawWireSphere(c, pellet_distrobution);
         }
-
-        Gizmos.DrawWireSphere(transform.position, adaptive_gridsize);
     }
 
 }

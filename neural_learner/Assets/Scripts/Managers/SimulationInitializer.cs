@@ -4,8 +4,12 @@ using UnityEngine;
 
 public class SimulationInitializer : MonoBehaviour
 {
+
+    public Texture2D cursor;
+
     private void Start()
     {
+        SetCurser();
         if (StateManager.manager != null)
         {
             // Move the manager from the saved state to our scene
@@ -30,5 +34,11 @@ public class SimulationInitializer : MonoBehaviour
         {
             GameObject.FindGameObjectWithTag("manager").GetComponent<Manager>().Setup();
         }
+    }
+
+    private void SetCurser()
+    {
+        Vector2 offset = new Vector2(cursor.width / 2, cursor.height / 2);
+        Cursor.SetCursor(cursor, offset, CursorMode.ForceSoftware);
     }
 }

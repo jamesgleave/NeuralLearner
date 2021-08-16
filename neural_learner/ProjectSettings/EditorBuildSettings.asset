@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/TestAncestory.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/TestInteractables + UI 1+ food system.unity
+    guid: d73bbdc33cafc4dbcba6bd22704c0e75
   m_configObjects: {}

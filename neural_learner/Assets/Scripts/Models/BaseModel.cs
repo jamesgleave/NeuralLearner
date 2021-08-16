@@ -6,5 +6,6 @@ namespace Model
     {
         public abstract List<float> Infer(List<float> inputs);
         public abstract BaseModel Copy();
+        public abstract float GetComplexity();
     }
 }

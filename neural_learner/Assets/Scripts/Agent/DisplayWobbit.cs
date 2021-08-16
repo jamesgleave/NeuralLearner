@@ -8,7 +8,8 @@ public class DisplayWobbit : MonoBehaviour
     // 
     public int head_id, body_id;
     public SpriteManager sprite_manager;
-    public GameObject head, body;
+    public GameObject head, body, cross;
+
     public void Setup(Genes g)
     {
         head_id = g.spritemap["head"];
@@ -38,5 +39,15 @@ public class DisplayWobbit : MonoBehaviour
     {
         head.transform.LookAt(Camera.main.transform.position);
         body.transform.LookAt(Camera.main.transform.position);
+
+        if (cross != null)
+        {
+            cross.transform.LookAt(Camera.main.transform.position);
+        }
+    }
+
+    public void SetCross(bool state)
+    {
+        cross.SetActive(state);
     }
 }

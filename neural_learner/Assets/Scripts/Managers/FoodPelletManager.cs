@@ -80,9 +80,16 @@ public class FoodPelletManager : MonoBehaviour
             feed_rate = general_manager.total_food;
         }
 
+        if (general_manager.food_pellets.Count <= 0)
+        {
+            return;
+        }
+
         // Iterate through using the feed rate
         for (int i = 0; i < (general_manager.total_food - feed_rate); i++)
         {
+
+
             // Check if tick pointer is too big
             if (tick_pointer >= general_manager.total_food)
             {

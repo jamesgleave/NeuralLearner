@@ -337,7 +337,7 @@ MonoBehaviour:
   base_rotation_speed: 50
   base_perception: 20
   base_gestation_time: 10
-  base_lifespan: 600
+  base_lifespan: 800
   base_mass: 2
   base_consumption_rate: 20
   base_update_rate: 250
@@ -411,8 +411,11 @@ MonoBehaviour:
   egg_gestation_time: 0
   metabolism: 0
   true_metabolic_cost: 0
+  amount_used_brain: 0
+  amount_used_metabolism: 0
+  amount_used_movement: 0
   brain_cost: 1
-  brain_cost_reduction_factor: 125
+  brain_cost_reduction_factor: 175
   cost_comparison: {x: 0, y: 0}
   time_to_die: 0
   control: 2

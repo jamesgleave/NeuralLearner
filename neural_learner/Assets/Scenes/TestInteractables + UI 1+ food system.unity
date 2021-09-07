@@ -483,7 +483,7 @@ MonoBehaviour:
   food_pellet_manager: {fileID: 2047405934}
   food_pellets: []
   update_rate: 0.1
-  gridsize: 250
+  gridsize: 275
   adaptive_grid: 0
   adaptive_gridsize: 150
   adaptive_grid_agent_threshold: 0
@@ -491,8 +491,8 @@ MonoBehaviour:
   agent_pellet_threshold: 200
   agent: {fileID: 8284897868176631410, guid: fbd032cd3431242748fe08f4ef324252, type: 3}
   egg: {fileID: 798380245572057900, guid: 147dc55d0b0304c8cbf8fc3ae99ab8ce, type: 3}
-  starting_agents: 0
-  min_agents: 0
+  starting_agents: 150
+  min_agents: 10
   metabolism_scale_rate: 12.5
   agents: []
   energy: 0
@@ -667,7 +667,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   manager: {fileID: 2047405929}
-  r: 5
+  r: 6
   k: 35
 --- !u!1001 &3638946739586988900
 PrefabInstance:

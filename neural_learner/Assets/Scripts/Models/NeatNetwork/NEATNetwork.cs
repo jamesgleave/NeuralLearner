@@ -752,9 +752,11 @@ public class NEATNeuron
 
             // check to see if this is a latch neuron
             case NodeCalculationMethod.Latch:
-                // A latch neuron will always return 1 if output is one (latched) and input is greater than zero.
+                // A latch neuron will always return 1 if sum squish is 0.80 or higher (latched) and input is greater than zero.
                 // If the output is less than or equal to zero, output zero
-                if (output == 1 && activation.activate(sum) > 0 || activation.activate(sum) >= 0.9f)
+
+                // TODO Dont forget that I removed the activation from the sum
+                if (output == 1 && sum > 0 || sum >= 1.0f)
                 {
                     output = 1;
                 }
@@ -914,7 +916,18 @@ public class NEATNeuron
             pair.Value.ResetValue();
         }
 
-        // Reset the ouput
-        output = 0;
+        // Here we look at the different calculation methods to see what to do during a reset.
+        switch (method)
+        {
+            // If we have a lincomb, then we want to reset the output value at each reset
+            case NodeCalculationMethod.LinComb:
+                output = 0;
+                break;
+
+            // If we have a latch neuron, dont do anything.
+            // The point of a latch neuron is to stay 1 when the input is nonzero and it has been activated.
+            case NodeCalculationMethod.Latch:
+                break;
+        }
     }
 }

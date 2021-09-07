@@ -286,14 +286,17 @@ public class BaseAgent : Interactable
     ///   <para>The actual cost with all factors included.</para>
     /// </summary>
     public float true_metabolic_cost;
+
     /// <summary>
     /// If true, having a large brain will require more energy
     /// </summary>
     public bool brain_cost;
+
     /// <summary>
     /// Increasing this value decreases the amount of energy is used by the agents brain
     /// </summary>
     public float brain_cost_reduction_factor;
+
     /// <summary>
     /// TODO DELETE LATER
     /// </summary>
@@ -344,6 +347,9 @@ public class BaseAgent : Interactable
 
     public virtual void Setup(int id, Genes genes)
     {
+
+        // Set the tag
+        this.tag = "agent";
 
         // Setup the names
         genus = genes.genus;
@@ -1047,6 +1053,9 @@ public class BaseAgent : Interactable
 
     public virtual void Die()
     {
+        // Change the name
+        this.tag = "DeadAgent";
+
         // Remove this agent from the manager's list
         manager.agents.Remove(this);
 

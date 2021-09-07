@@ -104,6 +104,7 @@
     <Compile Include="Assets/Scripts/Models/NeatNetwork/ConnectionGene.cs" />
     <Compile Include="Assets/Scripts/Managers/SpriteManager.cs" />
     <Compile Include="Assets/Scripts/Agent/Genes.cs" />
+    <Compile Include="Assets/Scripts/Managers/SpawnManager.cs" />
     <Compile Include="Assets/Scripts/Inanimates/Meat.cs" />
     <Compile Include="Assets/Scripts/Agent/BaseAgent.cs" />
     <Compile Include="Assets/Scripts/AncestorDisplay/AncestorDisplay.cs" />
@@ -120,24 +121,17 @@
     <Compile Include="Assets/Scripts/Util/testing.cs" />
     <Compile Include="Assets/Scripts/Testing/BoidController.cs" />
     <Compile Include="Assets/Scripts/Models/NeuralNetwork/Activations.cs" />
+    <Compile Include="Assets/Scripts/Managers/TestFood.cs" />
     <Compile Include="Assets/Scripts/AncestorDisplay/AncestorDisplayNode.cs" />
     <Compile Include="Assets/Scripts/UI/NEATNetworkUIController.cs" />
     <Compile Include="Assets/Scripts/UI/UILineRenderer.cs" />
     <Compile Include="Assets/Scripts/UI/GeneBarChart.cs" />
     <Compile Include="Assets/Scripts/Inanimates/Egg.cs" />
-    <Compile Include="Assets/Scripts/Managers/TestFood.cs" />
-    <Compile Include="Assets/Scripts/Managers/SpawnManager.cs" />
   </ItemGroup>
   <ItemGroup>
-     <None Include="Assets/SaveData/fffd/genes.txt" />
-     <None Include="Assets/SaveData/fffd/genome.txt" />
-     <None Include="Assets/SaveData/fff/genome.txt" />
-     <None Include="Assets/SaveData/CrayCray/genome.txt" />
+     <None Include="Assets/SaveData/skurt/genome.txt" />
+     <None Include="Assets/SaveData/skurt/genes.txt" />
      <None Include="Assets/Scripts/Agent/names.txt" />
-     <None Include="Assets/SaveData/CrayCray/genes.txt" />
-     <None Include="Assets/SaveData/test/genome.txt" />
-     <None Include="Assets/SaveData/test/genes.txt" />
-     <None Include="Assets/SaveData/fff/genes.txt" />
     <Reference Include="UnityEngine">
       <HintPath>/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

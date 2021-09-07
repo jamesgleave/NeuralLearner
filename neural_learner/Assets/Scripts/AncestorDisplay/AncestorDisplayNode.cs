@@ -117,8 +117,13 @@ public class AncestorDisplayNode : MonoBehaviour
             display_wobbit.Setup(n.parent.original_genes);
         }
 
+        // Check if extinct!
+        display.manager.population[n.FullName()].CheckExtinct();
+
         // Get the population size
         population_size = display.manager.population[n.FullName()].size;
+        print(n.FullName() + ": " + population_size);
+
         // If the species is extinct, change the colour of the line to red
         if (display.manager.population[n.FullName()].extinct)
         {
@@ -252,8 +257,7 @@ public class AncestorDisplayNode : MonoBehaviour
 
         // Check if we have a proper population
         proper = display.manager.population[node.FullName()].is_proper_population;
-        // 
-        display_wobbit.SetCross(!proper || display.manager.population[node.FullName()].extinct);
+        display_wobbit.SetCross((!proper || display.manager.population[node.FullName()].extinct) && parent != null);
 
     }
 

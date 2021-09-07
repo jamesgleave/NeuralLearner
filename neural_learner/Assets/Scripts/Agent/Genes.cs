@@ -348,19 +348,19 @@ public class Genes
         if (GetProb(colour_mutation_prob))
         {
             colour_r += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-            colour_r = Mathf.Max(colour_r, 0);
+            colour_r = Mathf.Clamp01(colour_r);
         }
 
         if (GetProb(colour_mutation_prob))
         {
             colour_g += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-            colour_g = Mathf.Max(colour_g, 0);
+            colour_g = Mathf.Clamp01(colour_g);
         }
 
         if (GetProb(colour_mutation_prob))
         {
             colour_b += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-            colour_b = Mathf.Max(colour_b, 0);
+            colour_b = Mathf.Clamp01(colour_b);
         }
     }
 
@@ -746,10 +746,10 @@ public class Genes
                 colour_r = float.Parse(values[i++]);
                 colour_g = float.Parse(values[i++]);
                 colour_b = float.Parse(values[i++]);
-                cohesion = float.Parse(values[i++]);
-                allignment = float.Parse(values[i++]);
-                separation = float.Parse(values[i++]);
-                matching = float.Parse(values[i++]);
+                //cohesion = float.Parse(values[i++]);
+                //allignment = float.Parse(values[i++]);
+                //separation = float.Parse(values[i++]);
+                //matching = float.Parse(values[i++]);
 
                 // The name
                 genus = values[i++];

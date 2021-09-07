@@ -123,6 +123,15 @@ public class PopulationContainer
     public void CheckExtinct()
     {
 
+        // Remove all null values (agents which have died)
+        for (int i = agents.Count - 1; i >= 0; i--)
+        {
+            if (agents[i].CompareTag("DeadAgent") || agents[i] == null)
+            {
+                agents.RemoveAt(i);
+            }
+        }
+
         // Set the size
         size = agents.Count;
 
@@ -158,26 +167,10 @@ public class PopulationContainer
         }
 
         // If we do not have an average genes value yet, calculate it from scratch
-        // TODO Fix this
         if (average == null || true)
         {
             //// Set average to the passed agent to start recalculating the average genes
             average = a.genes;
-            //int c = 1;
-            //for (int i = 0; i < agents.Count; i++)
-            //{
-            //    if (agents[i] != null)
-            //    {
-            //        // Add all of the genes
-            //        average += agents[i].genes;
-            //        c++;
-            //    }
-            //}
-
-            //// Now that the average is the sum of all genes, we divided it by the number of agents to find the average
-            ////average /= agents.Count + 1;
-            //average /= c;
-
         }
         // If we do, we can iteravely calculate it
         else
@@ -242,32 +235,25 @@ public class AncestorManager
 
     public void UpdatePopulation(BaseAgent agent)
     {
-        // The name of the agent 
-        string fullname = agent.genes.genus + " " + agent.genes.species;
-
         // If the population contains the species, add the agent to the species.
+        PopulationContainer container;
+        string fullname = agent.genes.genus + " " + agent.genes.species;
         if (population.ContainsKey(fullname))
         {
-            // Add the agent 
-            population[fullname].AddAgent(agent, fullname);
+            // Add the agent
+            container = population[fullname];
+            container.AddAgent(agent, fullname);
         }
         else
         {
             // Create a new population container and add the agent
-            population[fullname] = new PopulationContainer(agent.genes);
-            population[fullname].AddAgent(agent, fullname);
+            container = new PopulationContainer(agent.genes);
+            container.AddAgent(agent, fullname);
+            population[fullname] = container;
         }
 
         // Update the max size
-        population[fullname].max_size = Mathf.Max(population[fullname].max_size, population[fullname].size);
-
-        // Loop through each key and update the population
-        foreach (string key in population.Keys)
-        {
-            if (population[key].extinct == false)
-                // Dont double check... If a population is extinct, dont check it again.
-                population[key].CheckExtinct();
-        }
+        container.max_size = Mathf.Max(population[fullname].max_size, population[fullname].size);
     }
 
     public void SetupTesting()

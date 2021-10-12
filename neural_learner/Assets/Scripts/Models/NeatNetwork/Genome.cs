@@ -181,9 +181,9 @@ public class Genome
             }
         }
 
-        // If we have no connections, there is a 75% chance that the first connection formed will be to the movement neuron
+        // If we have no connections, there is a 90% chance that the first connection formed will be to the movement neuron
         NodeGene node1, node2;
-        if (connections.Count == 0 && 0.85f > Random.value)
+        if (connections.Count == 0 && 0.90f > Random.value)
         {
             // Grab the two nodes that we will be connecting
             node1 = nodes[keys[Random.Range(0, keys.Count)]];
@@ -473,10 +473,9 @@ public class Genome
 
     public string SaveGenome(string save_path)
     {
-        string code = "";
-
         int id;
         string method;
+        string code = "";
         string activation;
         NodeGeneType type;
 
@@ -499,11 +498,6 @@ public class Genome
             code += conneciton.GetInnovation() + "," + conneciton.getInNode() + "," + conneciton.getOutNode() + "," + conneciton.GetWeight() + "," + conneciton.IsExpressed() + "; ";
         }
 
-        ///
-        /// Genome:Innovation=0
-        /// Nodes: 0,lin_comb,Input,Tanh; 1,lin_comb,Input,Tanh; 2,lin_comb,Input,Tanh; 3,lin_comb,Input,Tanh; 4,lin_comb,Input,Tanh; 5,lin_comb,Input,Tanh; 6,lin_comb,Input,Tanh; 7,lin_comb,Input,Tanh; 8,lin_comb,Input,Tanh; 9,lin_comb,Input,Tanh; 10,lin_comb,Input,Tanh; 11,lin_comb,Input,Tanh; 12,lin_comb,Input,Tanh; 13,lin_comb,Input,Tanh; 14,lin_comb,Input,Tanh; 15,lin_comb,Input,Tanh; 16,lin_comb,Input,Tanh; 17,lin_comb,Input,Tanh; 18,lin_comb,Input,Tanh; 19,lin_comb,Input,Tanh; 20,lin_comb,Input,Tanh; 21,lin_comb,Input,Tanh; 22,lin_comb,Output,Tanh; 23,lin_comb,Output,Tanh; 24,lin_comb,Output,Tanh; 25,lin_comb,Output,Tanh; 26,lin_comb,Output,Tanh; 27,lin_comb,Output,Tanh;
-        ///
-        // "./Assets/SaveData/WriteLines.txt" 
         File.WriteAllText(save_path, code);
         return code;
     }
@@ -572,19 +566,9 @@ public class Genome
                     }
                     // Get the activation code
                     activation = node_data[3];
-                    NodeCalculationMethod calc_method = NodeCalculationMethod.LinComb;
-                    switch (method)
-                    {
-                        case "LinComb":
-                            calc_method = NodeCalculationMethod.LinComb;
-                            break;
-                        case "Latch":
-                            calc_method = NodeCalculationMethod.Latch;
-                            break;
-                    }
 
                     // Add node to genome
-                    new_genome.AddNode(new NodeGene(type, id, activation, calc_method));
+                    new_genome.AddNode(new NodeGene(type, id, activation, MethodHelp.FromName(method)));
                 }
             }
             else if (line.Contains("Connections:"))

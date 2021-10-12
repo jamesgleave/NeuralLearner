@@ -1,0 +1,24 @@
+Improvements to Neural Learner
+
+
+1) Node gene action objects
+
+Instead of using an enum to determine which calculation method to use (for now we have lin comb and latch), we should have a calculation object which handles that generally.
+With that object, instead of using a switch case, we can just call obj.calculate or something similar
+
+
+2) Agent special abilities
+
+A new feature to allow agents to get a random passive or active ability they can use (like boost or poison)
+
+
+3) Improve the way the genes are handled
+
+There are too many vars, maybe put into list?
+
+
+4) Improve senses
+
+The way senses work right now is not modular... How could we make it modular?
+If I want to add more senses, I must add substantial code.
+

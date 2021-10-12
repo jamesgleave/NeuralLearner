@@ -9,6 +9,8 @@ public class DisplayEvoNEAT : Display
     public List<NEATDisplayNeuron> input_neurons;
     public List<NEATDisplayNeuron> hidden_neurons;
     public List<NEATDisplayNeuron> output_neurons;
+    public List<NEATDisplayNeuron> combined;
+    public List<int> execution_order;
     public int input_index = 0;
     public int hidden_index = 0;
     public int output_index = 0;
@@ -70,17 +72,18 @@ public class DisplayEvoNEAT : Display
             input_names = StateManager.selected_agent.senses.observation_names;
 
             // Setup the output names
-            output_names = new List<string>();
-            output_names.Add("Move Forward");
-            output_names.Add("Rotate");
-            output_names.Add("Wants To Reproduce");
-            output_names.Add("Wants To Eat");
-            output_names.Add("Wants To Grab");
-            output_names.Add("Wants To Attack");
-            output_names.Add("Produce Red Pheromone");
-            output_names.Add("Produce Green Pheromone");
-            output_names.Add("Produce Blue Pheromone");
-
+            output_names = new List<string>
+            {
+                "Move Forward",
+                "Rotate",
+                "Wants To Reproduce",
+                "Wants To Eat",
+                "Wants To Grab",
+                "Wants To Attack",
+                "Produce Red Pheromone",
+                "Produce Green Pheromone",
+                "Produce Blue Pheromone"
+            };
         }
         else
         {
@@ -96,6 +99,15 @@ public class DisplayEvoNEAT : Display
             // Add to inputs
             if (model.GetInputs().Contains(n.Key))
             {
+
+                // Only add inputs if they have valid outputs
+                // TODO Fix naming issue
+                //if (n.Value.GetOutputIDs().Count == 0)
+                //{
+                //    input_names.RemoveAt(0);
+                //    continue;
+                //}
+
                 var x = Instantiate(neuron, transform).GetComponent<NEATDisplayNeuron>();
                 x.Setup(n.Value, this);
                 input_neurons.Add(x);
@@ -111,6 +123,15 @@ public class DisplayEvoNEAT : Display
             // Add to outputs
             else if (model.GetOutputs().Contains(n.Key))
             {
+
+                // Only add outputs if they have valid inputs
+                // TODO Fix naming issue
+                //if (n.Value.GetInputs().Count == 0)
+                //{
+                //    output_names.RemoveAt(0);
+                //    continue;
+                //}
+
                 var x = Instantiate(neuron, transform).GetComponent<NEATDisplayNeuron>();
                 x.Setup(n.Value, this);
                 output_neurons.Add(x);
@@ -149,7 +170,7 @@ public class DisplayEvoNEAT : Display
     private void SetupChildren()
     {
         // Get each child neuron
-        List<NEATDisplayNeuron> combined = new List<NEATDisplayNeuron>();
+        combined = new List<NEATDisplayNeuron>();
         combined.AddRange(input_neurons);
         combined.AddRange(hidden_neurons);
         combined.AddRange(output_neurons);
@@ -196,6 +217,9 @@ public class DisplayEvoNEAT : Display
         // Tick down the timer!
         cooldown -= Time.deltaTime;
 
+        // Get the neuron execution order
+        execution_order = model.neuron_execution_order;
+
         // Run inference
         if (Input.GetKeyDown(KeyCode.D))
         {
@@ -206,6 +230,12 @@ public class DisplayEvoNEAT : Display
                 inputs.Add(Random.Range(-1f, 1f));
             }
             print(model.Infer(inputs));
+        }
+
+        // Run inference
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            StartCoroutine("ShowOrder");
         }
     }
 
@@ -249,5 +279,22 @@ public class DisplayEvoNEAT : Display
         output.AddRange(hidden_neurons);
         output.AddRange(output_neurons);
         return output;
+    }
+
+    IEnumerator ShowOrder()
+    {
+        for (int i = 0; i < execution_order.Count; i++)
+        {
+            int exe_index = execution_order[i];
+            for (int j = 0; j < combined.Count; j++)
+            {
+                if (combined[j].neuron.GetNeuronID() == exe_index)
+                {
+                    combined[j].transform.localScale *= 1.5f;
+                    yield return new WaitForSeconds(.1f);
+                }
+            }
+
+        }
     }
 }

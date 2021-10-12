@@ -18,19 +18,6 @@ public class PheromoneGland : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            SpawnRed();
-        }
-        else if (Input.GetKeyDown(KeyCode.G))
-        {
-            SpawnGreen();
-        }
-        else if (Input.GetKeyDown(KeyCode.B))
-        {
-            SpawnBlue();
-        }
-
         cooldown -= Time.deltaTime;
     }
 

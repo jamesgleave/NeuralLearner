@@ -15,6 +15,9 @@ public class NEATNetwork : Model.BaseModel
     // A list to store neurons temporarily during the feed forward calculation
     public List<NEATNeuron> unprocessed_neurons;
 
+    // A list that stores neurons in the order they are executed
+    public List<int> neuron_execution_order = new List<int>();
+
     // The neurons of the network
     private Dictionary<int, NEATNeuron> neurons;
 
@@ -407,6 +410,12 @@ public class NEATNetwork : Model.BaseModel
             throw new System.Exception("Number of inputs must match number of input neurons! Expected: " + this.inputs.Count + ", Received: " + inputs.Count);
         }
 
+        // Here, if the execution order is known, we can use the smart inference method which is pretty much twice as fast
+        if (neuron_execution_order.Count > 0)
+        {
+            return SmartInfer(inputs);
+        }
+
         // Reset each neuron before running
         foreach (NEATNeuron n in neurons.Values)
         {
@@ -416,6 +425,7 @@ public class NEATNetwork : Model.BaseModel
 
         // Clear the unprocessed list and add all neurons to it
         unprocessed_neurons.Clear();
+        neuron_execution_order.Clear();
         unprocessed_neurons.AddRange(neurons.Values);
         unprocessed_neurons.Reverse();
 
@@ -424,6 +434,9 @@ public class NEATNetwork : Model.BaseModel
         {
             // Get the input from our neuron list
             NEATNeuron input_neuron = neurons[this.inputs[i]];
+
+            // Testing
+            neuron_execution_order.Add(input_neuron.GetNeuronID());
 
             // Give the input neuron its value
             input_neuron.FeedInput(-1, inputs[i]);
@@ -489,6 +502,8 @@ public class NEATNetwork : Model.BaseModel
 
                     // If the calculation is done, we can remove this node from the unprocessed list
                     n.order.Add(order++);
+                    // Testing
+                    neuron_execution_order.Add(n.GetNeuronID());
                     unprocessed_neurons.RemoveAt(x);
                 }
             }
@@ -503,6 +518,79 @@ public class NEATNetwork : Model.BaseModel
 
         // Finally, return the inference
         return output_values;
+    }
+
+    public List<float> SmartInfer(List<float> inputs)
+    {
+
+        // Reset each neuron before running TODO Move into lower loop
+        foreach (NEATNeuron n in neurons.Values)
+        {
+            n.Reset();
+            n.order.Clear();
+        }
+
+        output_values.Clear();
+        for (int i = 0, input_size = inputs.Count; i < neuron_execution_order.Count; i++)
+        {
+            int to_execute = neuron_execution_order[i];
+
+            // If the neuron is an input, feed it the input values
+            if (to_execute < input_size)
+            {
+                // Get the input from our neuron list
+                NEATNeuron input_neuron = neurons[i];
+
+                // Give the input neuron its value
+                input_neuron.FeedInput(-1, inputs[i]);
+
+                // Calculate the output
+                input_neuron.Calculate();
+
+                // For each of the input's outputs (lol) give the ouptut of this neuron
+                for (int r = 0; r < input_neuron.GetOutputIDs().Count; r++)
+                {
+                    // Get each of the neuron's outputs (receiver because it receives the output)
+                    NEATNeuron receiver = neurons[input_neuron.GetOutputIDs()[r]];
+
+                    // Get the product of the input's value and its weight (forward propogate)
+                    receiver.FeedInput(input_neuron.GetNeuronID(), input_neuron.GetOutput() * input_neuron.GetWeights()[r]);
+                }
+            }
+            else
+            {
+                // If all values are filled...
+                if (neurons[to_execute].IsReady())
+                {
+                    NEATNeuron n = neurons[to_execute];
+
+                    // Get the output
+                    n.Calculate();
+
+                    // Look at each output
+                    for (int r = 0; r < n.GetOutputIDs().Count; r++)
+                    {
+                        // Get the ith output for n
+                        int receiverID = n.GetOutputIDs()[r];
+                        // Perform the product calculation
+                        float receiver_value = n.GetOutput() * n.GetWeights()[r];
+
+                        // Give the neuron the input value calculated above
+                        neurons[receiverID].FeedInput(n.GetNeuronID(), receiver_value);
+                    }
+                }
+            }
+        }
+
+        // Gather all outputs.. TODO Move into upper loop
+        for (int i = 0; i < outputs.Count; i++)
+        {
+            output_values.Add(neurons[outputs[i]].GetOutput());
+        }
+
+        // Finally, return the inference
+        return output_values;
+
     }
 
     /// <summary>
@@ -755,8 +843,11 @@ public class NEATNeuron
                 // A latch neuron will always return 1 if sum squish is 0.80 or higher (latched) and input is greater than zero.
                 // If the output is less than or equal to zero, output zero
 
-                // TODO Dont forget that I removed the activation from the sum
-                if (output == 1 && sum > 0 || sum >= 1.0f)
+                // Activate the sum
+                float activ = activation.activate(sum);
+                //Debug.Log(activ + ", " + sum + ", " + activation.name);
+
+                if (output == 1 && activ > 0 || activ >= 0.80f)
                 {
                     output = 1;
                 }

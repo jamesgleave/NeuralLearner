@@ -100,7 +100,7 @@ MonoBehaviour:
   base_attack: 5
   base_defense: 5
   base_speed: 40
-  base_rotation_speed: 10
+  base_rotation_speed: 20
   base_perception: 14
   base_gestation_time: 5
   base_lifespan: 60
@@ -140,6 +140,10 @@ MonoBehaviour:
     species: 
     genetic_drift: 0
     code: {x: 0, y: 0, z: 0}
+    cohesion_factor: 0
+    separation_factor: 0
+    allignment_factor: 0
+    matching_factor: 0
   manager: {fileID: 0}
   meat: {fileID: 4058128813785644151, guid: 70565dae98084450eaaf14c20f28fea9, type: 3}
   egg: {fileID: 798380245572057900, guid: 147dc55d0b0304c8cbf8fc3ae99ab8ce, type: 3}
@@ -173,6 +177,8 @@ MonoBehaviour:
   egg_gestation_time: 0
   metabolism: 0
   true_metabolic_cost: 0
+  brain_cost: 0
+  cost_comparison: {x: 0, y: 0}
   time_to_die: 0
   control: 2
   node:
@@ -204,11 +210,20 @@ MonoBehaviour:
       species: 
       genetic_drift: 0
       code: {x: 0, y: 0, z: 0}
+      cohesion_factor: 0
+      separation_factor: 0
+      allignment_factor: 0
+      matching_factor: 0
   generation: 0
+  num_pellets_eaten: 0
+  num_meat_eaten: 0
+  num_eggs_eaten: 0
+  num_kills: 0
   god: 0
   grabbed_force: 0
   strength: 0
   obs: []
+  torque_for_boids: 0
 --- !u!212 &8284897868176631423
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -316,6 +331,7 @@ MonoBehaviour:
   green_distance: 0
   observations: []
   observation_names: []
+  agent_context: []
 --- !u!60 &8284897868176631421
 PolygonCollider2D:
   m_ObjectHideFlags: 0

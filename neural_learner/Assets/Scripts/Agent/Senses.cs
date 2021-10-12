@@ -41,6 +41,9 @@ public class Senses : MonoBehaviour
 
     // The buffer for the circlecast
     public RaycastHit2D[] buffer;
+    [Tooltip("The amount of time until the agent forgets something")]
+    public float sense_memory;
+
     ContactFilter2D filter;
 
     /// <summary>
@@ -61,6 +64,7 @@ public class Senses : MonoBehaviour
         // Create the buffer
         buffer = new RaycastHit2D[20];
         filter = new ContactFilter2D();
+        //sense_memory = Mathf.Log(GetComponent<BaseAgent>());
     }
 
     public void SetupNames()
@@ -99,7 +103,7 @@ public class Senses : MonoBehaviour
         observation_names.Add("Agent's Lifespan");
         observation_names.Add("Agent's Speed");
         observation_names.Add("Agent's Rotation");
-        observation_names.Add("ID Of Grabbed Entity");
+        observation_names.Add("Agent Has Grabbed Object");
 
         // Pheromones
         observation_names.Add("Is Facing Red Pheromone");
@@ -127,8 +131,6 @@ public class Senses : MonoBehaviour
             // If i is not null, we add the angle too, but if it is null then we add 0
             if (i != null)
             {
-                // Add the dot product
-                //observations.Add((1 - Vector3.Dot(transform.up, (i.transform.position - transform.position).normalized)) / 2);
                 // Add the normalized angle (between -1 and 1)
                 observations.Add(Vector3.SignedAngle(transform.up, i.transform.position - transform.position, transform.forward) / 180f);
             }
@@ -137,14 +139,6 @@ public class Senses : MonoBehaviour
                 observations.Add(0);
             }
         }
-
-        // We normalize the num_* proportionally to each value (min max scaling)
-        //float max = Mathf.Max(num_agents, num_eggs, num_meats, num_pellets);
-        //float min = Mathf.Min(num_agents, num_eggs, num_meats, num_pellets);
-        //float scaled_num_agents = (num_agents - min) / Mathf.Max(max - min, 1);
-        //float scaled_num_eggs = (num_eggs - min) / Mathf.Max(max - min, 1);
-        //float scaled_num_meats = (num_meats - min) / Mathf.Max(max - min, 1);
-        //float scaled_num_pellets = (num_pellets - min) / Mathf.Max(max - min, 1);
 
         // The max number of this seen is the size of the buffer array used to store the collisions from the overlap circle and therefore we can use its lenght to normalize each value
         float scaled_num_agents = num_agents / (float)buffer.Length;
@@ -201,8 +195,8 @@ public class Senses : MonoBehaviour
         // Whether or not the agent has something grabbed (21)
         if (agent.grabbed != null)
         {
-            // Add the normalized ID of the object we have grabbed
-            observations.Add(agent.grabbed.GetID() / (int)ID.MaxID);
+            // Let the agent know it has something grabbed
+            observations.Add(1);
         }
         else
         {
@@ -276,8 +270,11 @@ public class Senses : MonoBehaviour
 
         // Look at stuff!
         Physics2D.CircleCast(origin: transform.position + transform.up * vision_width, radius: vision_width, direction: transform.up, distance: vision_distance, results: buffer, contactFilter: filter.NoFilter());
-        foreach (RaycastHit2D c in buffer)
+        for (int i = 0; i < buffer.Length; i++)
         {
+            // Grab the object from the buffer
+            RaycastHit2D c = buffer[i];
+
             // If we have a null value, skip!
             if (c.collider == null)
             {
@@ -285,8 +282,9 @@ public class Senses : MonoBehaviour
             }
 
             // Define the game object we are looking at
+            // We only detect the agent's body... This is to avoid adding it twice to the detected list (avoid checking as well)
             GameObject g;
-            if (c.collider.CompareTag("Body") || c.collider.CompareTag("Head"))
+            if (c.collider.CompareTag("Body"))
             {
                 // Check if we have collided with an agent's body component and if so we must look at the parent (the agent)
                 g = c.collider.transform.parent.gameObject;
@@ -303,8 +301,6 @@ public class Senses : MonoBehaviour
                 // Use a switch case cuz it be faster
                 float raw_dist = Vector2.Distance(obj.transform.position, transform.position);
                 float dist = raw_dist / (vision_distance + vision_width * 2f);
-
-                // Add the object to the list of things we have detected
                 detected.Add(obj);
 
                 switch ((ID)obj.GetID())
@@ -380,50 +376,6 @@ public class Senses : MonoBehaviour
         return detected;
     }
 
-    public string Touch(Collision2D collision, Vector3 facing)
-    {
-        if (collision.gameObject.TryGetComponent(out Interactable i))
-        {
-            // If the dot product between the forward vector of an agent and the interactable is greater than 0.5 then it is facing the object
-            bool is_facing = Vector3.Dot(facing, (i.transform.position - transform.position).normalized) > 0.5f;
-
-            if (is_facing)
-            {
-                return "Front";
-            }
-            else
-            {
-                return "Back";
-            }
-        }
-        else
-        {
-            return "Unknown";
-        }
-    }
-
-    public string Touch(Collider2D collision, Vector3 facing)
-    {
-        if (collision.gameObject.TryGetComponent(out Interactable i))
-        {
-            // If the dot product between the forward vector of an agent and the interactable is greater than 0.5 then it is facing the object
-            bool is_facing = Vector3.Dot(facing, (i.transform.position - transform.position).normalized) > 0.5f;
-
-            if (is_facing)
-            {
-                return "Front";
-            }
-            else
-            {
-                return "Back";
-            }
-        }
-        else
-        {
-            return "Unknown";
-        }
-    }
-
     public void ClearDetection()
     {
         detected.Clear();
@@ -432,32 +384,12 @@ public class Senses : MonoBehaviour
 
     public void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(transform.position + transform.up * vision_width, vision_width);
-        Gizmos.DrawWireSphere(transform.position + transform.up * vision_distance, vision_width);
-
-        foreach (Interactable i in detected)
+        for (int i = 0; i < detected.Count; i++)
         {
-            if (i != null)
+            if (detected[i] != null)
             {
-                Gizmos.DrawLine(transform.position, i.transform.position);
+                Gizmos.DrawLine(transform.position, detected[i].transform.position);
             }
-        }
-
-        if (closest_agent != null)
-        {
-            Gizmos.DrawSphere(closest_agent.transform.position, 0.1f);
-        }
-        if (closest_meat != null)
-        {
-            Gizmos.DrawSphere(closest_meat.transform.position, 0.1f);
-        }
-        if (closest_pellet != null)
-        {
-            Gizmos.DrawSphere(closest_pellet.transform.position, 0.1f);
-        }
-        if (closest_egg != null)
-        {
-            Gizmos.DrawSphere(closest_egg.transform.position, 0.1f);
         }
     }
 }

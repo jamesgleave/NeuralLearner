@@ -114,6 +114,7 @@ public class NEATDisplayNeuron : Interactable
     public virtual void OnSetup()
     {
         seed = Random.Range(0, 10000);
+        name = "Neuron-" + neuron.GetNeuronID();
     }
 
     public void UpdateSize()

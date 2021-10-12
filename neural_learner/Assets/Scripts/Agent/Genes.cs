@@ -409,55 +409,55 @@ public class Genes
 
     private void ClampMutationRates()
     {
-        base_mutation_rate = Mathf.Clamp01(base_mutation_rate);
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (base_mutation_rate <= 0.01 || base_mutation_rate >= 1)
+        {
+            base_mutation_rate = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (colour_mutation_prob < 0.01f || colour_mutation_prob >= 1)
+        {
+            colour_mutation_prob = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (attribute_mutation_rate < 0.01f || attribute_mutation_rate >= 1)
+        {
+            attribute_mutation_rate = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (neuro_mutation_prob < 0.01f || neuro_mutation_prob >= 1)
+        {
+            neuro_mutation_prob = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (weight_mutation_prob < 0.01f || weight_mutation_prob >= 1)
+        {
+            weight_mutation_prob = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (bias_mutation_prob < 0.01f || bias_mutation_prob >= 1)
+        {
+            bias_mutation_prob = Random.Range(0, 1f);
+        }
+
+        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
+        if (dropout_prob < 0.01f || dropout_prob >= 1)
+        {
+            dropout_prob = Random.Range(0, 1f);
+        }
+
+        base_mutation_rate = Mathf.Clamp(base_mutation_rate, 0.1f, 1f);
         colour_mutation_prob = Mathf.Clamp01(colour_mutation_prob);
         attribute_mutation_rate = Mathf.Clamp01(attribute_mutation_rate);
         neuro_mutation_prob = Mathf.Clamp01(neuro_mutation_prob);
         weight_mutation_prob = Mathf.Clamp01(weight_mutation_prob);
         bias_mutation_prob = Mathf.Clamp01(bias_mutation_prob);
         dropout_prob = Mathf.Clamp01(dropout_prob);
-
-        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
-        if (base_mutation_rate == 0 || base_mutation_rate == 1)
-        {
-            base_mutation_rate = Random.Range(0, 1f);
-        }
-
-        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
-        if (colour_mutation_prob < 0.01f || colour_mutation_prob == 1)
-        {
-            colour_mutation_prob = Random.Range(0, 1f);
-        }
-
-        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
-        if (attribute_mutation_rate < 0.01f || attribute_mutation_rate == 1)
-        {
-            attribute_mutation_rate = Random.Range(0, 1f);
-        }
-
-        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
-        if (neuro_mutation_prob < 0.01f || neuro_mutation_prob == 1)
-        {
-            neuro_mutation_prob = Random.Range(0, 1f);
-        }
-
-        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
-        if (weight_mutation_prob < 0.01f || weight_mutation_prob == 1)
-        {
-            weight_mutation_prob = Random.Range(0, 1f);
-        }
-
-        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
-        if (bias_mutation_prob < 0.01f || bias_mutation_prob == 1)
-        {
-            bias_mutation_prob = Random.Range(0, 1f);
-        }
-
-        // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
-        if (dropout_prob < 0.01f || dropout_prob == 1)
-        {
-            dropout_prob = Random.Range(0, 1f);
-        }
     }
 
     private void TryMutateAttributes()
@@ -527,7 +527,7 @@ public class Genes
         // There is a small change that a body component will mutate
         if (GetProb(base_mutation_rate * attribute_mutation_rate * colour_mutation_prob))
         {
-            if (GetProb(1f / 5f))
+            if (GetProb(1 / 3))
             {
                 int head_components = GameObject.FindGameObjectWithTag("manager").GetComponent<SpriteManager>().head_components.Count;
                 spritemap["head"] = Random.Range(0, head_components);

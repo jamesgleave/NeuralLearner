@@ -67,6 +67,7 @@
     <Compile Include="Assets/Scripts/Managers/TimeManager.cs" />
     <Compile Include="Assets/Scripts/Brains/EvolutionaryNEATLearner.cs" />
     <Compile Include="Assets/Scripts/Models/NeatNetwork/NodeGeneType.cs" />
+    <Compile Include="Assets/Scripts/UI/MainMenu.cs" />
     <Compile Include="Assets/Scripts/Testing/Boids.cs" />
     <Compile Include="Assets/Scripts/Models/NeatNetwork/NEATInputContainer.cs" />
     <Compile Include="Assets/Scripts/Inanimates/Interactable.cs" />
@@ -127,11 +128,21 @@
     <Compile Include="Assets/Scripts/UI/UILineRenderer.cs" />
     <Compile Include="Assets/Scripts/UI/GeneBarChart.cs" />
     <Compile Include="Assets/Scripts/Inanimates/Egg.cs" />
+    <Compile Include="Assets/Scripts/Agent/Abilities/AgentSpecialAbilities.cs" />
+    <Compile Include="Assets/Scripts/Agent/Abilities/PassiveAbilities.cs" />
+    <Compile Include="Assets/Scripts/Agent/Abilities/ActiveAbilities.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets/SaveData/skurt/genome.txt" />
+     <None Include="Assets/SaveData/ooooo/genome.txt" />
      <None Include="Assets/SaveData/skurt/genes.txt" />
+     <None Include="Assets/SaveData/Heavy/genome.txt" />
+     <None Include="Assets/Notes/notes.txt" />
      <None Include="Assets/Scripts/Agent/names.txt" />
+     <None Include="Assets/SaveData/ooooo/genes.txt" />
+     <None Include="Assets/SaveData/YumSpin!/genome.txt" />
+     <None Include="Assets/SaveData/YumSpin!/genes.txt" />
+     <None Include="Assets/SaveData/Heavy/genes.txt" />
     <Reference Include="UnityEngine">
       <HintPath>/Applications/Unity/Hub/Editor/2020.1.0f1/Unity.app/Contents/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

@@ -31,11 +31,16 @@ public class NodeGene
         this.type = type;
         this.id = id;
 
-        // Set as sigmoid if it is an output node
+        // Set as Tanh if it is an output node
         if (IsOutput())
         {
             activation = "Tanh";
         }
+        else if (IsInput())
+        {
+            activation = "Linear";
+        }
+
         this.activation = activation;
         this.method = method;
     }

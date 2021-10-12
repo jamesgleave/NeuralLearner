@@ -77,38 +77,6 @@ namespace Activations
         }
     }
 
-    public class LeakyRelu : Activation
-    {
-        float alpha;
-        public LeakyRelu(float a)
-        {
-            name = "LeakyRelu" + a.ToString();
-            alpha = 1 / a;
-        }
-
-        public override float activate(float value)
-        {
-            // The ReLu function.
-            if (value >= 0)
-            {
-                return value;
-            }
-            else
-            {
-                return value * alpha;
-            }
-        }
-
-        public override List<float> activate(List<float> values)
-        {
-            for (int i = 0; i < values.Count; i++)
-            {
-                values[i] = activate(values[i]);
-            }
-            return values;
-        }
-    }
-
     public class Tanh : Activation
     {
         public Tanh()
@@ -134,36 +102,6 @@ namespace Activations
         {
             // 1-tanh(x)^2
             return 1 - Mathf.Pow(activate(value), 2);
-        }
-    }
-
-    public class Softmax : Activation
-    {
-        public Softmax()
-        {
-            name = "Softmax";
-        }
-
-        public override float activate(float value)
-        {
-            return 0.0f;
-        }
-
-        public override List<float> activate(List<float> values)
-        {
-            float sum = 0;
-
-            for (int i = 0; i < values.Count; i++)
-            {
-                sum += Mathf.Exp(values[i]);
-            }
-
-            for (int i = 0; i < values.Count; i++)
-            {
-                values[i] = Mathf.Exp(values[i]) / sum;
-            }
-
-            return values;
         }
     }
 
@@ -232,30 +170,107 @@ namespace Activations
         }
     }
 
+    public class Invert : Activation
+    {
+        public Invert()
+        {
+            name = "Invert";
+        }
+
+        public override float activate(float value)
+        {
+            return -value;
+        }
+
+        public override List<float> activate(List<float> values)
+        {
+            for (int i = 0; i < values.Count; i++)
+            {
+                values[i] = activate(values[i]);
+            }
+            return values;
+        }
+
+        public float Derivative(float value)
+        {
+            return -1;
+        }
+    }
+
+
+    public class IncorrectActivationException : Exception
+    {
+
+    }
+
     public static class ActivationHelper
     {
-        public static string GetRandomActivation()
-        {
-            // Create a list of names
-            List<string> names = new List<string>();
+        // Create a list of names
+        private static List<string> names = new List<string>();
 
+        private static void AddNames()
+        {
             // Add all of the codes
-            //names.Add("Softmax");
-            names.Add("Sigmoid");
             names.Add("Tanh");
             names.Add("Linear");
             names.Add("Relu");
             names.Add("Abs");
+            names.Add("Invert");
+        }
+
+        public static string GetRandomActivation()
+        {
+            // If this function is called for the first time, we add the names to the static name list
+            if (names.Count == 0)
+            {
+                AddNames();
+            }
 
             // Return a random name
             return names[UnityEngine.Random.Range(0, names.Count)];
         }
 
-        public static void FromCode()
+        public static Activation FromName(string activ)
         {
+            // Return a linear activation
+            if (activ.Equals("Linear"))
+            {
+                return new Activations.Linear();
+            }
 
+            // Return a Relu activation
+            if (activ.Equals("Relu"))
+            {
+                return new Activations.Relu();
+            }
+
+            // Return a Tahnh activation
+            if (activ.Contains("Tanh"))
+            {
+                return new Activations.Tanh();
+            }
+
+            // Return a absolute value activation
+            if (activ.Contains("Abs"))
+            {
+                return new Activations.Abs();
+            }
+
+            // Return a Sigmoid activation
+            if (activ.Contains("Sigmoid"))
+            {
+                return new Activations.Sigmoid();
+            }
+
+            // Return an Invert activation
+            if (activ.Contains("Invert"))
+            {
+                return new Activations.Invert();
+            }
+
+            throw new IncorrectActivationException();
+            //return new Activations.Linear();
         }
     }
-
 }
 

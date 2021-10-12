@@ -336,16 +336,20 @@ MonoBehaviour:
   base_speed: 25
   base_rotation_speed: 50
   base_perception: 20
-  base_gestation_time: 10
+  base_gestation_time: 20
   base_lifespan: 800
   base_mass: 2
   base_consumption_rate: 20
-  base_update_rate: 250
+  base_update_rate: 500
+  wants_move_forward: 0
+  wants_rotate_clockwise: 0
   wants_to_breed: 0
   wants_to_eat: 0
   wants_to_grab: 0
   wants_to_attack: 0
-  inf: []
+  wants_to_produce_red_pheromone: 0
+  wants_to_produce_green_pheromone: 0
+  wants_to_produce_blue_pheromone: 0
   genus: 
   species: 
   original_name: 
@@ -411,11 +415,7 @@ MonoBehaviour:
   egg_gestation_time: 0
   metabolism: 0
   true_metabolic_cost: 0
-  amount_used_brain: 0
-  amount_used_metabolism: 0
-  amount_used_movement: 0
   brain_cost: 1
-  brain_cost_reduction_factor: 175
   cost_comparison: {x: 0, y: 0}
   time_to_die: 0
   control: 2
@@ -453,6 +453,10 @@ MonoBehaviour:
       allignment_factor: 0
       matching_factor: 0
   generation: 0
+  num_pellets_eaten: 0
+  num_meat_eaten: 0
+  num_eggs_eaten: 0
+  num_kills: 0
   god: 0
   grabbed_force: 0
   strength: 0

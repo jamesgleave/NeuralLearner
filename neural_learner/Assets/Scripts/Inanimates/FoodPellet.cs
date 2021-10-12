@@ -90,6 +90,13 @@ public class FoodPellet : Interactable
     // Update is called once per frame
     public void Update()
     {
+
+        // If the pellet is too far, respawn it
+        if (manager.teleport && Vector2.Distance(transform.position, manager.transform.position) > (manager.gridsize) * 1.25f)
+        {
+            manager.RecycleEnergy(Eat());
+        }
+
         if (max_energy > energy + (max_energy / growth_rate) * Time.deltaTime && max_energy > energy_consumed + (max_energy / growth_rate) * Time.deltaTime)
         {
             // Extract energy from the manager

@@ -478,7 +478,7 @@ MonoBehaviour:
   pellet_distrobution: 25
   pellet_clusters: 60
   food_pellet_size: 2
-  food_pellet_energy: 20
+  food_pellet_energy: 40
   pellet: {fileID: 3829854075992685049, guid: 72416a997ceb74010b84d5ace9c7462e, type: 3}
   food_pellet_manager: {fileID: 2047405934}
   food_pellets: []
@@ -491,9 +491,11 @@ MonoBehaviour:
   agent_pellet_threshold: 200
   agent: {fileID: 8284897868176631410, guid: fbd032cd3431242748fe08f4ef324252, type: 3}
   egg: {fileID: 798380245572057900, guid: 147dc55d0b0304c8cbf8fc3ae99ab8ce, type: 3}
-  starting_agents: 150
+  starting_agents: 250
   min_agents: 10
-  metabolism_scale_rate: 12.5
+  metabolism_scale_rate: 6
+  movement_cost_scale_rate: 500
+  brain_cost_reduction_factor: 500
   agents: []
   energy: 0
   initial_energy: 0
@@ -505,6 +507,7 @@ MonoBehaviour:
   percent_energy_in_agents: 0
   percent_energy_in_ether: 0
   stat_manager:
+    manager: {fileID: 0}
     total_energy: 0
     percent_energy_in_agent_bi_product: 0
     percent_energy_in_agents: 0
@@ -544,7 +547,6 @@ MonoBehaviour:
     counts: []
   spawn_manager: {fileID: 2047405935}
   use_auto_manual_collection: 0
-  herding_multiplier: 0
   num_active_food: 0
 --- !u!4 &2047405930
 Transform:

@@ -78,53 +78,7 @@ namespace Parse
 
         public static Activations.Activation ReadActivation(string activ)
         {
-            // Return a linear activation
-            if (activ.Equals("Linear"))
-            {
-                return new Activations.Linear();
-            }
-
-            // Return a Relu activation
-            if (activ.Equals("Relu"))
-            {
-                return new Activations.Relu();
-            }
-
-            // Return a LeakyRelu activation
-            if (activ.Contains("LeakyRelu"))
-            {
-                char delim = '.';
-                float alpha = float.Parse(activ.Split(delim)[1]);
-                return new Activations.LeakyRelu(alpha);
-            }
-
-            // Return a Tahnh activation
-            if (activ.Contains("Tanh"))
-            {
-                return new Activations.Tanh();
-            }
-
-            // Return a absolute value activation
-            if (activ.Contains("Abs"))
-            {
-                return new Activations.Abs();
-            }
-
-            // Return a Softmax activation
-            if (activ.Contains("Softmax"))
-            {
-                return new Activations.Softmax();
-            }
-
-            // Return a Sigmoid activation
-            if (activ.Contains("Sigmoid"))
-            {
-                return new Activations.Sigmoid();
-            }
-
-            // If invalid return linear
-            return new Activations.Linear();
-
+            return Activations.ActivationHelper.FromName(activ);
         }
 
         public static List<string> ParseMutationInstructions(string instr)

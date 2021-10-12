@@ -5,6 +5,10 @@ using UnityEngine;
 [System.Serializable]
 public class StatisticManager
 {
+    /// <summary>
+    /// The manager of the simulation
+    /// </summary>
+    public Manager manager;
 
     [Header("Energy")]
     public float total_energy;
@@ -117,6 +121,20 @@ public class StatisticManager
 
         num_agents = agents.Count;
     }
+
+    public void LoopThrough()
+    {
+        foreach (BaseAgent agent in manager.agents)
+        {
+            Operate(agent);
+        }
+    }
+
+    public void Operate(BaseAgent agent)
+    {
+
+    }
+
 
     public void Update()
     {

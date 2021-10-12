@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class SimulationInitializer : MonoBehaviour
 {
 
@@ -42,3 +43,6 @@ public class SimulationInitializer : MonoBehaviour
         Cursor.SetCursor(cursor, offset, CursorMode.ForceSoftware);
     }
 }
+
+
+

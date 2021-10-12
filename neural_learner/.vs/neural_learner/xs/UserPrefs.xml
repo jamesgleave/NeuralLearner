@@ -1,28 +1,24 @@
 ﻿<Properties StartupConfiguration="{B3AF31EC-A24B-61DB-F2F2-AC2579EB55ED}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Managers/FoodPelletManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Agent/Senses.cs">
     <Files>
-      <File FileName="Assets/Scripts/Managers/FoodPelletManager.cs" Line="1" Column="1" />
-      <File FileName="Assets/Scripts/Agent/NameGenerator.cs" />
-      <File FileName="Assets/Scripts/Managers/SpawnManager.cs" />
-      <File FileName="Assets/Scripts/Agent/Senses.cs" />
-      <File FileName="Assets/Scripts/Managers/Manager.cs" />
-      <File FileName="Assets/Scripts/Inanimates/Meat.cs" />
-      <File FileName="Assets/Scripts/Managers/SimulationInitializer.cs" />
-      <File FileName="Assets/Scripts/Managers/SimulationSceneManager.cs" />
-      <File FileName="Assets/Scripts/UserControl/UserControllerEvoSim.cs" />
-      <File FileName="Assets/Scripts/Inanimates/Egg.cs" />
-      <File FileName="Assets/Scripts/Agent/BaseAgent.cs" />
-      <File FileName="Assets/Scripts/Managers/AncestorManager.cs" />
-      <File FileName="Assets/Scripts/AncestorDisplay/AncestorDisplayNode.cs" />
-      <File FileName="Assets/Scripts/Models/NeatNetwork/NEATNetwork.cs" />
-      <File FileName="Assets/Scripts/DisplayModel/NeatNetwork/NEATDisplayNeuron.cs" />
-      <File FileName="Assets/Scripts/Models/NeatNetwork/Genome.cs" Line="114" Column="1" />
-      <File FileName="Assets/Scripts/Models/NeatNetwork/NodeGeneAction.cs" />
+      <File FileName="Assets/Scripts/Managers/FoodPelletManager.cs" Line="114" Column="41" />
+      <File FileName="Assets/Scripts/Agent/AgentSpecialAbilities.cs" Line="139" Column="6" />
+      <File FileName="Assets/Scripts/Agent/Abilities/ActiveAbilities.cs" Line="43" Column="1" />
+      <File FileName="Assets/Scripts/Agent/Abilities/PassiveAbilities.cs" Line="26" Column="36" />
+      <File FileName="Assets/Scripts/Inanimates/FoodPellet.cs" Line="91" Column="21" />
+      <File FileName="Assets/Scripts/Agent/Genes.cs" Line="454" Column="72" />
+      <File FileName="Assets/Notes/notes.txt" Line="26" Column="1" />
+      <File FileName="Assets/Scripts/Models/NeatNetwork/NEATNetwork.cs" Line="118" Column="23" />
+      <File FileName="Assets/Scripts/Models/NeatNetwork/Genome.cs" Line="409" Column="48" />
+      <File FileName="Assets/Scripts/DisplayModel/NeatNetwork/DisplayEvoNEAT.cs" Line="142" Column="18" />
+      <File FileName="Assets/Scripts/Managers/Manager.cs" Line="248" Column="51" />
+      <File FileName="Assets/Scripts/Agent/BaseAgent.cs" Line="451" Column="45" />
+      <File FileName="Assets/Scripts/Agent/Senses.cs" Line="66" Column="73" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="53913132-8ed1-43f5-b677-b1ba357d5813" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="e93af4b7-d060-4f7b-8486-b97fc870d25e" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

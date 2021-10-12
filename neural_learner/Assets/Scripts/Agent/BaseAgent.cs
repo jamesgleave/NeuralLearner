@@ -78,6 +78,17 @@ public class BaseAgent : Interactable
 
 
     [Header("Agent Decisions")]
+
+    /// <summary>
+    ///   <para> How much the agent wants to move forward</para>
+    /// </summary>
+    public float wants_move_forward;
+
+    /// <summary>
+    ///   <para> How much the agent wants to rotate clockwise</para>
+    /// </summary>
+    public float wants_rotate_clockwise;
+
     /// <summary>
     ///   <para>Whether the agent wants to breed or not</para>
     /// </summary>
@@ -98,8 +109,23 @@ public class BaseAgent : Interactable
     /// </summary>
     public bool wants_to_attack;
 
+    /// <summary>
+    ///   <para>Whether the agent wants to produce red pheromone</para>
+    /// </summary>
+    public bool wants_to_produce_red_pheromone;
+
+    /// <summary>
+    ///   <para>Whether the agent wants to produce green pheromone</para>
+    /// </summary>
+    public bool wants_to_produce_green_pheromone;
+
+    /// <summary>
+    ///   <para>Whether the agent wants to produce blue pheromone</para>
+    /// </summary>
+    public bool wants_to_produce_blue_pheromone;
+
     // testing
-    public List<float> inf = new List<float>();
+    private List<float> inf = new List<float>();
 
 
     [Header("Aquired Agent Attributes")]
@@ -283,7 +309,7 @@ public class BaseAgent : Interactable
     /// </summary>
     public float metabolism;
     /// <summary>
-    ///   <para>The actual cost with all factors included.</para>
+    ///   <para>The actual cost with all factors included deducted every frame.</para>
     /// </summary>
     public float true_metabolic_cost;
 
@@ -291,11 +317,6 @@ public class BaseAgent : Interactable
     /// If true, having a large brain will require more energy
     /// </summary>
     public bool brain_cost;
-
-    /// <summary>
-    /// Increasing this value decreases the amount of energy is used by the agents brain
-    /// </summary>
-    public float brain_cost_reduction_factor;
 
     /// <summary>
     /// TODO DELETE LATER
@@ -326,10 +347,31 @@ public class BaseAgent : Interactable
     /// </summary>
     public AncestorNode node;
 
+    [Space()]
     /// <summary>
     ///   <para>The generation of the agent. The first generation (generation=0), is the first agent of a specific species</para>
     /// </summary>
     public int generation;
+
+    /// <summary>
+    /// The number of pellets consumed by the agent in its lifetime
+    /// </summary>
+    public int num_pellets_eaten;
+
+    /// <summary>
+    /// The number of meats consumed by the agent in its lifetime
+    /// </summary>
+    public int num_meat_eaten;
+
+    /// <summary>
+    /// The number of meats consumed by the agent in its lifetime
+    /// </summary>
+    public int num_eggs_eaten;
+
+    /// <summary>
+    /// The number of other agents killed
+    /// </summary>
+    public int num_kills;
 
 
     /// <summary>
@@ -370,8 +412,6 @@ public class BaseAgent : Interactable
 
         // The cost of movement and stuff (starts small and increases as it grows
         metabolism = (Mathf.Pow(genes.size, 2) * genes.speed + genes.perception + Mathf.Pow((genes.attack * genes.defense), 2)) * 0.25f;
-        //print(GetRawName() + ": " + genes.size + "^2 * " + genes.speed + " + " + genes.perception + " + " + genes.attack * genes.defense + "^2");
-
 
         // How fast can the consume food?
         consumption_rate = (base_consumption_rate / Mathf.Exp(-genes.size)) * 0.5f;
@@ -395,12 +435,14 @@ public class BaseAgent : Interactable
         // Setup the base interactable
         base.Setup(id);
 
-
         // Give the rigid body the mass
         rb.mass = (genes.size * genes.size) * base_mass + base_mass;
 
         // Setup the sprite for the agent
         manager.SetSprite(this, genes.colour_r, genes.colour_g, genes.colour_b);
+
+        // Set up the agent's brain
+        brain = GetComponent<Brain>();
 
         // Set the senses up
         senses = GetComponent<Senses>();
@@ -427,10 +469,6 @@ public class BaseAgent : Interactable
             movement_speed = base_speed;
             rotation_speed = base_rotation_speed;
         }
-
-        // Finally, set up the brain!!
-        brain = GetComponent<Brain>();
-        //brain.Setup();
 
         // Setup the joint for grabbing!
         GetComponent<RelativeJoint2D>().maxForce = (1 + genes.vitality) * 5;
@@ -508,7 +546,6 @@ public class BaseAgent : Interactable
                 if (grabbed_force > strength)
                 {
                     ReleaseGrab();
-                    //print("Grab force too high: " + strength.ToString() + " < " + grabbed_force.ToString());
                 }
             }
 
@@ -571,7 +608,7 @@ public class BaseAgent : Interactable
     protected virtual void ExistentialCost()
     {
         // The cost of existing with the cost of moving and the cost of having a large brain
-        float brain_cost = this.brain_cost ? (brain.GetModel().GetComplexity() / brain_cost_reduction_factor) : 0;
+        float brain_cost = this.brain_cost ? (brain.GetModel().GetComplexity() / manager.brain_cost_reduction_factor) : 0;
         float cost = ((metabolism + brain_cost) * Time.deltaTime) / manager.metabolism_scale_rate;
         cost_comparison.Set((metabolism + brain_cost), metabolism);
         energy -= cost;
@@ -733,76 +770,73 @@ public class BaseAgent : Interactable
     public void LearningControl()
     {
 
+        // Only update if the update time has been triggered
+        if (internal_clock < (base_update_rate / 1000) * genes.clockrate)
+        {
+            // Do nothing right now
+            // This is case, the agent's internal clock has not cycled and therefore the agent cannot make a new decision yet.
+        }
+        else
+        {
+            // Reset the agent's internal clock
+            internal_clock = 0;
+
+            // Sense the environment
+            SenseEnv();
+
+            // Move back to other side if goes to far
+            if ((Vector2.Distance(transform.position, manager.transform.position) > (manager.gridsize) * 1.25f) && manager.teleport)
+            {
+                transform.position = -transform.position;
+                transform.position = Vector3.MoveTowards(transform.position, manager.transform.position, 3f);
+            }
+
+            // Clear the list of inferences and pass in our observations
+            inf.Clear();
+            inf.AddRange(brain.GetAction(senses.GetObservations(this)));
+
+            // Set the decisions
+            wants_move_forward = inf[0];
+            wants_rotate_clockwise = inf[1];
+
+            wants_to_breed = is_mature && inf[2] >= 0; //is_mature && (inf[2] > 0 || energy > max_energy * 1.75f);
+            wants_to_eat = inf[3] >= 0;
+            wants_to_grab = inf[4] > 0;
+            wants_to_attack = inf[5] > 0;
+            wants_to_produce_red_pheromone = inf[6] > 0.5;
+            wants_to_produce_red_pheromone = inf[7] > 0.5;
+            wants_to_produce_red_pheromone = inf[8] > 0.5;
+
+            // Pheromones
+            TryProducingPheromone();
+
+            // If the agent wants to breed and has grabbed another agent, check if that agent is close enough genetically or if it has the same name (meaning it is the same species)
+            if (wants_to_breed && grabbed != null && grabbed.TryGetComponent<BaseAgent>(out BaseAgent a) && (genes.CalculateGeneticDrift(a.genes) < 1 || a.GetRawName().Equals(GetRawName())))
+            {
+                Breed(a);
+            }
+            // If it does not then asexually reproduce
+            else if (wants_to_breed)
+            {
+                LayEgg();
+            }
+
+            // If we have an agent grabbed and we want to attack then attack it!
+            if (grabbed != null && grabbed.GetID() == (int)ID.Wobbit && wants_to_attack)
+            {
+                Attack((BaseAgent)grabbed);
+            }
+        }
+
+        // After the agent has made a decision or not, we use its inferences (new or old) to make the agent act
         // If we have something grabbed and are hungry then eat it!
         if (wants_to_eat && grabbed != null)
         {
             Eat(grabbed);
         }
 
-        // Only update if the update time has been triggered
-        if (internal_clock < (base_update_rate / 1000) * genes.clockrate)
-        {
-            return;
-        }
-        else
-        {
-            internal_clock = 0;
-        }
-
-        // Sense stuff!
-        SenseEnv();
-
-        // Move back to other side if goes to far
-        if (Vector2.Distance(transform.position, manager.transform.position) > (!manager.adaptive_grid ? manager.gridsize : manager.adaptive_gridsize) * 1.25f)
-        {
-            transform.position = -transform.position;
-            transform.position = Vector3.MoveTowards(transform.position, manager.transform.position, 3f);
-        }
-
-        // Clear the list of inferences and pass in our observations
-        inf.Clear();
-        inf.AddRange(brain.GetModel().Infer(senses.GetObservations(this)));
-
-        // Behavioural traits
-        //BoidWrap wrap = BehaviouralNeuron.Boid(8, 10, 14, 4, genes.matching_factor, senses.agent_context, gameObject, torque_force: 0.001f);
-        //BoidWrap wrap = BehaviouralNeuron.Boid(genes.cohesion_factor * 10, genes.separation_factor * 10, genes.allignment_factor * 10, genes.separation_factor * genes.perception * base_perception, genes.matching_factor, senses.agent_context, gameObject, degree: manager.herding_multiplier);
-        //torque_for_boids = (wrap.torque * rotation_speed) / 35;
-
-        // Allow the agent to move 
-        Move(inf[0] * movement_speed, 0, inf[1] * rotation_speed, 0);
-
-        // Set the decisions
-        wants_to_breed = is_mature && (inf[2] > 0 || energy > max_energy * 1.75f);
-        wants_to_eat = inf[3] >= 0;
-        wants_to_grab = inf[4] > 0;
-        wants_to_attack = inf[5] > 0;
-
-        // Pheromones
-        if (inf[6] > 0.5f)
-            GetComponent<PheromoneGland>().SpawnRed();
-        if (inf[7] > 0.5f)
-            GetComponent<PheromoneGland>().SpawnGreen();
-        if (inf[8] > 0.5f)
-            GetComponent<PheromoneGland>().SpawnBlue();
-
-
-        // TODO Give the agent the ability to decide whether it wants to just lay an egg or breed (sexual vs asexual reproduction)
-        // If the agent wants to breed and has grabbed another agent, check if that agent is close enough genetically or if it has the same name (meaning it is the same species)
-        if (wants_to_breed && grabbed != null && grabbed.TryGetComponent<BaseAgent>(out BaseAgent a) && (genes.CalculateGeneticDrift(a.genes) < 1 || a.GetRawName().Equals(GetRawName())))
-        {
-            Breed(a);
-        }
-        // If it does not then asexually reproduce
-        else if (wants_to_breed)
-        {
-            LayEgg();
-        }
-
-        // If we have an agent grabbed and we want to attack then attack it!
-        if (grabbed != null && grabbed.GetID() == (int)ID.Wobbit && wants_to_attack)
-        {
-            Attack((BaseAgent)grabbed);
-        }
+        // Move the agent with its inferences
+        Move(wants_move_forward * movement_speed, 0, wants_rotate_clockwise * rotation_speed, 0);
     }
 
     protected virtual void Move(float forward, float backward, float left, float right)
@@ -811,16 +845,16 @@ public class BaseAgent : Interactable
         float scaler = Mathf.Clamp(age / maturity_age, 0.1f, 1);
 
         // Find force to add for moving forward
-        Vector3 forward_force = transform.up * (forward + (genes.vitality * forward));
-        Vector3 backward_force = transform.up * -(backward + (genes.vitality * backward));
+        Vector3 forward_force = transform.up * (forward);
+        Vector3 backward_force = transform.up * -(backward);
 
         // Add the force
         rb.AddForce(forward_force);
         rb.AddForce(backward_force);
 
         // Calculate torque to add
-        float torque_right = (right + genes.vitality * right) * scaler;
-        float torque_left = -(left + genes.vitality * left) * scaler;
+        float torque_right = (right) * scaler;
+        float torque_left = -(left) * scaler;
 
         rb.AddTorque(torque_right);
         rb.AddTorque(torque_left);
@@ -831,7 +865,7 @@ public class BaseAgent : Interactable
 
         // TODO keep this updated
         // Testing energy consumption by moving
-        cost_of_movement = ((genes.size * (Mathf.Abs(torque_left) + forward_force.magnitude) * Time.deltaTime) / (2 * manager.metabolism_scale_rate));
+        cost_of_movement = ((genes.size * (Mathf.Abs(torque_left) + forward_force.magnitude) * Time.deltaTime) / manager.movement_cost_scale_rate);
         energy -= cost_of_movement;
         manager.RecycleEnergy(cost_of_movement);
         true_metabolic_cost += cost_of_movement;
@@ -882,6 +916,27 @@ public class BaseAgent : Interactable
 
             // Reset the egg formation cooldown
             egg_formation_cooldown = 0;
+        }
+    }
+
+    /// <summary>
+    /// Tries to produce pheromones based on the agent's wants
+    /// </summary>
+    private void TryProducingPheromone()
+    {
+        if (wants_to_produce_red_pheromone)
+        {
+            GetComponent<PheromoneGland>().SpawnRed();
+        }
+
+        if (wants_to_produce_green_pheromone)
+        {
+            GetComponent<PheromoneGland>().SpawnGreen();
+        }
+
+        if (wants_to_produce_blue_pheromone)
+        {
+            GetComponent<PheromoneGland>().SpawnBlue();
         }
     }
 
@@ -952,7 +1007,10 @@ public class BaseAgent : Interactable
 
             // Release the grab
             if (other.GetComponent<FoodPellet>().eaten)
+            {
+                num_pellets_eaten++;
                 ReleaseGrab();
+            }
 
             // Determine how much of it is actually extracted
             float extracted_percentage = 1f - genes.diet;
@@ -968,7 +1026,10 @@ public class BaseAgent : Interactable
 
             // Release the grab
             if (other.GetComponent<Meat>().energy <= 0)
+            {
+                num_meat_eaten++;
                 ReleaseGrab();
+            }
 
             // Determine how much of it is actually extracted
             float extracted_percentage = genes.diet;
@@ -984,7 +1045,11 @@ public class BaseAgent : Interactable
 
             // Release the grab
             if (other.GetComponent<Egg>().energy <= 0)
+            {
+                num_eggs_eaten++;
                 ReleaseGrab();
+            }
+
 
             // Determine how much of it is actually extracted
             float extracted_percentage = genes.diet;
@@ -1038,6 +1103,12 @@ public class BaseAgent : Interactable
         // Release grab and add attack force to other agent
         ReleaseGrab();
         other.GetRB().AddForce((transform.position - other.transform.position).normalized * -100 * attack);
+
+        // Check to see if the other agent has died
+        if (other.health <= 0)
+        {
+            num_kills++;
+        }
     }
 
     /// <summary>
@@ -1080,8 +1151,8 @@ public class BaseAgent : Interactable
             }
         }
 
+        num_pellets_eaten = num_meat_eaten = num_eggs_eaten = num_kills = 0;
         manager.GetComponent<EntityPoolManager>().Destroy(this);
-        //Destroy(gameObject);
     }
 
     public virtual void OnCollisionStay2D(Collision2D collision)

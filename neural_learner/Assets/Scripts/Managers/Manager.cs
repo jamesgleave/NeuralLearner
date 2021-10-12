@@ -37,16 +37,12 @@ public class Manager : MonoBehaviour
     [Header("Simulation Settings")]
     [Tooltip("The manager's update rate in time per update (seconds)")]
     public float update_rate;
+    [Tooltip("If true, the agents will be teleported to the other side of the map when moving too far away from the grid. If false, the agents are left to wander the void.")]
+    public bool teleport;
     private float clock = 0;
 
     [Tooltip("The size of our simulation area")]
     public int gridsize;
-
-    [Header("Adaptive Grid Settings")]
-    [Tooltip("Use an adaptive grid which expands and contracts with the number of agents")]
-    public bool adaptive_grid;
-    public float adaptive_gridsize;
-    public int adaptive_grid_agent_threshold;
 
     [Header("Adaptive Food Settings")]
     public bool adaptive_food;
@@ -63,6 +59,12 @@ public class Manager : MonoBehaviour
 
     [Tooltip("The scale rate for the agent metabolism. Increase this value to increate the lifetime of each agent.")]
     public float metabolism_scale_rate;
+
+    [Tooltip("The scale rate for each agent's movement cost. Increasing this value will reduce the cost of movement for all agents.")]
+    public float movement_cost_scale_rate;
+
+    [Tooltip("Increasing this value decreases the amount of energy is used by the agents brain")]
+    public float brain_cost_reduction_factor;
 
     [Tooltip("The list of all present agents")]
     public List<Interactable> agents = new List<Interactable>();
@@ -95,7 +97,7 @@ public class Manager : MonoBehaviour
     [Header("Garbage Collection")]
     public bool use_auto_manual_collection;
 
-    public float herding_multiplier = 1;
+    //public float herding_multiplier = 1;
 
     // These are values the manager uses to manage the simulation (does not need to be seen)
     // The cluster pos is the center positions of all the clusters 
@@ -370,13 +372,4 @@ public class Manager : MonoBehaviour
 
         return to_be_returned;
     }
-
-    public void OnDrawGizmos()
-    {
-        foreach (var c in cluster_pos)
-        {
-            Gizmos.DrawWireSphere(c, pellet_distrobution);
-        }
-    }
-
 }

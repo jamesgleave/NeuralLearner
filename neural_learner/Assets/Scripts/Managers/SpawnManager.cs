@@ -39,6 +39,7 @@ public class SpawnManager : MonoBehaviour
     public Vector2 GetFoodSpawnLocation()
     {
         // Find random position
+        s = manager.gridsize;
         Vector2 pos = Random.insideUnitCircle * s;
         for (int i = 0; i < k; i++)
         {
@@ -58,6 +59,7 @@ public class SpawnManager : MonoBehaviour
 
     public Vector2 GetRandomSpawnLocation()
     {
+        s = manager.gridsize;
         return Random.insideUnitCircle * s;
     }
 

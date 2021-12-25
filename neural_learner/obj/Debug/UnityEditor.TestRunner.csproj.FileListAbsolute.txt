@@ -1,0 +1,2 @@
+/Users/martingleave/Documents/Unity Projects/NeuralLearner/neural_learner/obj/Debug/UnityEditor.TestRunner.csproj.AssemblyReference.cache
+/Users/martingleave/Documents/Unity Projects/NeuralLearner/neural_learner/obj/Debug/UnityEditor.TestRunner.csproj.CoreCompileInputs.cache

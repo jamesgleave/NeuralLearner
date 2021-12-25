@@ -6,7 +6,7 @@ using System.Threading;
 
 public class EvolutionaryNEATLearner : Brain
 {
-    // The model 
+    // The model
     public NEATNetwork model;
 
     // The genome that creates the model
@@ -30,9 +30,9 @@ public class EvolutionaryNEATLearner : Brain
     public string log;
 
     /// <summary>
-    /// Whether or not to mutate 25 times on load
+    /// The initial number of mutations
     /// </summary>
-    public bool mutate_on_load;
+    public int initial_mutations;
 
     public string gcode;
 
@@ -61,23 +61,35 @@ public class EvolutionaryNEATLearner : Brain
             genome.AddNode(new NodeGene(NodeGeneType.Output, i + input_size));
         }
 
-        if (mutate_on_load)
+        for (int i = 0; i < 100 * Random.value; i++)
         {
-            for (int i = 0; i < 100; i++)
+            Mutate();
+        }
+        // Set new model after mutation
+        SetNewModel();
+    }
+
+    public override void Setup(BaseModel g)
+    {
+
+    }
+
+    public void SetupGenome(Genome g)
+    {
+        // Setup and mutate the model
+        genome = g;
+        if (initial_mutations == 1)
+        {
+            Mutate();
+        }
+        else
+        {
+            for (int i = 0; i < initial_mutations; i++)
             {
                 Mutate();
             }
         }
-
-        // Parse the model code and set the model
-        model = new NEATNetwork(genome);
-    }
-
-    public override void Setup(BaseModel nn)
-    {
-        // Setup and mutate the model
-        model = (NEATNetwork)nn;
-        Mutate();
+        SetNewModel();
     }
 
     public override List<float> GetAction(List<float> obs)
@@ -104,21 +116,7 @@ public class EvolutionaryNEATLearner : Brain
     {
         if (agent != null)
         {
-            Genome new_genome = model.CopyGenome();
-            log = Genome.Mutate(new_genome, agent.genes.base_mutation_rate, agent.genes.weight_mutation_prob, agent.genes.neuro_mutation_prob, agent.genes.bias_mutation_prob, agent.genes.dropout_prob);
-            genome = new_genome;
-
-            // Set the model using multi threading or not
-            if (use_threading_model_creation)
-            {
-                t = new Thread(SetNewModel);
-                t.Start();
-            }
-            else
-            {
-                SetNewModel();
-            }
-
+            log = Genome.Mutate(genome, agent.genes.base_mutation_rate, agent.genes.weight_mutation_prob, agent.genes.neuro_mutation_prob, agent.genes.bias_mutation_prob, agent.genes.dropout_prob);
         }
         else
         {

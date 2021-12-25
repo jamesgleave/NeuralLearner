@@ -46,7 +46,8 @@ public class Egg : Interactable
     /// <summary>
     ///   <para>The model that controls the agent</para>
     /// </summary>
-    public Model.BaseModel brain = null;
+    public NEATNetwork brain;
+    public Genome model_genome;
 
     /// <summary>
     /// If the egg was created by the manager instead of another agent
@@ -63,7 +64,7 @@ public class Egg : Interactable
 
     public float time_spent_building = 0;
 
-    public void Setup(int id, float e, Genes genes, Manager m, BaseAgent a)
+    public void Setup(int id, float e, Genes genes, Manager m, BaseAgent a, Brain parent_brain)
     {
 
         // Set genes and mutate them
@@ -87,7 +88,15 @@ public class Egg : Interactable
         parent_node = parent.node;
         generation = parent.generation + 1;
 
+        // Give the egg a brain!
+        brain = (NEATNetwork)parent_brain.GetModel();
+        model_genome = brain.CopyGenome();
+
         base.Setup(id);
+
+        // Lightly set the color of the egg to that of its parent
+        this.sprite.color = new Color(genes.colour_r + 0.5f, genes.colour_g + 0.5f, genes.colour_b + 0.5f);
+
     }
 
     public void Setup(int id, float e, Genes genes, Manager m, BaseAgent a, BaseAgent parent_1, BaseAgent parent_2)
@@ -114,15 +123,21 @@ public class Egg : Interactable
         parent_node = parent.node;
         generation = parent.generation + 1;
 
+        // Give the egg a brain!
+        brain = (NEATNetwork)parent_1.brain.GetModel();
+        model_genome = ((NEATNetwork)parent_1.brain.GetModel()).CopyGenome();
+
         // Setup the parents
         sexually_produced = true;
         p1 = parent_1;
         p2 = parent_2;
 
         // TODO implement crossover (it already exists in the genome!)
-
         // Setup as an interactable
         base.Setup(id);
+
+        // Lightly set the color of the egg to that of its parent
+        this.sprite.color = new Color(genes.colour_r + 0.5f, genes.colour_g + 0.5f, genes.colour_b + 0.5f);
     }
 
     public void Setup(Manager m, int id)
@@ -163,8 +178,15 @@ public class Egg : Interactable
         // Set this as the initial population
         initial_population = true;
 
+        // Give the egg a brain!
+        agent.brain.Setup();
+        brain = (NEATNetwork)agent.brain.GetModel();
+
         // Setup as an interactable
         base.Setup(id);
+
+        // Lightly set the color of the egg to that of its parent
+        this.sprite.color = new Color(genes.colour_r + 0.5f, genes.colour_g + 0.5f, genes.colour_b + 0.5f);
     }
 
     public void Update()
@@ -196,35 +218,7 @@ public class Egg : Interactable
             }
             else
             {
-                //string s = "[";
-                //foreach (var x in manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).GetGeneList())
-                //{
-                //    s += x + ", ";
-                //}
-                //s += "]";
-
-                //string j = "[";
-                //foreach (var x in genes.GetGeneList())
-                //{
-                //    j += x + ", ";
-                //}
-                //j += "]";
-
-                // Set the genetic drift of the agent by checking againts its parent's node. The parent's node contains the genes of the original.
                 genes.genetic_drift = manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).CalculateGeneticDrift(genes);
-                //print(genes.genus + " " + genes.species + ": " + s + ", " + j + " : " + genes.genetic_drift + " -> " + manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).CalculateGeneticDrift(genes) + manager.anc_manager.population[genes.genus + " " + genes.species].agents.Count);
-                //string v = "";
-                //float sum = 0;
-                //int count = 0;
-                //foreach (BaseAgent ag in manager.anc_manager.population[genes.genus + " " + genes.species].agents)
-                //{
-                //    v += ag.genes.speed + "+";
-                //    sum += ag.genes.speed;
-                //    count++;
-                //}
-                //sum = sum / count;
-                //print(genes.genus + " " + genes.species + ": " + sum + " -> " + v + " >>> " + manager.anc_manager.GetAverageGenes(genes.genus + " " + genes.species).speed);
-                //genes.genetic_drift = 1;
             }
 
             // Add the agent object to the manager's list
@@ -232,6 +226,7 @@ public class Egg : Interactable
 
             // To track the ancestory, we use an ancestor manager object which is a tree like structure using nodes
             a.node = parent_node;
+
             // Increment the generation
             a.generation = generation;
 
@@ -255,9 +250,11 @@ public class Egg : Interactable
             // Setup the agent
             a.Setup(id - 1, genes, manager);
             a.energy = energy;
+            a.GetRB().velocity = this.rb.velocity;
 
             // Setup the brain
             SetupBrain(a);
+            print("After created agent's Brain Complexity: " + a.brain.GetModel().GetComplexity());
 
             // Setup using parents
             HandleReproductionMode(a);
@@ -291,20 +288,18 @@ public class Egg : Interactable
 
     private void SetupBrain(BaseAgent a)
     {
+
         // Give the brain
         if (initial_population)
         {
             // If initial population, give a new brain
             a.brain.Setup();
-            for (int i = 0; i < 20 * Random.value; i++)
-            {
-                a.brain.Mutate();
-            }
         }
         else
         {
             // Else, use the brain set by the parent
-            a.brain.Setup(brain);
+            ((EvolutionaryNEATLearner)a.brain).SetupGenome(model_genome);
+
         }
     }
 

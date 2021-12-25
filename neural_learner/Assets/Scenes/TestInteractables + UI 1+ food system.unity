@@ -473,26 +473,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f59269cc84b94ec48eac2cb189a6bd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  total_food: 8000
+  total_food: 1000
   food_growth_rate: 3
   pellet_distrobution: 25
   pellet_clusters: 60
-  food_pellet_size: 2
+  food_pellet_size: 4
   food_pellet_energy: 40
   pellet: {fileID: 3829854075992685049, guid: 72416a997ceb74010b84d5ace9c7462e, type: 3}
   food_pellet_manager: {fileID: 2047405934}
   food_pellets: []
   update_rate: 0.1
-  gridsize: 275
-  adaptive_grid: 0
-  adaptive_gridsize: 150
-  adaptive_grid_agent_threshold: 0
+  teleport: 1
+  gridsize: 200
   adaptive_food: 1
   agent_pellet_threshold: 200
   agent: {fileID: 8284897868176631410, guid: fbd032cd3431242748fe08f4ef324252, type: 3}
   egg: {fileID: 798380245572057900, guid: 147dc55d0b0304c8cbf8fc3ae99ab8ce, type: 3}
-  starting_agents: 250
-  min_agents: 10
+  starting_agents: 50
+  min_agents: 1
   metabolism_scale_rate: 6
   movement_cost_scale_rate: 500
   brain_cost_reduction_factor: 500
@@ -652,7 +650,7 @@ MonoBehaviour:
   tick_pointer: 0
   feed_rate: 4938
   retention: 0.79
-  intensity: 396
+  intensity: 142
   calculated_pellets: 0
   target_pellets: 0
   general_manager: {fileID: 2047405929}
@@ -669,8 +667,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   manager: {fileID: 2047405929}
-  r: 6
-  k: 35
+  r: 12
+  k: 200
 --- !u!1001 &3638946739586988900
 PrefabInstance:
   m_ObjectHideFlags: 0

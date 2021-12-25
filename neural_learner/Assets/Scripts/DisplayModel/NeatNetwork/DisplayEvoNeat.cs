@@ -102,11 +102,11 @@ public class DisplayEvoNEAT : Display
 
                 // Only add inputs if they have valid outputs
                 // TODO Fix naming issue
-                //if (n.Value.GetOutputIDs().Count == 0)
-                //{
-                //    input_names.RemoveAt(0);
-                //    continue;
-                //}
+                if (n.Value.GetOutputIDs().Count == 0)
+                {
+                   input_names.RemoveAt(0);
+                   continue;
+                }
 
                 var x = Instantiate(neuron, transform).GetComponent<NEATDisplayNeuron>();
                 x.Setup(n.Value, this);
@@ -182,7 +182,7 @@ public class DisplayEvoNEAT : Display
             {
                 // Check if the output ids contain the id of the child neuron
                 bool is_child = disp_neuron_parent.neuron.GetOutputIDs().Contains(disp_neuron_child.neuron.GetNeuronID());
-                // If the neuron is a child, add it 
+                // If the neuron is a child, add it
                 if (is_child)
                 {
                     disp_neuron_parent.AddChild(disp_neuron_child);

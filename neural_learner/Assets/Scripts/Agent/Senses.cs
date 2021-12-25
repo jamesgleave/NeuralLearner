@@ -82,20 +82,23 @@ public class Senses : MonoBehaviour
         observation_names.Add("Number Of Meat Seen");
         observation_names.Add("Is Facing Closest Meat");
 
-        // Add observation names for the egg
-        observation_names.Add("Distance To Closest Egg");
-        observation_names.Add("Number Of Eggs Seen");
-        observation_names.Add("Is Facing Closest Egg");
-
         // Add observation names for the Agent
         observation_names.Add("Distance To Closest Agent");
         observation_names.Add("Number Of Agents Seen");
         observation_names.Add("Is Facing Closest Agent");
 
-        // The next 3 are all about the closest agent seen
+        // The next 4 are all about the closest agent seen
         observation_names.Add("Red Value Of Closest Agent Seen");
         observation_names.Add("Green Value Of Closest Agent Seen");
         observation_names.Add("Blue Value Of Closest Agent Seen");
+        observation_names.Add("Color Difference Between Self & Closest Agent");
+
+        // Add observation names for the egg
+        observation_names.Add("Distance To Closest Egg");
+        observation_names.Add("Number Of Eggs Seen");
+        observation_names.Add("Is Facing Closest Egg");
+        observation_names.Add("Color Difference Between Self & Closest Egg");
+
 
         // Next are all about the agent's state
         observation_names.Add("Agent's Energy");
@@ -153,46 +156,58 @@ public class Senses : MonoBehaviour
         // 4-6
         AddTo(closest_meat, closest_meat_dist_magnitude, scaled_num_meats);
         // 7-9
-        AddTo(closest_egg, closest_egg_dist_magnitude, scaled_num_eggs);
-        // 10 - 12
         AddTo(closest_agent, closest_agent_dist_magnitude, scaled_num_agents);
-
         // The next 3 are all about the closest agent seen
         if (closest_agent != null)
         {
-            // 13, 14, 15
+            // 10-11-12-13
             // Note: I have changed this to the colour of the agent for testing
             observations.Add(closest_agent.genes.colour_r);
             observations.Add(closest_agent.genes.colour_g);
             observations.Add(closest_agent.genes.colour_b);
+            observations.Add(closest_agent.genes.ComputeColorDifference(agent.genes));
         }
         else
         {
             // If there is nothing, then just add default values
             // Add the code of the other agent
-            // 13, 14, 15
+            //  10-11-12-13
+            observations.Add(0);
             observations.Add(0);
             observations.Add(0);
             observations.Add(0);
         }
+        // 14-15-16
+        AddTo(closest_egg, closest_egg_dist_magnitude, scaled_num_eggs);
+
+        // The next is the colour difference between the closest egg and the agent
+        // 17
+        if (closest_egg != null)
+        {
+            observations.Add(closest_egg.genes.ComputeColorDifference(agent.genes));
+        }
+        else
+        {
+            observations.Add(0);
+        }
 
         // The next things to add are about the agent's own state
-        // Add the agent's energy % (16)
+        // Add the agent's energy % (18)
         observations.Add(agent.energy / (2 * agent.max_energy));
 
-        // Add the agent's health % (17)
+        // Add the agent's health % (19)
         observations.Add(Mathf.Clamp(agent.health / agent.max_health, 0f, 1f));
 
-        // Add the agent's lifetime % (18)
+        // Add the agent's lifetime % (20)
         observations.Add(agent.age / agent.lifespan);
 
-        // Add the agent's speed % (18)
+        // Add the agent's speed % (21)
         observations.Add(1 - 1 / (1 + agent.speed));
 
-        // Rotation % (20)
+        // Rotation % (22)
         observations.Add(Mathf.Abs(agent.transform.rotation.z));
 
-        // Whether or not the agent has something grabbed (21)
+        // Whether or not the agent has something grabbed (23)
         if (agent.grabbed != null)
         {
             // Let the agent know it has something grabbed
@@ -203,7 +218,7 @@ public class Senses : MonoBehaviour
             observations.Add(0);
         }
 
-        // 22
+        // 24
         // Add red pheromone
         if (red != null)
         {
@@ -214,7 +229,7 @@ public class Senses : MonoBehaviour
             observations.Add(0);
         }
 
-        // 23
+        // 25
         // Add green pheromone
         if (green != null)
         {
@@ -225,7 +240,7 @@ public class Senses : MonoBehaviour
             observations.Add(0);
         }
 
-        // 24
+        // 26
         // Add blue pheromone
         if (blue != null)
         {
@@ -236,7 +251,7 @@ public class Senses : MonoBehaviour
             observations.Add(0);
         }
 
-        // Constant 25
+        // Constant 27
         observations.Add(1);
         return observations;
     }

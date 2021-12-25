@@ -507,7 +507,7 @@ public class BaseAgent : Interactable
 
         if (control != Control.Static)
         {
-            // Reduces energy over the agent's life 
+            // Reduces energy over the agent's life
             ExistentialCost();
 
             // Heal the agent if they have enough energy
@@ -533,7 +533,7 @@ public class BaseAgent : Interactable
             }
 
             // If we do not want to grab, we should get rid of anything we are trying to grab
-            // If something is too far we drop it 
+            // If something is too far we drop it
             if (wants_to_grab == true && grabbed != null)
             {
                 Vector2 c1 = grabbed.GetCol().ClosestPoint(transform.position);
@@ -901,7 +901,7 @@ public class BaseAgent : Interactable
             x.Setup(this.id + 1, energy_to_child, genes.Clone(), manager, manager.GetAgent(id), this, partner);
 
             // Give the egg a copy of this brain's model
-            x.brain = brain.GetModel().Copy();
+            // x.brain = brain.GetModel().Copy();
 
             // TODO Implement crossover
 
@@ -911,7 +911,7 @@ public class BaseAgent : Interactable
             // Add the egg to the manager to track
             manager.AddAgent(x);
 
-            // Update this value 
+            // Update this value
             eggs_layed++;
 
             // Reset the egg formation cooldown
@@ -952,10 +952,11 @@ public class BaseAgent : Interactable
             return;
         }
 
+        print("Ag: " + brain.GetModel().GetComplexity());
+
         // Spawn in the egg object
         Vector2 pos = egg_location.position;
-        //var x = Instantiate(egg, pos, transform.rotation, manager.transform);
-        var x = manager.GetComponent<EntityPoolManager>().InstantiateEgg(egg, pos, transform.rotation, manager.transform);
+        Egg x = manager.GetComponent<EntityPoolManager>().InstantiateEgg(egg, pos, transform.rotation, manager.transform);
 
         // Add this agent as the parent to the egg
         x.parent = this;
@@ -965,10 +966,10 @@ public class BaseAgent : Interactable
 
         // Every agent will have its eggs id be the agents id + 1
         // Create a perfect clone of the genes and pass it on to the egg
-        x.Setup(this.id + 1, energy_to_child, genes.Clone(), manager, manager.GetAgent(id));
+        x.Setup(this.id + 1, energy_to_child, genes.Clone(), manager, manager.GetAgent(id), brain);
 
         // Give the egg a copy of this brain's model
-        x.brain = brain.GetModel().Copy();
+        // x.brain = brain.GetModel().Copy();
 
         // An egg requres 50% of the agents max energy or just the remaining amount of energy they have
         energy -= energy_to_child;
@@ -976,7 +977,7 @@ public class BaseAgent : Interactable
         // Add the egg to the manager to track
         manager.AddAgent(x);
 
-        // Update this value 
+        // Update this value
         eggs_layed++;
 
         // Reset the egg formation cooldown

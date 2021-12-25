@@ -402,7 +402,7 @@ public class Genome
     /// <returns></returns>
     public Genome Copy()
     {
-        // Create new 
+        // Create new
         Genome new_genome = new Genome();
 
         // Copy each node
@@ -457,7 +457,7 @@ public class Genome
                 // If we take from more fit parent, chose 'connection' else chose the less fit with same innovation number
                 ConnectionGene child_con = from_more_fit ? connection.Copy() : less_fit.GetConnections()[connection.GetInnovation()].Copy();
 
-                // Add the connection to the child 
+                // Add the connection to the child
                 child.AddConnection(child_con);
             }
             else
@@ -675,7 +675,7 @@ public class Genome
                     // If the weight is not pertubed, there is a 25% chance of the weight being set to an all new value
                     else if (0.25f > Random.value)
                     {
-                        // If not, then set the weight value 
+                        // If not, then set the weight value
                         con.SetWeight(Random.Range(-2 * mutation_amount, 2 * mutation_amount));
                         log += "Set weight, ";
                     }
@@ -955,6 +955,11 @@ public class Genome
         int disjoint = Genome.CountDisjointGenes(g1, g2);
         float weight_difference = Genome.AverageWeightDifference(g1, g2);
         return excess * c1 + disjoint * c2 + weight_difference * c3;
+    }
+
+    public int GetNumConnections()
+    {
+        return this.connections.Count;
     }
 
 }

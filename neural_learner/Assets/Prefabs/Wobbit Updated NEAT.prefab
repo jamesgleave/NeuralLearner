@@ -309,10 +309,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 8284897868176631410}
-  input_size: 25
+  input_size: 27
   output_size: 9
-  log: 
-  mutate_on_load: 0
+  log: 'Added Node: <0.25 > 0.1646072> True, Changed Activation: , Added Connection:
+    True, Set weight, Updated weight, Updated weight, Updated weight, Updated weight,
+    Updated weight, Updated weight, '
+  initial_mutations: 1
   gcode: 
   use_threading_model_creation: 0
 --- !u!114 &8284897868176631410
@@ -333,7 +335,7 @@ MonoBehaviour:
   base_health: 100
   base_attack: 3
   base_defense: 3
-  base_speed: 25
+  base_speed: 20
   base_rotation_speed: 50
   base_perception: 20
   base_gestation_time: 20
@@ -497,6 +499,7 @@ MonoBehaviour:
   green_distance: 0
   observations: []
   observation_names: []
+  sense_memory: 0
   agent_context: []
 --- !u!50 &8284897868176631420
 Rigidbody2D:

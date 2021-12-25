@@ -527,7 +527,7 @@ public class Genes
         // There is a small change that a body component will mutate
         if (GetProb(base_mutation_rate * attribute_mutation_rate * colour_mutation_prob))
         {
-            if (GetProb(1 / 3))
+            if (GetProb((1f / 3f)))
             {
                 int head_components = GameObject.FindGameObjectWithTag("manager").GetComponent<SpriteManager>().head_components.Count;
                 spritemap["head"] = Random.Range(0, head_components);
@@ -592,6 +592,19 @@ public class Genes
     {
         float dist = CalculateGeneticDrift(g);
         return thresh > dist;
+    }
+
+    /// <summary>
+    /// Compute the color difference between two genomes.
+    /// Returns 1 if the colors are the exact same and 0 if they are opposites.
+    ///
+    /// Ex: 1 - 1/3 *(abs(0.1009873-0.9110215) + abs(0.9515456-0.4434575) + abs(0.6840981-0.1526029))
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    public float ComputeColorDifference(Genes other)
+    {
+        return 1 - ((1 / 3f) * (Mathf.Abs(other.colour_r - this.colour_r) + Mathf.Abs(other.colour_g - this.colour_g) + Mathf.Abs(other.colour_b - this.colour_b)));
     }
 
     /// <summary>

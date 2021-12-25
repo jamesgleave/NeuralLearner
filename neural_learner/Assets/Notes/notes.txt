@@ -1,24 +1,26 @@
 Improvements to Neural Learner
 
 
-1) Node gene action objects
-
-Instead of using an enum to determine which calculation method to use (for now we have lin comb and latch), we should have a calculation object which handles that generally.
-With that object, instead of using a switch case, we can just call obj.calculate or something similar
+1) Use shaders for the material of the agents?
 
 
 2) Agent special abilities
-
 A new feature to allow agents to get a random passive or active ability they can use (like boost or poison)
 
 
 3) Improve the way the genes are handled
-
 There are too many vars, maybe put into list?
 
 
 4) Improve senses
-
 The way senses work right now is not modular... How could we make it modular?
 If I want to add more senses, I must add substantial code.
 
+5) Give Agents Memory
+Give agents memory in their senses. For example, based on the size of their brain, they may be able to remember things longer in their visual buffer.
+Instead of clearing the visual buffer every time senses are collected, perhaps we can only update it instead.
+If pellet P1 was seen, and then the agent gets turned around and does not see it anymore,
+we can keep it for a certain number of steps or until it is over written.
+
+Idea? The agent's memory is a function of its brain size. The agents memory value effects how long it can accurately remember something.
+The longer the agent is not directly observing something, the more fuzzy (we add noise to the observation) the 'memory' becomes.

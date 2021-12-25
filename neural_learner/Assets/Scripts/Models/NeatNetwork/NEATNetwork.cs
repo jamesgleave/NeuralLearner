@@ -118,6 +118,11 @@ public class NEATNetwork : Model.BaseModel
         return genome.Copy();
     }
 
+    public Genome GetGenome()
+    {
+        return genome;
+    }
+
     public void Recompile(Genome genome)
     {
         // Increment the recompile counter

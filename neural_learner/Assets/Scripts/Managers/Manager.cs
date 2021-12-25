@@ -100,9 +100,9 @@ public class Manager : MonoBehaviour
     //public float herding_multiplier = 1;
 
     // These are values the manager uses to manage the simulation (does not need to be seen)
-    // The cluster pos is the center positions of all the clusters 
+    // The cluster pos is the center positions of all the clusters
     private List<Vector2> cluster_pos = new List<Vector2>();
-    // List of all activate agents 
+    // List of all activate agents
     private List<BaseAgent> all_agents = new List<BaseAgent>();
 
     public int num_active_food = 0;
@@ -182,8 +182,6 @@ public class Manager : MonoBehaviour
         // Spawn in the pellets
         for (int i = 0; i < total_food; i++)
         {
-            //Vector2 center = cluster_pos[Random.Range(0, cluster_pos.Count)];
-            //Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
             FoodPellet p = Instantiate(pellet, spawn_manager.GetFoodSpawnLocation(), Quaternion.identity, transform);
 
             p.Setup((int)ID.FoodPellet, food_pellet_energy, food_growth_rate, food_pellet_size, this);
@@ -191,7 +189,6 @@ public class Manager : MonoBehaviour
             p.energy = food_pellet_energy;
             energy -= food_pellet_energy;
             food_pellets.Add(p);
-
         }
     }
 

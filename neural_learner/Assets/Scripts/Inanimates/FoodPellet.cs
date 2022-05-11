@@ -53,6 +53,8 @@ public class FoodPellet : Interactable
     // When this is 30, they can start to regrow
     public float time_since_eaten = 0;
 
+
+
     public void Setup(int id, float me, float gr, float s, Manager m)
     {
         // Set values
@@ -68,31 +70,29 @@ public class FoodPellet : Interactable
 
     public void Respawn(Vector2 pos, float me, float gr, float s)
     {
-        if (ready)
-        {
-            transform.position = pos;
-            max_energy = me;
-            growth_rate = gr * Random.Range(0.9f, 1.1f);
-            eaten = false;
-            energy = 0;
-            size = s * Random.Range(0.5f, 1.5f);
 
-            sprite.enabled = true;
-            rb.simulated = true;
-            col.enabled = true;
+        transform.position = pos;
+        max_energy = me;
+        growth_rate = gr * Random.Range(0.9f, 1.1f);
+        eaten = false;
+        energy = 0;
+        size = s * Random.Range(0.5f, 1.5f);
 
-            transform.localScale = Vector3.zero;
+        sprite.enabled = true;
+        rb.simulated = true;
+        col.enabled = true;
 
-            ready = false;
-        }
+        transform.localScale = Vector3.zero;
+
+
+
     }
 
-    // Update is called once per frame
-    public void Update()
+    public void UpdatePellet()
     {
 
         // If the pellet is too far, respawn it
-        if (manager.teleport && Vector2.Distance(transform.position, manager.transform.position) > (manager.gridsize) * 1.25f)
+        if (manager.teleport && Vector2.Distance(transform.position, manager_position) > (manager.gridsize) * 1.25f)
         {
             manager.RecycleEnergy(Eat());
         }
@@ -103,7 +103,7 @@ public class FoodPellet : Interactable
             float energy_delta = manager.ExtractEnergy((max_energy / growth_rate) * Time.deltaTime);
 
             // Find the delta energy and the goal size
-            goal_scale = new Vector3(size, size, size) * Mathf.Max((energy / max_energy), 0.1f) + Vector3.one / 10f;
+            goal_scale = new Vector3(size, size, size) * Mathf.Max((energy / max_energy), 0.1f);
 
             // Scale up
             transform.localScale = Vector3.Lerp(Vector3.zero, goal_scale, energy / max_energy);
@@ -117,20 +117,39 @@ public class FoodPellet : Interactable
             // Find the delta energy and the goal size
             goal_scale = new Vector3(size, size, size) * Mathf.Max((energy / max_energy), 0.1f) + Vector3.one / 10f;
             transform.localScale = Vector3.Lerp(transform.localScale, goal_scale, growth_rate);
-
-            // Count down if we are not ready
-            if (cooldown_time > 0 && ready == false)
-            {
-                cooldown_time -= Time.deltaTime;
-            }
-            else
-            // If we are ready, set a respawn timer equal to the proportion of max_agents
-            {
-                // The cooldown time exponentially increases as the number of agents reach the max threshold
-                cooldown_time = 0;
-                ready = true;
-            }
         }
+    }
+
+    /// <summary>
+    /// Used by the computer shader version of the food system
+    /// </summary>
+    /// <param name="recycle"></param>
+    public void SetAttributes(bool recycle, bool update_scale, float energy_extraction_ratio, float new_scale)
+    {
+        // If the compute shader determined we are ready to recycle, we do.
+        // recycle = manager.teleport && Vector2.Distance(transform.position, manager_position) > (manager.gridsize) * 1.25f
+        if (recycle) { manager.RecycleEnergy(Eat()); }
+
+        // goal_scale = new Vector3(size, size, size) * Mathf.Max((energy / max_energy), 0.1f) + Vector3.one / 10f;
+        // new_scale = Vector3.Lerp(Vector3.zero, goal_scale, energy / max_energy);
+        transform.localScale.Set(new_scale, new_scale, new_scale);
+
+        // Check whether or not to update the scale/take more energy from the manager
+        // update_scale = max_energy > energy + (max_energy / growth_rate) * Time.deltaTime && max_energy > energy_consumed + (max_energy / growth_rate) * Time.deltaTime
+        if (update_scale)
+        {
+            // Extract energy from the manager
+            // energy_extraction_ratio = (max_energy / growth_rate) * Time.deltaTime
+            float energy_delta = manager.ExtractEnergy(energy_extraction_ratio);
+
+            // Add energy
+            energy += energy_delta;
+            energy_consumed += energy_delta;
+
+            // We are finished here
+            return;
+        }
+
     }
 
     void Deactivate()

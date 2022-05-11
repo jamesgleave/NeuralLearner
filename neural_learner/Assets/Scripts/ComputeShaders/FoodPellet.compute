@@ -1,0 +1,67 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// The same as Time.deltaTime
+float delta_time;
+
+// If true, the manager will be managing food pellet teleportation
+bool manager_teleport;
+
+// A buffer given while calculating the manager teleport value.
+// This is multiplied by the gridsize to determine the whether or not to teleport. Defaults to 1.25.
+float distance_threshold_buffer;
+
+// The position of the manager
+float2 manager_position;
+
+// The growth rate of the pellets
+float growth_rate;
+
+// The gridsize determined by the manager
+float gridsize;
+
+// The struct for our pellets
+struct FoodPelletStruct
+{
+    float size;
+    int update_scale;
+
+    int recycle;
+
+    float energy;
+    float max_energy;
+    float energy_consumed;
+    float energy_extraction_ratio;
+
+    float2 position;
+};
+
+// Food Pellet's data, shared with the shader
+RWStructuredBuffer<FoodPelletStruct> pellets;
+
+
+[numthreads(64,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // Check for teleport
+    pellets[id.x].recycle = manager_teleport && distance(pellets[id.x].position, manager_position) > gridsize * distance_threshold_buffer;
+
+    // Calculate new size
+    // goal_scale = new Vector3(size, size, size) * Mathf.Max((energy / max_energy), 0.1f);
+    // new_scale = Vector3.Lerp(Vector3.zero, goal_scale, energy / max_energy);
+    // Calculate the energy percentage for this pellet
+    float energy_percentage = pellets[id.x].energy / pellets[id.x].max_energy;
+    // Calculate the current size of the pellet by lerping between the zero vector and the goal size
+    // based on the current energy percentatage.
+    float max_size = float3(pellets[id.x].size, pellets[id.x].size, pellets[id.x].size);
+    pellets[id.x].size = lerp(float3(0.0, 0.0, 0.0), max_size * max(energy_percentage, 0.1), energy_percentage);
+
+    // Calculate the energy we will be hypothetically extracting during the next update
+    pellets[id.x].energy_extraction_ratio = (pellets[id.x].max_energy / growth_rate) * delta_time;
+
+    // Check to see if we are still consuming energy
+    float new_energy = pellets[id.x].max_energy + pellets[id.x].energy_extraction_ratio;
+    // Continue growing if our current energy and the total energy consumed is less than the newly calculated energy
+    pellets[id.x].update_scale = (pellets[id.x].energy < new_energy) && (pellets[id.x].energy_consumed < new_energy);
+}
+

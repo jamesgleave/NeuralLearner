@@ -32,7 +32,7 @@ public class Manager : MonoBehaviour
     public FoodPelletManager food_pellet_manager;
 
     [Tooltip("The list of all food pelletes present")]
-    public List<Interactable> food_pellets = new List<Interactable>();     // The list of food pellets
+    public List<FoodPellet> food_pellets = new List<FoodPellet>();     // The list of food pellets
 
     [Header("Simulation Settings")]
     [Tooltip("The manager's update rate in time per update (seconds)")]

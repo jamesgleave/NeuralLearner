@@ -43,6 +43,11 @@ public class Interactable : MonoBehaviour
     protected int id;
 
     /// <summary>
+    /// The position of the manager (never changes)
+    /// </summary>
+    protected static Vector2 manager_position;
+
+    /// <summary>
     ///   <para>Sets up the interactable by assinging its rigidbody, collider, and id code. This should always be called when instantiating an interactable</para>
     /// </summary>
     public void Setup(int id)
@@ -87,6 +92,11 @@ public class Interactable : MonoBehaviour
             ((CompositeCollider2D)col).generationType = CompositeCollider2D.GenerationType.Manual;
             ((CompositeCollider2D)col).GenerateGeometry();
         }
+    }
+
+    public static void SetManagerProperties(Manager manager)
+    {
+        manager_position = manager.transform.position;
     }
 
 }

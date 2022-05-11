@@ -1,0 +1,27 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+int n;
+float3 Position;
+RWStructuredBuffer<float3> Positions;
+RWStructuredBuffer<float3> Forces;
+
+[numthreads(64,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    Forces[id.x] = float3(0., 0., 0.);
+    for(int i = 0; i < n; i++){
+        // Compute the distance between this node and node 'i'
+        float d = distance(Positions[id.x], Positions[i]);
+
+        // Compute the base colombs law
+        d = max(d, 0.1);
+        float coulombs_law = 1.0 / (d * d);
+
+        // Use the difference to compute the forces
+        float3 diff = Positions[id.x] - Positions[i];
+        if(length(diff) != 0){
+            Forces[id.x] += diff * -coulombs_law;
+        }
+    }
+}

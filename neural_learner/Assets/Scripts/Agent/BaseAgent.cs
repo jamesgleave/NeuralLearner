@@ -494,11 +494,9 @@ public class BaseAgent : Interactable
 
         if (control == Control.Heuristic)
         {
-            HeuristicControl();
         }
         else if (control == Control.Hard)
         {
-            HardControl();
         }
         else if (control == Control.Learning)
         {
@@ -600,11 +598,6 @@ public class BaseAgent : Interactable
         }
     }
 
-    protected virtual void SenseEnv()
-    {
-        senses.Sense();
-    }
-
     protected virtual void ExistentialCost()
     {
         // The cost of existing with the cost of moving and the cost of having a large brain
@@ -646,127 +639,6 @@ public class BaseAgent : Interactable
         }
     }
 
-    protected virtual void HeuristicControl()
-    {
-        if (Input.GetKey(KeyCode.W))
-        {
-            Move(movement_speed * genes.speed, 0, 0, 0);
-        }
-
-        if (Input.GetKey(KeyCode.S))
-        {
-            Move(0, movement_speed * genes.speed, 0, 0);
-        }
-
-        if (Input.GetKey(KeyCode.D))
-        {
-            Move(0, 0, genes.speed * rotation_speed, 0);
-        }
-
-        if (Input.GetKey(KeyCode.A))
-        {
-            Move(0, 0, 0, genes.speed * rotation_speed);
-        }
-
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            LayEgg();
-        }
-
-        wants_to_grab = Input.GetKey(KeyCode.G);
-        wants_to_eat = Input.GetKey(KeyCode.E);
-
-        if (wants_to_eat && grabbed != null)
-        {
-            Eat(grabbed);
-        }
-
-
-    }
-
-    public void HardControl()
-    {
-        senses.detected = senses.detected.Where(Interactable => Interactable != null).ToList();
-        if (senses.detected.Count() > 0 && grabbed == null)
-        {
-            var closest = senses.detected.OrderBy(x => Vector2.Distance(this.transform.position, x.transform.position)).ToList()[0];
-
-            if (wants_to_breed)
-            {
-                foreach (var v in senses.detected)
-                {
-                    if (v.GetID() == (int)ID.Wobbit)
-                    {
-                        closest = v;
-                        break;
-                    }
-                }
-            }
-
-            if (closest != null && !(closest.GetID() == (int)ID.Wobbit && ((BaseAgent)closest).genes.CalculateGeneticDrift(genes) < 1.5f) && !(closest.GetID() == (int)ID.WobbitEgg && ((Egg)closest).parent != null && ((Egg)closest).parent.species.Equals(species)))
-            {
-                transform.up = Vector2.Lerp(transform.up, closest.transform.position - transform.position, rotation_speed * 0.5f * Time.deltaTime);
-                Move(movement_speed, 0, 0, 0);
-            }
-            else
-            {
-                if (wants_to_breed && closest.GetID() == (int)ID.Wobbit && ((BaseAgent)closest).genes.species.Equals(genes.species) && is_mature && ((BaseAgent)closest).is_mature)
-                {
-                    transform.up = Vector2.Lerp(transform.up, closest.transform.position - transform.position, rotation_speed * 0.5f * Time.deltaTime);
-                    Move(movement_speed, 0, 0, 0);
-                }
-                else
-                {
-                    transform.up = Vector2.Lerp(transform.up, -(closest.transform.position - transform.position), rotation_speed * 0.5f * Time.deltaTime);
-                    Move(movement_speed, 0, 0, 0);
-                }
-            }
-        }
-        else if (grabbed != null && wants_to_eat)
-        {
-            Move(0, 0, 0f, 0);
-        }
-        else
-        {
-            Move(0, 0, 1f, 0);
-        }
-
-        if (is_mature && energy > max_energy * 2f)
-        {
-            wants_to_breed = true;
-            wants_to_eat = false;
-            if (manager.anc_manager.population[genes.genus + " " + genes.species].size < 2)
-            {
-                LayEgg();
-            }
-        }
-        else
-        {
-            wants_to_breed = false;
-            wants_to_eat = true;
-            wants_to_grab = true;
-        }
-
-
-        if (wants_to_eat && grabbed != null)
-        {
-            Eat(grabbed);
-        }
-
-        if (grabbed != null && grabbed.GetID() == (int)ID.Wobbit && ((BaseAgent)grabbed).genes.CalculateGeneticDrift(genes) > 1.0f)
-        {
-            Attack((BaseAgent)grabbed);
-        }
-        else if (grabbed != null && grabbed.GetID() == (int)ID.Wobbit && ((BaseAgent)grabbed).wants_to_breed && wants_to_breed)
-        {
-            Breed((BaseAgent)grabbed);
-        }
-        else if (grabbed != null && grabbed.GetID() == (int)ID.Wobbit && ((BaseAgent)grabbed).genes.CalculateGeneticDrift(genes) < 1.0f)
-        {
-            wants_to_grab = false;
-        }
-    }
-
     public void LearningControl()
     {
 
@@ -782,7 +654,7 @@ public class BaseAgent : Interactable
             internal_clock = 0;
 
             // Sense the environment
-            SenseEnv();
+            senses.Sense();
 
             // Move back to other side if goes to far
             if ((Vector2.Distance(transform.position, manager.transform.position) > (manager.gridsize) * 1.25f) && manager.teleport)

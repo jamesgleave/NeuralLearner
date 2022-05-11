@@ -33,7 +33,11 @@ public class SimulationInitializer : MonoBehaviour
         }
         else
         {
+            // Set up the manager
             GameObject.FindGameObjectWithTag("manager").GetComponent<Manager>().Setup();
+
+            // Set up the interactable with the manager properties
+            Interactable.SetManagerProperties(GameObject.FindGameObjectWithTag("manager").GetComponent<Manager>());
         }
     }
 

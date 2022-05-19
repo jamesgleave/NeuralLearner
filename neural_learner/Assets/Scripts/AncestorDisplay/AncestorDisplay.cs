@@ -80,8 +80,6 @@ public class AncestorDisplay : MonoBehaviour
 
                 // Now that we have found the node and their parent, we can setup their position
                 nodes[key].CalculateDesiredPosition();
-
-                print(key + " parent -> " + nodes[key].parent.name);
             }
         }
     }

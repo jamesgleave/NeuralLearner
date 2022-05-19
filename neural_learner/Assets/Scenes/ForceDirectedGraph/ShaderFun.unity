@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311298, g: 0.38073644, b: 0.35873345, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -220,8 +220,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1cd23cee33e24c2a9e7d626ad79bfe5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  node: {fileID: 3294448353534836552, guid: ed50464065ca046bf85894bc0bfec50e, type: 3}
-  num_nodes: 20
+  node: {fileID: 8158367032010448976, guid: 3047cdeca05b7463cbf244923984e1f1, type: 3}
+  num_nodes: 500
   neighbour_prob: 0
   n_neighbour_attempts: 2
   gravity: 5
@@ -244,6 +244,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sensitivity: 75
   aim_assists: 50
+  actual_sensitivity: 0
   climbSpeed: 4
   normalMoveSpeed: 10
   slowMoveFactor: 0.25
@@ -327,6 +328,7 @@ Light:
   m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
 --- !u!4 &1800183211

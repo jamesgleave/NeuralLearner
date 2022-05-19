@@ -52,6 +52,16 @@ public class Senses : MonoBehaviour
     [Space]
     public List<GameObject> agent_context;
 
+    /// <summary>
+    /// A static variable to hold which observation maps to which index of the observation list.
+    /// </summary>
+    public static Dictionary<string, int> observation_indices;
+
+    /// <summary>
+    /// Weights assosiated with sensory connections for mutations (defaulted to 1/length)
+    /// </summary>
+    public static Dictionary<string, float> observation_weights;
+
     public void Setup(float dist, int id, Transform t)
     {
         // Set the vision radius 

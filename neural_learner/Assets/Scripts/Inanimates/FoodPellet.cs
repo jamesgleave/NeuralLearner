@@ -83,9 +83,6 @@ public class FoodPellet : Interactable
         col.enabled = true;
 
         transform.localScale = Vector3.zero;
-
-
-
     }
 
     public void UpdatePellet()
@@ -132,7 +129,10 @@ public class FoodPellet : Interactable
 
         // goal_scale = new Vector3(size, size, size) * Mathf.Max((energy / max_energy), 0.1f) + Vector3.one / 10f;
         // new_scale = Vector3.Lerp(Vector3.zero, goal_scale, energy / max_energy);
-        transform.localScale.Set(new_scale, new_scale, new_scale);
+        if (!float.IsNaN(new_scale) && !float.IsInfinity(new_scale))
+        {
+            transform.localScale = Vector3.one * new_scale;
+        }
 
         // Check whether or not to update the scale/take more energy from the manager
         // update_scale = max_energy > energy + (max_energy / growth_rate) * Time.deltaTime && max_energy > energy_consumed + (max_energy / growth_rate) * Time.deltaTime
@@ -141,15 +141,10 @@ public class FoodPellet : Interactable
             // Extract energy from the manager
             // energy_extraction_ratio = (max_energy / growth_rate) * Time.deltaTime
             float energy_delta = manager.ExtractEnergy(energy_extraction_ratio);
-
             // Add energy
             energy += energy_delta;
             energy_consumed += energy_delta;
-
-            // We are finished here
-            return;
         }
-
     }
 
     void Deactivate()

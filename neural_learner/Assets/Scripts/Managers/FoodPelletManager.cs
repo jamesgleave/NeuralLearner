@@ -37,7 +37,7 @@ public class FoodPelletManager : MonoBehaviour
     // This manager has a reference to the main manager (to access the food list)
     public Manager general_manager;
     private float percent;
-    private int storage;
+    public int storage;
 
     /// <summary>
     /// If true, we use a hardware accelerated version of the food manager and food pellet scripts
@@ -63,6 +63,9 @@ public class FoodPelletManager : MonoBehaviour
     };
     ComputeBuffer buffer;
     FoodPelletStruct[] food_pellet_structs;
+    public int chunk_size = 1024;
+    bool dispatch_frame = true;
+    bool coroutine_running = false;
 
     void Start()
     {
@@ -86,25 +89,31 @@ public class FoodPelletManager : MonoBehaviour
     // Start is called before the first frame update
     void Update()
     {
-
-        // Update all of the pellets
-        if (hardware_accelerated)
-        {
-            SetBufferValues();
-            UpdatePelletsHardwareAccelorated();
-        }
-        else
-        {
-            UpdatePellets();
-
-        }
-
         if (Input.GetKeyDown(KeyCode.K))
         {
             foreach (FoodPellet pellet in general_manager.food_pellets)
             {
                 general_manager.RecycleEnergy(pellet.Eat());
             }
+        }
+
+        UpdatePelletManager();
+    }
+
+    public void UpdatePelletManager()
+    {
+        // Update all of the pellets
+        if (hardware_accelerated)
+        {
+            SetBufferValues();
+            if (coroutine_running == false)
+            {
+                StartCoroutine(PelletUpdateTest());
+            }
+        }
+        else
+        {
+            UpdatePellets();
         }
     }
 
@@ -216,59 +225,257 @@ public class FoodPelletManager : MonoBehaviour
         cs.SetFloat("gridsize", general_manager.gridsize);
     }
 
-    public void UpdatePelletsHardwareAccelorated()
+    public void UpdatePelletsHardwareAccelerated()
     {
-        // Lock in the feed rate
-        if (feed_rate > general_manager.total_food)
+        if (dispatch_frame)
         {
-            feed_rate = general_manager.total_food - 1;
+            // Set to total food
+            storage = general_manager.total_food;
+
+            // Lock in the feed rate
+            if (feed_rate > general_manager.total_food)
+            {
+                feed_rate = general_manager.total_food - 1;
+            }
+
+            if (general_manager.food_pellets.Count <= 0)
+            {
+                return;
+            }
+
+            // Do all of the compute shader stuff...
+            for (int i = 0; i < food_pellet_structs.Length; i++)
+            {
+                // Update all values in the compute shader
+                food_pellet_structs[i].size = general_manager.food_pellets[i].size;
+                food_pellet_structs[i].energy = general_manager.food_pellets[i].energy;
+                food_pellet_structs[i].max_energy = general_manager.food_pellets[i].max_energy;
+                food_pellet_structs[i].energy_consumed = general_manager.food_pellets[i].energy_consumed;
+                food_pellet_structs[i].position = general_manager.food_pellets[i].transform.position;
+
+                // Fill these in (they outputs so these dont matter)
+                food_pellet_structs[i].update_scale = -1;
+                food_pellet_structs[i].energy_extraction_ratio = -1.0f;
+            }
+
+            // Create a position and force buffer
+            buffer.SetData(food_pellet_structs);
+
+            // Run the thing
+            int num_threads = Mathf.Max(food_pellet_structs.Length / 16, food_pellet_structs.Length);
+            cs.Dispatch(0, num_threads, 2, 2);
+            dispatch_frame = false;
+        }
+        else
+        {
+            // Get the data back!
+            buffer.GetData(food_pellet_structs);
+
+            // Set values of the pellets and calculate the percent energy in food pellets
+            percent = 0;
+            for (int i = 0; i < food_pellet_structs.Length; i++)
+            {
+                //print(food_pellet_structs[i].size);
+                // Update all values in the compute shader
+                general_manager.food_pellets[i].SetAttributes(
+                    food_pellet_structs[i].recycle == 1,
+                    food_pellet_structs[i].update_scale == 1,
+                    food_pellet_structs[i].energy_extraction_ratio,
+                    food_pellet_structs[i].size);
+
+                // Add the energy of the food pellet
+                percent += general_manager.food_pellets[i].energy;
+                storage -= general_manager.food_pellets[i].eaten ? 1 : 0;
+            }
+
+            // Get the ratio of total energy in the system and the energy in the pellets
+            general_manager.energy_in_pellets = percent;
+            general_manager.percent_energy_in_pellets = percent / general_manager.initial_energy;
+
+            // Look at each pellet
+            general_manager.num_active_food = storage;
+            dispatch_frame = true;
         }
 
-        if (general_manager.food_pellets.Count <= 0)
-        {
-            return;
-        }
-
-        // Do all of the compute shader stuff...
-        for (int i = 0; i < food_pellet_structs.Length; i++)
-        {
-            // Update all values in the compute shader
-            food_pellet_structs[i].size = general_manager.food_pellets[i].size;
-            food_pellet_structs[i].energy = general_manager.food_pellets[i].energy;
-            food_pellet_structs[i].max_energy = general_manager.food_pellets[i].max_energy;
-            food_pellet_structs[i].energy_consumed = general_manager.food_pellets[i].energy_consumed;
-            food_pellet_structs[i].position = general_manager.food_pellets[i].transform.position;
-
-            // Fill these in (they outputs so these dont matter)
-            food_pellet_structs[i].update_scale = -1;
-            food_pellet_structs[i].energy_extraction_ratio = -1.0f;
-        }
-
-        // Create a position and force buffer
-        buffer.SetData(food_pellet_structs);
-
-        // Run the thing
-        int num_threads = Mathf.Max(food_pellet_structs.Length / 32, food_pellet_structs.Length);
-        cs.Dispatch(0, num_threads, 1, 1);
-
-        // Get the data back!
-        buffer.GetData(food_pellet_structs);
-
-        // Do all of the compute shader stuff...
-        for (int i = 0; i < food_pellet_structs.Length; i++)
-        {
-            // Update all values in the compute shader
-            general_manager.food_pellets[i].SetAttributes(
-                food_pellet_structs[i].recycle == 1,
-                food_pellet_structs[i].update_scale == 1,
-                food_pellet_structs[i].energy_extraction_ratio,
-                food_pellet_structs[i].size);
-        }
     }
+
+    private IEnumerator UpdatePelletsHardwareAcceleratedCoroutine()
+    {
+        // Run in an update loop
+        coroutine_running = true;
+        print("Started Coroutine For GPU Pellets");
+        while (hardware_accelerated)
+        {
+
+            // Set to total food
+            storage = general_manager.total_food;
+
+            // Lock in the feed rate
+            if (feed_rate > general_manager.total_food)
+            {
+                feed_rate = general_manager.total_food - 1;
+            }
+
+            if (general_manager.food_pellets.Count <= 0)
+            {
+                continue;
+            }
+
+            // Do all of the compute shader stuff...
+            for (int i = 0; i < food_pellet_structs.Length; i++)
+            {
+                // Update all values in the compute shader
+                food_pellet_structs[i].size = general_manager.food_pellets[i].size;
+                food_pellet_structs[i].energy = general_manager.food_pellets[i].energy;
+                food_pellet_structs[i].max_energy = general_manager.food_pellets[i].max_energy;
+                food_pellet_structs[i].energy_consumed = general_manager.food_pellets[i].energy_consumed;
+                food_pellet_structs[i].position = general_manager.food_pellets[i].transform.position;
+
+                // Fill these in (they outputs so these dont matter)
+                food_pellet_structs[i].update_scale = -1;
+                food_pellet_structs[i].energy_extraction_ratio = -1.0f;
+
+                // We only process one chunk per frame
+                if (i % chunk_size == 0)
+                {
+                    yield return new WaitForEndOfFrame();
+                }
+            }
+
+            // Create a position and force buffer
+            buffer.SetData(food_pellet_structs);
+
+            // Run the thing
+            int num_threads = Mathf.Max(food_pellet_structs.Length / 16, food_pellet_structs.Length);
+            cs.Dispatch(0, num_threads, 2, 2);
+
+            // We have finished half of the work, now take a break
+            //yield return new WaitForEndOfFrame();
+
+            // Get the data back!
+            buffer.GetData(food_pellet_structs);
+
+            // Set values of the pellets and calculate the percent energy in food pellets
+            percent = 0;
+            for (int i = 0; i < food_pellet_structs.Length; i++)
+            {
+                //print(food_pellet_structs[i].size);
+                // Update all values in the compute shader
+                general_manager.food_pellets[i].SetAttributes(
+                    food_pellet_structs[i].recycle == 1,
+                    food_pellet_structs[i].update_scale == 1,
+                    food_pellet_structs[i].energy_extraction_ratio,
+                    food_pellet_structs[i].size);
+
+                // Add the energy of the food pellet
+                percent += general_manager.food_pellets[i].energy;
+                storage -= general_manager.food_pellets[i].eaten ? 1 : 0;
+
+                // We only process one chunk per frame
+                //if (i % chunk_size == 0)
+                //{
+                //    yield return new WaitForEndOfFrame();
+                //}
+            }
+
+            // Get the ratio of total energy in the system and the energy in the pellets
+            general_manager.energy_in_pellets = percent;
+            general_manager.percent_energy_in_pellets = percent / general_manager.initial_energy;
+
+            // Look at each pellet
+            general_manager.num_active_food = storage;
+            dispatch_frame = true;
+
+            yield return null;
+            print("Hello");
+        }
+        coroutine_running = false;
+        print("Stopped Coroutine For GPU Pellets");
+    }
+
+    private IEnumerator PelletUpdateTest()
+    {
+        // Run in an update loop
+        int start_index = 0;
+        int max_index = general_manager.food_pellets.Count;
+        coroutine_running = true;
+        print("Started Coroutine For GPU Pellets");
+        while (hardware_accelerated)
+        {
+
+            // Set to total food
+            storage = general_manager.total_food;
+
+            // Calculate our max index
+            int end_index = Mathf.Min(start_index + chunk_size, max_index);
+
+            // Do all of the compute shader stuff...
+            for (int i = start_index; i < end_index; i++)
+            {
+                // Update all values in the compute shader
+                food_pellet_structs[i].size = general_manager.food_pellets[i].size;
+                food_pellet_structs[i].energy = general_manager.food_pellets[i].energy;
+                food_pellet_structs[i].max_energy = general_manager.food_pellets[i].max_energy;
+                food_pellet_structs[i].energy_consumed = general_manager.food_pellets[i].energy_consumed;
+                food_pellet_structs[i].position = general_manager.food_pellets[i].transform.position;
+
+                // Fill these in (they outputs so these dont matter)
+                food_pellet_structs[i].update_scale = -1;
+                food_pellet_structs[i].energy_extraction_ratio = -1.0f;
+            }
+
+            // Create a position and force buffer
+            buffer.SetData(food_pellet_structs);
+
+            // Run the thing
+            int num_threads = Mathf.Max(food_pellet_structs.Length / 16, food_pellet_structs.Length);
+            cs.Dispatch(0, num_threads, 2, 2);
+
+            // We have finished half of the work, now take a break
+            //yield return new WaitForEndOfFrame();
+
+            // Get the data back!
+            buffer.GetData(food_pellet_structs);
+
+            // Set values of the pellets and calculate the percent energy in food pellets
+
+            for (int i = start_index; i < end_index; i++)
+            {
+                //print(food_pellet_structs[i].size);
+                // Update all values in the compute shader
+                general_manager.food_pellets[i].SetAttributes(
+                    food_pellet_structs[i].recycle == 1,
+                    food_pellet_structs[i].update_scale == 1,
+                    food_pellet_structs[i].energy_extraction_ratio,
+                    food_pellet_structs[i].size);
+
+                // If the pellet has been eaten then respawn if we have enough energy
+                if (general_manager.food_pellets[i].eaten && general_manager.num_active_food < target_pellets)
+                {
+                    general_manager.food_pellets[i].Respawn(general_manager.spawn_manager.GetFoodSpawnLocation(), general_manager.food_pellet_energy, general_manager.food_growth_rate, general_manager.food_pellet_size);
+                }
+            }
+
+            // Reset start index if we exceed the size of our array
+            start_index += chunk_size;
+            if (start_index >= general_manager.food_pellets.Count)
+            {
+                // Reset index
+                start_index = 0;
+            }
+
+            yield return null;
+
+            CalculateSpawnFunc();
+        }
+        coroutine_running = false;
+        print("Stopped Coroutine For GPU Pellets");
+    }
+
 
     public void OnDestroy()
     {
         // Get rid of the buffer
-        buffer.Dispose();
+        //buffer.Dispose();
     }
 }

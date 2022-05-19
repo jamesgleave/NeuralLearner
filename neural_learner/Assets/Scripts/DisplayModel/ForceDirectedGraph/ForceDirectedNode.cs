@@ -16,7 +16,7 @@ public class ForceDirectedNode : Interactable
     public Material selected_mat, deselected_mat;
 
     // The Rigidbody
-    private Rigidbody rb;
+    public Rigidbody rb;
     public List<SpringJoint> spring_joints = new List<SpringJoint>();
     public List<LineRenderer> line_renderers = new List<LineRenderer>();
     public Dictionary<int, ForceDirectedNode> adjacent_nodes = new Dictionary<int, ForceDirectedNode>();
@@ -24,7 +24,7 @@ public class ForceDirectedNode : Interactable
 
 
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
         // Set the rb
         rb = GetComponent<Rigidbody>();
@@ -99,17 +99,17 @@ public class ForceDirectedNode : Interactable
         }
 
         // Increase/Decrease the size according to the manager
-        if (Mathf.Abs(transform.localScale.x - size) > 0.01f)
-        {
-            if (transform.localScale.x > size)
-            {
-                transform.localScale *= 0.99f;
-            }
-            else
-            {
-                transform.localScale *= 1.01f;
-            }
-        }
+        //if (Mathf.Abs(transform.localScale.x - size) > 0.01f)
+        //{
+        //    if (transform.localScale.x > size)
+        //    {
+        //        transform.localScale *= 0.99f;
+        //    }
+        //    else
+        //    {
+        //        transform.localScale *= 1.01f;
+        //    }
+        //}
     }
 
     public bool IsConnectedTo(int id)

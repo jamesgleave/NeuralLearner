@@ -312,6 +312,14 @@ public class BaseAgent : Interactable
     ///   <para>The actual cost with all factors included deducted every frame.</para>
     /// </summary>
     public float true_metabolic_cost;
+    [SerializeReference]
+    private float brain_metabolic_cost;
+    [SerializeReference]
+    private float metabolic_cost_percentage_of_movement;
+    [SerializeReference]
+    private float metabolic_cost_percentage_of_brain;
+    [SerializeReference]
+    private float metabolic_cost_percentage_of_bmr;
 
     /// <summary>
     /// If true, having a large brain will require more energy
@@ -552,6 +560,11 @@ public class BaseAgent : Interactable
             {
                 ReleaseGrab();
             }
+
+            metabolic_cost_percentage_of_movement = cost_of_movement / true_metabolic_cost;
+            metabolic_cost_percentage_of_brain = (cost_comparison.x - cost_comparison.y) / true_metabolic_cost;
+            metabolic_cost_percentage_of_bmr = cost_comparison.y / true_metabolic_cost;
+            time_to_die = Mathf.Min(lifespan - age, (energy / true_metabolic_cost) / (1.0f / Time.deltaTime));
         }
     }
 
@@ -601,22 +614,21 @@ public class BaseAgent : Interactable
     protected virtual void ExistentialCost()
     {
         // The cost of existing with the cost of moving and the cost of having a large brain
-        float brain_cost = this.brain_cost ? (brain.GetModel().GetComplexity() / manager.brain_cost_reduction_factor) : 0;
-        float cost = ((metabolism + brain_cost) * Time.deltaTime) / manager.metabolism_scale_rate;
-        cost_comparison.Set((metabolism + brain_cost), metabolism);
+        brain_metabolic_cost = this.brain_cost ? (brain.GetModel().GetComplexity() / manager.brain_cost_reduction_factor) : 0;
+        float cost = ((metabolism + brain_metabolic_cost) * Time.deltaTime) / manager.metabolism_scale_rate;
+        cost_comparison.Set(cost, (metabolism * Time.deltaTime) / manager.metabolism_scale_rate);
         energy -= cost;
         manager.RecycleEnergy(cost);
 
         // If the health of the agent is less than or equal to zero or the energy has
-        // dropped to 30% its max capacity the agent dies (account for the age difference)
-        if (health <= 0 || energy < (max_energy * 0.3f) / Mathf.Max(maturity_age - age, 1))
+        // dropped to 10% its max capacity the agent dies (account for the age difference)
+        if (health <= 0 || energy < (max_energy * 0.1f) / Mathf.Max(maturity_age - age, 1))
         {
             Die();
         }
 
         // Update the true cost
         true_metabolic_cost += cost;
-        time_to_die = Mathf.Min(lifespan - age, energy / true_metabolic_cost);
     }
 
     protected virtual void TryHealing()
@@ -736,6 +748,11 @@ public class BaseAgent : Interactable
         rb.angularVelocity = Mathf.Clamp(rb.angularVelocity, -rotation_speed, rotation_speed * scaler);
 
         // TODO keep this updated
+        if (manager.movement_cost_scale_rate <= 0)
+        {
+            throw new System.Exception("movement_cost_scale_rate cannot be <= 0");
+        }
+
         // Testing energy consumption by moving
         cost_of_movement = ((genes.size * (Mathf.Abs(torque_left) + forward_force.magnitude) * Time.deltaTime) / manager.movement_cost_scale_rate);
         energy -= cost_of_movement;
@@ -819,7 +836,7 @@ public class BaseAgent : Interactable
     {
 
         // If we have not had enough time to form an egg, we return without doing anything
-        if (egg_formation_cooldown < egg_gestation_time)
+        if (egg_formation_cooldown < egg_gestation_time || num_pellets_eaten == 0)
         {
             return;
         }

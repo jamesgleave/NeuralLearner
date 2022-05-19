@@ -183,7 +183,7 @@ public class Genome
 
         // If we have no connections, there is a 90% chance that the first connection formed will be to the movement neuron
         NodeGene node1, node2;
-        if (connections.Count == 0 && 0.90f > Random.value)
+        if (connections.Count == 0 && (0.90f > Random.value || Manager.mobile_start))
         {
             // Grab the two nodes that we will be connecting
             node1 = nodes[keys[Random.Range(0, keys.Count)]];

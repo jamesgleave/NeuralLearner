@@ -11,6 +11,7 @@ public class AncestorNode
 {
     public string genus;
     public string species;
+    public string full_name;
     public float genetic_drift;
     public AncestorNode parent;
     public Genes original_genes;
@@ -18,6 +19,7 @@ public class AncestorNode
 
     public AncestorNode(AncestorNode parent, Genes genes, string name)
     {
+        full_name = name;
         genus = name.Split(' ')[0];
         species = name.Split(' ')[1];
         this.parent = parent;
@@ -221,6 +223,14 @@ public class AncestorManager
     /// </summary>
     public Dictionary<string, PopulationContainer> population = new Dictionary<string, PopulationContainer>();
     public List<string> counts = new List<string>();
+
+    // Singleton instance
+    public static AncestorManager instance;
+
+    public AncestorManager()
+    {
+        instance = this;
+    }
 
     public void AddGenus(AncestorNode child)
     {

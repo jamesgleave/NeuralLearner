@@ -276,6 +276,7 @@ public class NEATNetwork : Model.BaseModel
                 cont = false;
                 Recompile(genome);
             }
+
         }
 
         // Set each output neuron to the highest depth if it has not been set already

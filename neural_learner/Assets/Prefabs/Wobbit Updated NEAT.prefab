@@ -311,9 +311,8 @@ MonoBehaviour:
   agent: {fileID: 8284897868176631410}
   input_size: 27
   output_size: 9
-  log: 'Added Node: <0.25 > 0.1646072> True, Changed Activation: , Added Connection:
-    True, Set weight, Updated weight, Updated weight, Updated weight, Updated weight,
-    Updated weight, Updated weight, '
+  log: 'Added Connection: True, Updated weight, Updated weight, Updated weight, Updated
+    weight, '
   initial_mutations: 1
   gcode: 
   use_threading_model_creation: 0
@@ -417,6 +416,7 @@ MonoBehaviour:
   egg_gestation_time: 0
   metabolism: 0
   true_metabolic_cost: 0
+  metabolic_cost_of_brain: 0
   brain_cost: 1
   cost_comparison: {x: 0, y: 0}
   time_to_die: 0

@@ -474,8 +474,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f59269cc84b94ec48eac2cb189a6bd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  total_food: 3000
-  food_growth_rate: 1
+  total_food: 6000
+  food_growth_rate: 3
   pellet_distrobution: 25
   pellet_clusters: 60
   food_pellet_size: 4
@@ -485,14 +485,14 @@ MonoBehaviour:
   food_pellets: []
   update_rate: 0.1
   teleport: 1
-  gridsize: 200
+  gridsize: 300
   adaptive_food: 1
   agent_pellet_threshold: 200
   agent: {fileID: 8284897868176631410, guid: fbd032cd3431242748fe08f4ef324252, type: 3}
   egg: {fileID: 798380245572057900, guid: 147dc55d0b0304c8cbf8fc3ae99ab8ce, type: 3}
-  starting_agents: 1
-  min_agents: 1
-  metabolism_scale_rate: 6
+  starting_agents: 100
+  min_agents: 10
+  metabolism_scale_rate: 3
   movement_cost_scale_rate: 500
   brain_cost_reduction_factor: 500
   agents: []
@@ -655,8 +655,10 @@ MonoBehaviour:
   calculated_pellets: 0
   target_pellets: 0
   general_manager: {fileID: 2047405929}
+  storage: 0
   hardware_accelerated: 1
   cs: {fileID: 7200000, guid: b399f748a0e1144c38e2dd14028ccfba, type: 3}
+  chunk_size: 1024
 --- !u!114 &2047405935
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -134,6 +134,8 @@
     <Compile Include="Assets/Scripts/Managers/SpriteManager.cs" />
     <Compile Include="Assets/Scripts/DisplayModel/NeatNetwork/DisplayEvoNEAT.cs" />
     <Compile Include="Assets/Scripts/DisplayModel/NeatNetwork/NEATDisplayNeuron2D.cs" />
+    <Compile Include="Assets/AncestorDisplayFDG.cs" />
+    <Compile Include="Assets/AncestoryDisplayNodeFDG.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets/Scripts/ComputeShaders/FoodPellet.compute" />

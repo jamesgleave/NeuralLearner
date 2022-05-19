@@ -54,7 +54,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
     // Calculate the current size of the pellet by lerping between the zero vector and the goal size
     // based on the current energy percentatage.
     float max_size = float3(pellets[id.x].size, pellets[id.x].size, pellets[id.x].size);
-    pellets[id.x].size = lerp(float3(0.0, 0.0, 0.0), max_size * max(energy_percentage, 0.1), energy_percentage);
+    pellets[id.x].size = lerp(float3(0.0, 0.0, 0.0), max_size, energy_percentage);
 
     // Calculate the energy we will be hypothetically extracting during the next update
     pellets[id.x].energy_extraction_ratio = (pellets[id.x].max_energy / growth_rate) * delta_time;

@@ -151,7 +151,6 @@ public class Egg : Interactable
         // Set the values
         manager = m;
         energy = Mathf.Pow(genes.size, 2) * agent.base_health;
-        manager.energy -= energy;
         size = genes.size;
         transform.localScale = new Vector3(size, size, size);
 
@@ -232,7 +231,8 @@ public class Egg : Interactable
 
 
             // TODO This is a temporary step to create new agents in new species to test its funcitonality!
-            if (genes.genetic_drift > 5f && parent_node != null)
+            // Threshold was 5 not 1! this is for test
+            if (genes.genetic_drift > 1f && parent_node != null)
             {
                 string t = "<" + Random.Range(100000, 1000000).ToString() + ">";
                 string new_name = NameGenerator.GenerateFullName() + t;

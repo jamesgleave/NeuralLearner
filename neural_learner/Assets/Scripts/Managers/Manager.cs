@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Manager : MonoBehaviour
 {
-
     [Header("Food Settings")]
 
     [Tooltip("Max amount of food to spawn in")]
@@ -13,11 +12,11 @@ public class Manager : MonoBehaviour
     [Tooltip("The growth rate of the food pellets")]
     public float food_growth_rate;
 
-    [Tooltip("How tightly the pellets distrobuted")]
-    public float pellet_distrobution;
+    //[Tooltip("How tightly the pellets distrobuted")]
+    //public float pellet_distrobution;
 
-    [Tooltip("How many pellet clusters there will be")]
-    public int pellet_clusters;
+    //[Tooltip("How many pellet clusters there will be")]
+    //public int pellet_clusters;
 
     [Tooltip("The max food pellet size")]
     public float food_pellet_size;
@@ -44,32 +43,30 @@ public class Manager : MonoBehaviour
     [Tooltip("The size of our simulation area")]
     public int gridsize;
 
-    [Header("Adaptive Food Settings")]
-    public bool adaptive_food;
-    public int agent_pellet_threshold;
-
+    //[Header("Adaptive Food Settings")]
+    //public bool adaptive_food;
+    //public int agent_pellet_threshold;
+    [Space]
     [Header("Agent Settings")]
-    [Tooltip("The Agent")]
     public BaseAgent agent;
     public Egg egg;
 
     [Tooltip("The number of initial agents to spawn in.")]
     public float starting_agents;
+    [Tooltip("The min number of initial agents in the simulation. Once the number of agents drops below this value, more are spawned in.")]
     public int min_agents;
 
-    [Tooltip("The scale rate for the agent metabolism. Increase this value to increate the lifetime of each agent.")]
-    public float metabolism_scale_rate;
+    [Tooltip("The scale rate for the agent metabolism. Increase this value to decrease the basal metobalolic rate of the agents.")]
+    public float metabolism_scale_rate = 3;
 
     [Tooltip("The scale rate for each agent's movement cost. Increasing this value will reduce the cost of movement for all agents.")]
-    public float movement_cost_scale_rate;
+    public float movement_cost_scale_rate = 500f;
 
     [Tooltip("Increasing this value decreases the amount of energy is used by the agents brain")]
-    public float brain_cost_reduction_factor;
+    public float brain_cost_reduction_factor = 250;
 
-    [Tooltip("The list of all present agents")]
-    public List<Interactable> agents = new List<Interactable>();
-
-    [Header("Simulation info")]
+    [Space]
+    [Header("Simulation info (readonly)")]
     [Tooltip("The amount of energy present in the simulation")]
     public float energy;
     public float initial_energy;
@@ -87,6 +84,7 @@ public class Manager : MonoBehaviour
 
     [Header("Statistics")]
     public StatisticManager stat_manager = new StatisticManager();
+    public int num_active_food = 0;
 
     [Header("Ancesory")]
     public AncestorManager anc_manager = new AncestorManager();
@@ -94,10 +92,14 @@ public class Manager : MonoBehaviour
     [Header("Spawner")]
     public SpawnManager spawn_manager;
 
-    [Header("Garbage Collection")]
-    public bool use_auto_manual_collection;
+    /// <summary>
+    /// If true, all starting agents will evolve movement
+    /// </summary>
+    [Header("Evolution Settings")]
+    public static bool mobile_start;
 
-    //public float herding_multiplier = 1;
+    //[Header("Garbage Collection")]
+    //public bool use_auto_manual_collection;
 
     // These are values the manager uses to manage the simulation (does not need to be seen)
     // The cluster pos is the center positions of all the clusters
@@ -105,23 +107,25 @@ public class Manager : MonoBehaviour
     // List of all activate agents
     private List<BaseAgent> all_agents = new List<BaseAgent>();
 
-    public int num_active_food = 0;
+    [Tooltip("The list of all present agents")]
+    public List<Interactable> agents = new List<Interactable>();
 
     public void Setup()
     {
         // Setup the spawner
         spawn_manager.Setup();
 
-        // Create clusters for the spawning
-        CreateClusters();
+        // This spawns the agents.
+        SpawnAgents();
 
-        // Spawn in agents!
-        // This spawns the agents and calculates the required energy to spawn in the food.
-        // It will return the total energy required for the system
-        initial_energy += SpawnAgents();
+        // Calculate the energy in the agents
+        ManageAgents();
 
         // This spawns in all of the food pellets
         SpawnFoodPellets();
+
+        // Set the initial energy
+        initial_energy = energy + energy_in_agents;
 
         // Setup the stat manager
         stat_manager.Setup(initial_energy);
@@ -138,27 +142,34 @@ public class Manager : MonoBehaviour
             CalculateEnergyInEth();
             combined = energy_in_agents + energy_in_ether + energy_in_pellets;
 
+            percent_energy_in_pellets *= 100;
+            percent_energy_in_ether *= 100;
+            percent_energy_in_agents *= 100;
+
             stat_manager.SetOtherEnergy(percent_energy_in_pellets, percent_energy_in_ether);
             stat_manager.Update();
-        }
 
+            // To deal with rounding errors, we inject a energy into the system when it fades away
+            energy = Mathf.Max(initial_energy - combined + energy, 0);
+
+        }
         else
         {
             clock -= Time.deltaTime;
         }
     }
 
-    public void CreateClusters()
-    {
-        int num_clusters = pellet_clusters;
-        cluster_pos.Clear();
+    //public void CreateClusters()
+    //{
+    //    int num_clusters = pellet_clusters;
+    //    cluster_pos.Clear();
 
-        // Set up the clusters
-        for (int i = 0; i < num_clusters; i++)
-        {
-            cluster_pos.Add(Random.insideUnitCircle * gridsize);
-        }
-    }
+    //    // Set up the clusters
+    //    for (int i = 0; i < num_clusters; i++)
+    //    {
+    //        cluster_pos.Add(Random.insideUnitCircle * gridsize);
+    //    }
+    //}
 
     public List<Vector2> GetClusters()
     {
@@ -166,55 +177,47 @@ public class Manager : MonoBehaviour
     }
 
     /// <summary>
-    /// Runs the UpdatePellets() method in the food_pellet_manager
+    /// Calculates the energy in the food pellets
     /// </summary>
     public void ManageFoodPellets()
     {
-        food_pellet_manager.UpdatePellets();
+        float percent = 0;
+        num_active_food = 0;
+        for (int i = 0; i < food_pellets.Count; i++)
+        {
+            // Add the energy of the food pellet
+            percent += food_pellets[i].energy;
+            num_active_food += food_pellets[i].eaten ? 0 : 1;
+        }
+
+        // Get the ratio of total energy in the system and the energy in the pellets
+        energy_in_pellets = percent;
+        percent_energy_in_pellets = percent / initial_energy;
     }
 
     public void SpawnFoodPellets()
     {
-
-        // Calculate the amount of energy needed for all of the food
-        energy = food_pellet_energy * total_food;
-
         // Spawn in the pellets
         for (int i = 0; i < total_food; i++)
         {
             FoodPellet p = Instantiate(pellet, spawn_manager.GetFoodSpawnLocation(), Quaternion.identity, transform);
 
             p.Setup((int)ID.FoodPellet, food_pellet_energy, food_growth_rate, food_pellet_size, this);
-            p.energy_consumed = food_pellet_energy;
-            p.energy = food_pellet_energy;
-            energy -= food_pellet_energy;
+            RecycleEnergy(food_pellet_energy);
             food_pellets.Add(p);
         }
     }
 
     // Returns the amount of energy needed to create the agents
-    public float SpawnAgents()
+    public void SpawnAgents()
     {
         // Spawn in the agents
         for (int i = 0; i < starting_agents; i++)
         {
             // Spawn an agent and set it up
-            //Vector2 center = cluster_pos[Random.Range(0, cluster_pos.Count)];
-            //Vector2 offset = Random.insideUnitCircle * pellet_distrobution;
-            //print(spawn_manager.GetRandomSpawnLocation());
             var e = Instantiate(egg, spawn_manager.GetRandomSpawnLocation(), transform.rotation, transform);
             e.Setup(this, (int)ID.WobbitEgg);
-        }
-
-        // If the agents used all the energy then make up for it
-        float needed_for_food = total_food * food_pellet_energy;
-        if (energy < needed_for_food)
-        {
-            return needed_for_food + (-energy);
-        }
-        else
-        {
-            return -energy;
+            //RecycleEnergy(e.energy);
         }
     }
 
@@ -226,13 +229,14 @@ public class Manager : MonoBehaviour
         percent_energy_in_agents = 0;
 
         // Spawn more agents if we dont have enough
-        if (stat_manager.num_agents < min_agents)
+        if (agents.Count < min_agents)
         {
             float energy_required = agent.base_health * Mathf.Pow(Genes.GetBaseGenes().size, 2);
             if (energy >= energy_required)
             {
                 var e = Instantiate(egg, spawn_manager.GetRandomSpawnLocation(), transform.rotation, transform);
                 e.Setup(this, (int)ID.WobbitEgg);
+                ExtractEnergy(e.energy);
             }
         }
 
@@ -274,11 +278,8 @@ public class Manager : MonoBehaviour
 
     public void CalculateEnergyInEth()
     {
-        percent_energy_in_ether = 1 - percent_energy_in_pellets - percent_energy_in_agents;
-        energy_in_ether = initial_energy - energy_in_agents - energy_in_pellets;
-
-        // Set the energy (in case we lose precision due to floating point rounding)
-        energy = energy_in_ether;
+        energy_in_ether = energy;
+        percent_energy_in_ether = energy / initial_energy;
     }
 
     public float Round(float value, int digits)

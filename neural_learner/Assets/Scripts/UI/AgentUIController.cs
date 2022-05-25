@@ -129,11 +129,11 @@ public class AgentUIController : MonoBehaviour
         int display_size = Mathf.Min(agent.energy.ToString().Length, 5);
         try
         {
-            state_display_values.Add(agent.energy.ToString().Substring(0, display_size) + "/" + (agent.max_energy * 2f).ToString().Substring(0, display_size));
+            state_display_values.Add(agent.energy.ToString().Substring(0, display_size) + "/" + (agent.max_energy).ToString().Substring(0, display_size));
         }
         catch
         {
-            state_display_values.Add(agent.energy.ToString() + "/" + (agent.max_energy * 2f).ToString());
+            state_display_values.Add(agent.energy.ToString() + "/" + (agent.max_energy).ToString());
         }
         state_display_values.Add(agent.true_metabolic_cost.ToString());
 
@@ -193,7 +193,7 @@ public class AgentUIController : MonoBehaviour
         gl.Add("Attribute-Mutation Rate");
         gl.Add("Neuro-Mutation Probability");
         gl.Add("Weight-Mutation Probability");
-        gl.Add("Bias-Mutation Probability");
+        gl.Add("Field Of View");
         gl.Add("Dropout Probability");
 
         gl.Add("Speed");

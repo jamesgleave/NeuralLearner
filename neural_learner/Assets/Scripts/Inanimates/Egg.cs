@@ -1,15 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
-public class Egg : Interactable
+public class Egg : Edible
 {
-    /// <summary>
-    ///   <para>The energy containted in the egg</para>
-    /// </summary>
-    public float energy;
-
     /// <summary>
     ///   <para>The scale of the egg</para>
     /// </summary>
@@ -64,6 +59,8 @@ public class Egg : Interactable
 
     public float time_spent_building = 0;
 
+    public float energy_density;
+
     public void Setup(int id, float e, Genes genes, Manager m, BaseAgent a, Brain parent_brain)
     {
 
@@ -77,7 +74,7 @@ public class Egg : Interactable
         // Set the values
         manager = m;
         energy = e;
-        size = parent.genes.size;
+        size = energy / manager.egg_energy_density;
         transform.localScale = new Vector3(size, size, size);
 
         // Calculate the gestation time
@@ -112,7 +109,7 @@ public class Egg : Interactable
         // Set the values
         manager = m;
         energy = e;
-        size = parent.genes.size;
+        size = energy / manager.egg_energy_density;
         transform.localScale = new Vector3(size, size, size);
 
         // Calculate the gestation time
@@ -143,15 +140,19 @@ public class Egg : Interactable
     public void Setup(Manager m, int id)
     {
         // Set genes and mutate them
-        this.genes = Genes.GetBaseGenes();
+        if(m.dynamic_mutation_rates){
+            this.genes = m.random_initial_genes ? Genes.GetRandomGenes() : Genes.GetBaseGenes();
+        }else{
+            this.genes = Genes.GetBaseGenesSetMutationRate();
+        }
 
         // Set the agent
         this.agent = m.agent;
 
         // Set the values
         manager = m;
-        energy = Mathf.Pow(genes.size, 2) * agent.base_health;
-        size = genes.size;
+        energy = (Mathf.Pow(genes.size, 2) * agent.base_health);
+        size = energy/  manager.egg_energy_density;
         transform.localScale = new Vector3(size, size, size);
 
         // Calculate the gestation time
@@ -178,7 +179,7 @@ public class Egg : Interactable
         initial_population = true;
 
         // Give the egg a brain!
-        agent.brain.Setup();
+        // agent.brain.Setup();
         brain = (NEATNetwork)agent.brain.GetModel();
 
         // Setup as an interactable
@@ -231,8 +232,7 @@ public class Egg : Interactable
 
 
             // TODO This is a temporary step to create new agents in new species to test its funcitonality!
-            // Threshold was 5 not 1! this is for test
-            if (genes.genetic_drift > 1f && parent_node != null)
+            if (genes.genetic_drift > 5f && parent_node != null)
             {
                 string t = "<" + Random.Range(100000, 1000000).ToString() + ">";
                 string new_name = NameGenerator.GenerateFullName() + t;
@@ -254,7 +254,6 @@ public class Egg : Interactable
 
             // Setup the brain
             SetupBrain(a);
-            print("After created agent's Brain Complexity: " + a.brain.GetModel().GetComplexity());
 
             // Setup using parents
             HandleReproductionMode(a);
@@ -269,6 +268,13 @@ public class Egg : Interactable
 
             // Kill the egg!
             manager.GetComponent<EntityPoolManager>().Destroy(this);
+
+            
+        }
+energy_density = GetEnergyDensity();
+        if(Input.GetKeyDown(KeyCode.H))
+        {
+            gestation_time = 0;
         }
     }
 
@@ -303,7 +309,7 @@ public class Egg : Interactable
         }
     }
 
-    public float Eat()
+    public override float Eat()
     {
         // Temp store the energy so it can be returned
         float temp_energy = energy;
@@ -313,5 +319,4 @@ public class Egg : Interactable
 
         return temp_energy;
     }
-
 }

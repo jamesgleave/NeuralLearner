@@ -2,12 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Meat : Interactable
+public class Meat : Edible
 {
-    /// <summary>
-    ///   <para>The energy containted in the meat</para>
-    /// </summary>
-    public float energy;
     public float initial_energy;
 
     /// <summary>
@@ -27,14 +23,16 @@ public class Meat : Interactable
 
     public Genes genes;
 
+    public float energy_density;
+
     public void Setup(int id, float e, float rr, float s, Genes genes, Manager m)
     {
         // Set values
-        rot_rate = rr * Random.value;
+        rot_rate = rr;
         manager = m;
         energy = e;
         initial_energy = e;
-        size = s / 10 + Random.value;
+        size = s;
         transform.localScale = new Vector3(size, size, size);
         base.Setup(id);
 
@@ -57,7 +55,7 @@ public class Meat : Interactable
         }
 
         // Reduce the size and energy of the meat
-        float cost = Time.deltaTime * rot_rate * initial_energy;
+        float cost = initial_energy * (Time.deltaTime / rot_rate);
         if (energy - cost < 0)
         {
             cost = energy;
@@ -69,14 +67,14 @@ public class Meat : Interactable
         }
         // If there is any wasted energy, it is returned to the system
         manager.RecycleEnergy(cost);
-        // Find the new size
-        size -= 0.01f * Time.deltaTime;
-        float new_size = Mathf.Max(0.1f, size);
-        transform.localScale = new Vector3(new_size, new_size, new_size);
 
+        // Find the new size
+        transform.localScale = new Vector3(size, size, size) * (energy / initial_energy);
+
+        energy_density = GetEnergyDensity();
     }
 
-    public float Eat()
+    public override float Eat()
     {
         // Temp store the energy so it can be returned
         float temp_energy = energy;
@@ -90,7 +88,7 @@ public class Meat : Interactable
         return temp_energy;
     }
 
-    public float Eat(float consumption_rate)
+    public override float Eat(float consumption_rate)
     {
         // If we have enough energy after consuming then we do not destroy
         if (energy - consumption_rate > 0)

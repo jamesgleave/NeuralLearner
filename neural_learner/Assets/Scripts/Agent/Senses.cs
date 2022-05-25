@@ -5,8 +5,8 @@ using UnityEngine;
 public class Senses : MonoBehaviour
 {
 
-    public float vision_width;
     public float vision_distance;
+    public float field_of_view;
     public List<Interactable> detected;
 
     [Space]
@@ -40,7 +40,7 @@ public class Senses : MonoBehaviour
     public List<string> observation_names = new List<string>();
 
     // The buffer for the circlecast
-    public RaycastHit2D[] buffer;
+    public Collider2D[] buffer;
     [Tooltip("The amount of time until the agent forgets something")]
     public float sense_memory;
 
@@ -62,18 +62,19 @@ public class Senses : MonoBehaviour
     /// </summary>
     public static Dictionary<string, float> observation_weights;
 
-    public void Setup(float dist, int id, Transform t)
+    public void Setup(float dist, float fov, int id, Transform t)
     {
         // Set the vision radius 
         vision_distance = dist;
-        vision_width = dist / 2;
+
+        // Set up the FOV
+        field_of_view = fov;
 
         // Setup the names of all observations in the right order (the ith observation lines up with the ith observation_name)
         SetupNames();
 
         // Create the buffer
-        buffer = new RaycastHit2D[20];
-        filter = new ContactFilter2D();
+        buffer = new Collider2D[20];
         //sense_memory = Mathf.Log(GetComponent<BaseAgent>());
     }
 
@@ -203,7 +204,7 @@ public class Senses : MonoBehaviour
 
         // The next things to add are about the agent's own state
         // Add the agent's energy % (18)
-        observations.Add(agent.energy / (2 * agent.max_energy));
+        observations.Add(agent.energy / agent.max_energy);
 
         // Add the agent's health % (19)
         observations.Add(Mathf.Clamp(agent.health / agent.max_health, 0f, 1f));
@@ -288,36 +289,36 @@ public class Senses : MonoBehaviour
         blue = null;
 
         // Reset all distances
-        closest_pellet_dist_magnitude = closest_meat_dist_magnitude = closest_egg_dist_magnitude = closest_agent_dist_magnitude = red_distance = green_distance = blue_distance = 0;
+        closest_pellet_dist_magnitude = closest_meat_dist_magnitude = closest_egg_dist_magnitude = closest_agent_dist_magnitude = red_distance = green_distance = blue_distance = 1;
 
         // Reset counts
         num_pellets = num_meats = num_eggs = num_agents = 0;
 
         // Look at stuff!
-        Physics2D.CircleCast(origin: transform.position + transform.up * vision_width, radius: vision_width, direction: transform.up, distance: vision_distance, results: buffer, contactFilter: filter.NoFilter());
+        Physics2D.OverlapCircleNonAlloc(point: transform.position + transform.up, radius: vision_distance, results: buffer);
         for (int i = 0; i < buffer.Length; i++)
         {
             // Grab the object from the buffer
-            RaycastHit2D c = buffer[i];
+            Collider2D c = buffer[i];
 
-            // If we have a null value, skip!
-            if (c.collider == null)
-            {
-                continue;
-            }
+            // If it is not null
+            if(c == null){continue;}
+
+            // Check if the object is within the agent's field of view
+            if((Vector2.Dot((c.transform.position - transform.position).normalized, transform.up) + 1 ) / 2f < 1 - field_of_view) {continue;}
 
             // Define the game object we are looking at
             // We only detect the agent's body... This is to avoid adding it twice to the detected list (avoid checking as well)
             GameObject g;
-            if (c.collider.CompareTag("Body"))
+            if (c.CompareTag("Body"))
             {
                 // Check if we have collided with an agent's body component and if so we must look at the parent (the agent)
-                g = c.collider.transform.parent.gameObject;
+                g = c.transform.parent.gameObject;
             }
             else
             {
                 // If not, then it is something else and we close with g just being equal to the colliders game object
-                g = c.collider.gameObject;
+                g = c.gameObject;
             }
 
             if (g.TryGetComponent<Interactable>(out Interactable obj) && obj.gameObject != this.gameObject)
@@ -325,7 +326,7 @@ public class Senses : MonoBehaviour
                 // Now update the closest values
                 // Use a switch case cuz it be faster
                 float raw_dist = Vector2.Distance(obj.transform.position, transform.position);
-                float dist = raw_dist / (vision_distance + vision_width * 2f);
+                float dist = raw_dist / vision_distance;
                 detected.Add(obj);
 
                 switch ((ID)obj.GetID())
@@ -416,5 +417,21 @@ public class Senses : MonoBehaviour
                 Gizmos.DrawLine(transform.position, detected[i].transform.position);
             }
         }
+
+
+        float angle = 360 * (1 - field_of_view);
+        float rayRange = 5;
+        float halfFOV = angle / 2.0f;
+        float coneDirection = 180;
+
+        Quaternion upRayRotation = Quaternion.AngleAxis(-halfFOV + coneDirection, Vector3.forward);
+        Quaternion downRayRotation = Quaternion.AngleAxis(halfFOV + coneDirection, Vector3.forward);
+
+        Vector3 upRayDirection = upRayRotation * transform.up * rayRange;
+        Vector3 downRayDirection = downRayRotation * transform.up * rayRange;
+
+        Gizmos.DrawRay(transform.position, upRayDirection);
+        Gizmos.DrawRay(transform.position, downRayDirection);
+
     }
 }

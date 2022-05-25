@@ -123,6 +123,7 @@ public class NEATDisplayNeuron : Interactable
         float new_size = Mathf.Min(scale_rate * Mathf.Exp(Mathf.Abs(value)) + max_size / 10, max_size);
         float current = transform.localScale.x;
         float step = new_size * Time.deltaTime * (new_size - current);
+
         if (!Mathf.Approximately(current, new_size))
         {
             transform.localScale = new Vector3(current + step, current + step, current + step);

@@ -166,6 +166,11 @@ public class Genome
         List<int> keys = new List<int>(nodes.Count);
         List<int> non_input_ids = new List<int>();
         List<int> non_output_ids = new List<int>();
+        
+        // Create the weight of the connection as well as the reference to the connection
+        float weight = (Random.value * 2f) - 1f;
+        ConnectionGene new_connection;
+
         foreach (var item in nodes)
         {
             keys.Add(item.Key);
@@ -174,26 +179,76 @@ public class Genome
             if (item.Value.IsHidden() || item.Value.IsOutput())
             {
                 non_input_ids.Add(item.Key);
+
             }
             else if (item.Value.IsHidden() || item.Value.IsInput())
             {
                 non_output_ids.Add(item.Key);
+
             }
         }
 
         // If we have no connections, there is a 90% chance that the first connection formed will be to the movement neuron
         NodeGene node1, node2;
-        if (connections.Count == 0 && (0.90f > Random.value || Manager.mobile_start))
+        if (connections.Count == 0 && (0.90f > Random.value || Manager.static_mobile_start))
         {
+
             // Grab the two nodes that we will be connecting
-            node1 = nodes[keys[Random.Range(0, keys.Count)]];
-            node2 = nodes[25]; // 25 is the index of the movement neuron
+            node1 = nodes[Manager.static_mobile_start ? 26 : keys[Random.Range(0, keys.Count)]];
+            node2 = nodes[27]; // 27 is the index of the movement neuron
+
+            // Set the connection's weight
+            weight = Random.Range(0f, 0.5f);
+
+            // There is a 50 percent chance that a pred will evolve
+            if(Random.value < 0.50f && Manager.static_mobile_start)
+            {
+                // turn towards agents
+                new_connection = new ConnectionGene(8, 28, -1f, true, innovation.GetInnovation());
+                connections.Add(new_connection.GetInnovation(), new_connection);
+
+                // turn towards meat
+                new_connection = new ConnectionGene(5, 28, -1f, true, innovation.GetInnovation());
+                connections.Add(new_connection.GetInnovation(), new_connection);
+
+                // Turn away from similar colored species
+                // new_connection = new ConnectionGene(15, 28, -1f, true, innovation.GetInnovation());
+                // connections.Add(new_connection.GetInnovation(), new_connection);
+
+                // Accelerate towards agents
+                new_connection = new ConnectionGene(8, 27, -weight, true, innovation.GetInnovation());
+                connections.Add(new_connection.GetInnovation(), new_connection);
+
+                // Wants to attack when close
+                new_connection = new ConnectionGene(7, 32, 1f, true, innovation.GetInnovation());
+                connections.Add(new_connection.GetInnovation(), new_connection);
+
+                // Also turn towards pellets
+                new_connection = new ConnectionGene(2, 28, -0.8f, true, innovation.GetInnovation());
+                connections.Add(new_connection.GetInnovation(), new_connection);
+
+                Debug.Log("Pred");
+            }   
+
+            
         }
         else
         {
-            // Grab the two nodes that we will be connecting
-            node1 = nodes[keys[Random.Range(0, keys.Count)]];
-            node2 = nodes[keys[Random.Range(0, keys.Count)]];
+            // If we have a connection, then we have a 75% chance that the second connection will be to the rotate towards from food
+            if(connections.Count == 1 && Manager.static_mobile_start){
+                // Connect the node for rotation to the closest pellet
+                node1 = nodes[2];
+                node2 = nodes[28];
+
+                // Set the connection's weight
+                weight = -Random.Range(0f, 2f);
+                            Debug.Log("Mobile start: 2 - ");
+
+            }else{
+                // Grab the two nodes that we will be connecting
+                node1 = nodes[keys[Random.Range(0, keys.Count)]];
+                node2 = nodes[keys[Random.Range(0, keys.Count)]];
+            }
         }
 
         // If we fail and have an input connecting to an input or an output connecting to an output we search and find all outputs/inputs and select one at random that works
@@ -251,8 +306,6 @@ public class Genome
         }
 
         // if it is reversed, we must swap node 1 and node 2
-        float weight = (Random.value * 2f) - 1f;
-        ConnectionGene new_connection;
         if (reversed)
         {
             new_connection = new ConnectionGene(node2.GetID(), node1.GetID(), weight, true, innovation.GetInnovation());
@@ -264,6 +317,7 @@ public class Genome
 
         // Add the new connection to our connections
         connections.Add(new_connection.GetInnovation(), new_connection);
+
         return true;
     }
 
@@ -605,20 +659,18 @@ public class Genome
         return new_genome;
     }
 
-    public static string Mutate(Genome model, float mutation_amount, float weight_mutation_prob, float neuro_mutation_prob, float bias_mutation_prob, float dropout_prob)
+    public static void Mutate(Genome model, float mutation_amount, float weight_mutation_prob, float neuro_mutation_prob, float dropout_prob)
     {
-        string log = "";
-
         // There is a base 80% chance of a genome mutation
         if (0.80f > Random.value)
         {
-
+            
             // Mutate add node
             float prob_trigger = Random.Range(0f, 1f);
             bool trigger = (neuro_mutation_prob > prob_trigger);
             if (trigger)
             {
-                log += "Added Node: <" + neuro_mutation_prob + " > " + prob_trigger + "> " + model.AddNodeMutation() + ", ";
+                model.AddNodeMutation();
             }
 
             // Mutate activations
@@ -626,33 +678,33 @@ public class Genome
             trigger = (neuro_mutation_prob > prob_trigger);
             if (trigger)
             {
-                log += "Changed Activation: " + ", ";
                 model.ChangeActivationMutation();
             }
 
             // Mutate neuron types
             prob_trigger = Random.Range(0f, 1f);
-            trigger = (bias_mutation_prob > prob_trigger);
+            trigger = (neuro_mutation_prob > prob_trigger);
             if (trigger)
             {
-                log += "Changed Neuron Type: " + ", ";
                 model.ChangeCalculationMethodMutation();
             }
 
             // Mutate the connections by adding a few more
-            float num_added_connections = 3 * neuro_mutation_prob;
-            // We can only add up to 5 new connections per mutation
+            float num_added_connections = Mathf.Max(5f * neuro_mutation_prob, 3f);
+
+            // We can only add up to 3 new connections per mutation
             prob_trigger = Random.Range(0f, 1f);
-            trigger = (weight_mutation_prob > prob_trigger);
+            trigger = (neuro_mutation_prob > prob_trigger) || (Manager.static_mobile_start && model.GetNumConnections() < 2);
             while (trigger && num_added_connections > 0)
             {
                 // Add new connection
-                log += "Added Connection: " + model.AddConnectionMutation() + ", ";
                 num_added_connections -= 1;
 
                 // Recalculate trigger
                 prob_trigger = Random.Range(0f, 1f);
                 trigger = (weight_mutation_prob > prob_trigger);
+
+                model.AddConnectionMutation();
             }
 
             // Loop through each connection and mutate the weights according to the passed weight mutation probability
@@ -665,11 +717,6 @@ public class Genome
                     if (0.75f > Random.value)
                     {
                         con.SetWeight(con.GetWeight() + Random.Range(-2 * mutation_amount, 2 * mutation_amount));
-                        // Only add to the log if our value is greater than zero
-                        if (con.GetWeight() > 0)
-                        {
-                            log += "Updated weight, ";
-                        }
                     }
                     // If the weight mutation is not triggered, then we assign the weights a new value (as from the NEAT paper)
                     // If the weight is not pertubed, there is a 25% chance of the weight being set to an all new value
@@ -677,11 +724,9 @@ public class Genome
                     {
                         // If not, then set the weight value
                         con.SetWeight(Random.Range(-2 * mutation_amount, 2 * mutation_amount));
-                        log += "Set weight, ";
                     }
                 }
             }
-
 
             // Recalculate trigger but this time for dropping a connection
             prob_trigger = Random.Range(0f, 1f);
@@ -690,10 +735,8 @@ public class Genome
             {
                 // Drop the connection
                 model.InvertConnectionMutation();
-                log += "Dropped connection, ";
             }
         }
-        return log;
     }
 
     /// <summary>

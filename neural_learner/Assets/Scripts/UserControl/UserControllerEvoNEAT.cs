@@ -176,6 +176,7 @@ public class UserControllerEvoNEAT : MonoBehaviour
                 selected = null;
 
                 // Fade in all weights
+                print(nn);
                 foreach (var x in nn.GetAllNeurons())
                 {
                     x.FadeInWeights();

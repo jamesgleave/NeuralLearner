@@ -12,17 +12,23 @@ public class Manager : MonoBehaviour
     [Tooltip("The growth rate of the food pellets")]
     public float food_growth_rate;
 
-    //[Tooltip("How tightly the pellets distrobuted")]
-    //public float pellet_distrobution;
-
-    //[Tooltip("How many pellet clusters there will be")]
-    //public int pellet_clusters;
-
     [Tooltip("The max food pellet size")]
     public float food_pellet_size;
 
-    [Tooltip("The amount of energy in one pellet")]
-    public float food_pellet_energy;
+    [Tooltip("The energy density of the food pellets")]
+    public float food_pellet_energy_density;
+    [Tooltip("The energy density of wobbit meat")]
+    public float meat_energy_density = 1;
+    [Tooltip("The time taken for a meat to rot")]
+    public float meat_rot_time = 30;
+    [Tooltip("The energy density of wobbit eggs")]
+    public float egg_energy_density = 1;
+
+    public float food_pellet_digestion_toughness = 0.9f;
+    public float meat_pellet_digestion_toughness = 0.5f;
+    public float egg_digestion_toughness = 0.3f;
+    public float digestion_coefficient = 1f;
+    public float stomach_volume_multiplier =3f;
 
     [Tooltip("The food pellet prefab")]
     public FoodPellet pellet;
@@ -30,7 +36,7 @@ public class Manager : MonoBehaviour
     [Tooltip("The manager for the food pellets")]
     public FoodPelletManager food_pellet_manager;
 
-    [Tooltip("The list of all food pelletes present")]
+    [Tooltip("The list of all food pellets present")]
     public List<FoodPellet> food_pellets = new List<FoodPellet>();     // The list of food pellets
 
     [Header("Simulation Settings")]
@@ -51,6 +57,9 @@ public class Manager : MonoBehaviour
     public BaseAgent agent;
     public Egg egg;
 
+    public bool random_initial_genes;
+    public bool dynamic_mutation_rates;
+
     [Tooltip("The number of initial agents to spawn in.")]
     public float starting_agents;
     [Tooltip("The min number of initial agents in the simulation. Once the number of agents drops below this value, more are spawned in.")]
@@ -64,6 +73,8 @@ public class Manager : MonoBehaviour
 
     [Tooltip("Increasing this value decreases the amount of energy is used by the agents brain")]
     public float brain_cost_reduction_factor = 250;
+
+    public float agent_base_damage_multiplier = 5;
 
     [Space]
     [Header("Simulation info (readonly)")]
@@ -83,6 +94,14 @@ public class Manager : MonoBehaviour
     public float percent_energy_in_ether;
 
     [Header("Statistics")]
+    /// <summary>
+    /// How frequently the statistic history is updated (seconds)
+    /// </summary>
+    public float delta_history_update_time = 1;
+    /// <summary>
+    /// Once the history reaches this length, it is binned to half of the max length.
+    /// </summary>
+    public int history_length_threshold = 1000;
     public StatisticManager stat_manager = new StatisticManager();
     public int num_active_food = 0;
 
@@ -96,7 +115,8 @@ public class Manager : MonoBehaviour
     /// If true, all starting agents will evolve movement
     /// </summary>
     [Header("Evolution Settings")]
-    public static bool mobile_start;
+    public bool mobile_start;
+    public static bool static_mobile_start;
 
     //[Header("Garbage Collection")]
     //public bool use_auto_manual_collection;
@@ -110,19 +130,27 @@ public class Manager : MonoBehaviour
     [Tooltip("The list of all present agents")]
     public List<Interactable> agents = new List<Interactable>();
 
+    public static Manager instance;
+
     public void Setup()
     {
         // Setup the spawner
         spawn_manager.Setup();
 
-        // This spawns the agents.
-        SpawnAgents();
+        // Hacky mobile start
+        static_mobile_start = mobile_start;
+
+        // Set up singleton
+        instance = this;
 
         // Calculate the energy in the agents
         ManageAgents();
 
         // This spawns in all of the food pellets
         SpawnFoodPellets();
+
+        // This spawns the agents.
+        SpawnAgents();
 
         // Set the initial energy
         initial_energy = energy + energy_in_agents;
@@ -147,7 +175,6 @@ public class Manager : MonoBehaviour
             percent_energy_in_agents *= 100;
 
             stat_manager.SetOtherEnergy(percent_energy_in_pellets, percent_energy_in_ether);
-            stat_manager.Update();
 
             // To deal with rounding errors, we inject a energy into the system when it fades away
             energy = Mathf.Max(initial_energy - combined + energy, 0);
@@ -158,18 +185,6 @@ public class Manager : MonoBehaviour
             clock -= Time.deltaTime;
         }
     }
-
-    //public void CreateClusters()
-    //{
-    //    int num_clusters = pellet_clusters;
-    //    cluster_pos.Clear();
-
-    //    // Set up the clusters
-    //    for (int i = 0; i < num_clusters; i++)
-    //    {
-    //        cluster_pos.Add(Random.insideUnitCircle * gridsize);
-    //    }
-    //}
 
     public List<Vector2> GetClusters()
     {
@@ -202,8 +217,8 @@ public class Manager : MonoBehaviour
         {
             FoodPellet p = Instantiate(pellet, spawn_manager.GetFoodSpawnLocation(), Quaternion.identity, transform);
 
-            p.Setup((int)ID.FoodPellet, food_pellet_energy, food_growth_rate, food_pellet_size, this);
-            RecycleEnergy(food_pellet_energy);
+            p.Setup((int)ID.FoodPellet, food_pellet_energy_density, food_growth_rate, food_pellet_size, this);
+            RecycleEnergy(p.max_energy);
             food_pellets.Add(p);
         }
     }
@@ -215,7 +230,7 @@ public class Manager : MonoBehaviour
         for (int i = 0; i < starting_agents; i++)
         {
             // Spawn an agent and set it up
-            var e = Instantiate(egg, spawn_manager.GetRandomSpawnLocation(), transform.rotation, transform);
+            var e = Instantiate(egg, spawn_manager.GetFoodSpawnLocation(), transform.rotation, transform);
             e.Setup(this, (int)ID.WobbitEgg);
             //RecycleEnergy(e.energy);
         }

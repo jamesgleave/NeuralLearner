@@ -87,7 +87,7 @@ public class FoodPelletManager : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Update()
+    void FixedUpdate()
     {
         if (Input.GetKeyDown(KeyCode.K))
         {
@@ -149,7 +149,7 @@ public class FoodPelletManager : MonoBehaviour
         }
 
         // Iterate through using the feed rate
-        for (int i = 0; i < (general_manager.total_food - feed_rate); i++)
+        for (int i = 0; i < (feed_rate); i++)
         {
 
 
@@ -183,7 +183,7 @@ public class FoodPelletManager : MonoBehaviour
             // As the number of agents increase, the probability of a food pellet respawning dr
             if (pellet.eaten && general_manager.num_active_food < calculated_pellets)
             {
-                pellet.Respawn(general_manager.spawn_manager.GetFoodSpawnLocation(), general_manager.food_pellet_energy, general_manager.food_growth_rate, general_manager.food_pellet_size);
+                pellet.Respawn(general_manager.spawn_manager.GetFoodSpawnLocation(), general_manager.food_pellet_energy_density, general_manager.food_growth_rate, general_manager.food_pellet_size);
                 general_manager.num_active_food++;
             }
             else if (pellet.eaten)
@@ -452,7 +452,7 @@ public class FoodPelletManager : MonoBehaviour
                 // If the pellet has been eaten then respawn if we have enough energy
                 if (general_manager.food_pellets[i].eaten && general_manager.num_active_food < target_pellets)
                 {
-                    general_manager.food_pellets[i].Respawn(general_manager.spawn_manager.GetFoodSpawnLocation(), general_manager.food_pellet_energy, general_manager.food_growth_rate, general_manager.food_pellet_size);
+                    general_manager.food_pellets[i].Respawn(general_manager.spawn_manager.GetFoodSpawnLocation(), general_manager.food_pellet_energy_density, general_manager.food_growth_rate, general_manager.food_pellet_size);
                 }
             }
 

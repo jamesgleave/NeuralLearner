@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -102,11 +102,11 @@ public class DisplayEvoNEAT : Display
 
                 // Only add inputs if they have valid outputs
                 // TODO Fix naming issue
-                if (n.Value.GetOutputIDs().Count == 0)
-                {
-                   input_names.RemoveAt(0);
-                   continue;
-                }
+                // if (n.Value.GetOutputIDs().Count ==  0)
+                // {
+                //    input_names.RemoveAt(0);
+                //    continue;
+                // }
 
                 var x = Instantiate(neuron, transform).GetComponent<NEATDisplayNeuron>();
                 x.Setup(n.Value, this);
@@ -229,7 +229,6 @@ public class DisplayEvoNEAT : Display
             {
                 inputs.Add(Random.Range(-1f, 1f));
             }
-            print(model.Infer(inputs));
         }
 
         // Run inference

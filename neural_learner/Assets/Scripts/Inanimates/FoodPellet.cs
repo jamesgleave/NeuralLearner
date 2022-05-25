@@ -2,14 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FoodPellet : Interactable
+public class FoodPellet : Edible
 {
-
-    /// <summary>
-    ///   <para>The energy containted in food pellet</para>
-    /// </summary>
-    public float energy;
-
     /// <summary>
     ///   <para>The max energy containted in food pellet when fully grown</para>
     /// </summary>
@@ -53,67 +47,87 @@ public class FoodPellet : Interactable
     // When this is 30, they can start to regrow
     public float time_since_eaten = 0;
 
+    // Constants to speed up calculations
+    private float max_energy_growth_rate_ratio;
+    private Vector3 target_size;
 
+    public float energy_density;
 
     public void Setup(int id, float me, float gr, float s, Manager m)
     {
         // Set values
-        growth_rate = gr * Random.Range(0.9f, 1.1f);
-        size = s * Random.Range(0.5f, 1.5f);
-        max_energy = me;
+        float scaler = Random.Range(0.5f, 1.5f);
+        growth_rate = gr;
+        size = s * scaler;
+        max_energy = size * me;
         manager = m;
         energy = 0;
 
         transform.localScale = Vector3.zero;
         base.Setup(id);
+
+        // Set up constant ratio
+        max_energy_growth_rate_ratio = growth_rate;
+        target_size = new Vector3(size, size, size);
     }
 
     public void Respawn(Vector2 pos, float me, float gr, float s)
     {
 
-        transform.position = pos;
-        max_energy = me;
-        growth_rate = gr * Random.Range(0.9f, 1.1f);
-        eaten = false;
+        // Set values
+        float scaler = Random.Range(0.5f, 1.5f);
+        growth_rate = gr;
+        size = s * scaler;
+        max_energy = size * me;
         energy = 0;
-        size = s * Random.Range(0.5f, 1.5f);
 
         sprite.enabled = true;
         rb.simulated = true;
         col.enabled = true;
 
         transform.localScale = Vector3.zero;
+        transform.localPosition = pos;
+        eaten = false;
+
+        max_energy_growth_rate_ratio = growth_rate;
+        target_size = new Vector3(size, size, size);
+
     }
 
     public void UpdatePellet()
     {
-
-        // If the pellet is too far, respawn it
-        if (manager.teleport && Vector2.Distance(transform.position, manager_position) > (manager.gridsize) * 1.25f)
-        {
-            manager.RecycleEnergy(Eat());
-        }
-
-        if (max_energy > energy + (max_energy / growth_rate) * Time.deltaTime && max_energy > energy_consumed + (max_energy / growth_rate) * Time.deltaTime)
+        if(eaten){return;}
+        // Scale the ratio with delta time
+        float max_energy_growth_rate_ratio_time_scaled = growth_rate * Time.deltaTime;
+        if (max_energy > energy + max_energy_growth_rate_ratio_time_scaled && max_energy > energy_consumed + max_energy_growth_rate_ratio_time_scaled)
         {
             // Extract energy from the manager
-            float energy_delta = manager.ExtractEnergy((max_energy / growth_rate) * Time.deltaTime);
-
-            // Find the delta energy and the goal size
-            goal_scale = new Vector3(size, size, size) * Mathf.Max((energy / max_energy), 0.1f);
-
-            // Scale up
-            transform.localScale = Vector3.Lerp(Vector3.zero, goal_scale, energy / max_energy);
+            float energy_delta = manager.ExtractEnergy(max_energy_growth_rate_ratio_time_scaled);
 
             // Add energy
             energy += energy_delta;
             energy_consumed += energy_delta;
+
+            // Find the delta energy and the goal size
+            goal_scale = target_size * (energy / max_energy);
+
+            // Scale up
+            transform.localScale = goal_scale;
+
+            energy_density = GetEnergyDensity();
         }
         else
         {
-            // Find the delta energy and the goal size
-            goal_scale = new Vector3(size, size, size) * Mathf.Max((energy / max_energy), 0.1f) + Vector3.one / 10f;
-            transform.localScale = Vector3.Lerp(transform.localScale, goal_scale, growth_rate);
+            goal_scale = target_size * (energy / max_energy);
+
+            // Scale up
+            transform.localScale = goal_scale;
+        }
+
+        // If the pellet is too far, respawn it
+        if (manager.teleport && Vector2.Distance(rb.position, manager_position) > (manager.gridsize) * 1.25f)
+        {
+            manager.RecycleEnergy(Eat());
         }
     }
 
@@ -124,7 +138,7 @@ public class FoodPellet : Interactable
     public void SetAttributes(bool recycle, bool update_scale, float energy_extraction_ratio, float new_scale)
     {
         // If the compute shader determined we are ready to recycle, we do.
-        // recycle = manager.teleport && Vector2.Distance(transform.position, manager_position) > (manager.gridsize) * 1.25f
+        // recycle = manager.teleport && Vector2.Distance(rb.position, manager_position) > (manager.gridsize) * 1.25f
         if (recycle) { manager.RecycleEnergy(Eat()); }
 
         // goal_scale = new Vector3(size, size, size) * Mathf.Max((energy / max_energy), 0.1f) + Vector3.one / 10f;
@@ -158,7 +172,7 @@ public class FoodPellet : Interactable
         rb.velocity = Vector2.zero;
     }
 
-    public float Eat()
+    public override float Eat()
     {
         // Temp store the energy so it can be returned
         float temp_energy = energy;
@@ -170,7 +184,7 @@ public class FoodPellet : Interactable
         energy = 0;
         max_energy = 0;
 
-        if (energy <= 0)
+        if (energy <= 0.1F)
         {
             // Set eaten to true obviously 
             eaten = true;
@@ -182,14 +196,14 @@ public class FoodPellet : Interactable
         return temp_energy;
     }
 
-    public float Eat(float consumption_rate)
+    public override float Eat(float consumption_rate)
     {
 
         // Set time to zero
         time_since_eaten = 0;
 
         // If we have enough energy after consuming then we do not destroy
-        if (energy - consumption_rate > 0)
+        if (energy - consumption_rate > 0.1F)
         {
             energy -= consumption_rate;
             return consumption_rate;
@@ -202,5 +216,4 @@ public class FoodPellet : Interactable
             return energy;
         }
     }
-
 }

@@ -6,6 +6,7 @@ public class UserControllerEvoSim : MonoBehaviour
 {
     // For movement
     public float drag_speed = 2;
+    public float zoom_speed = 10;
 
     // For selecting interactable
     public GameObject selected;
@@ -169,7 +170,7 @@ public class UserControllerEvoSim : MonoBehaviour
     void HandleUserMovement()
     {
         // Zoom in and out with Mouse Wheel
-        transform.Translate(0, 0, Input.GetAxis("Mouse ScrollWheel") * drag_speed, Space.Self);
+        transform.Translate(0, 0, Input.GetAxis("Mouse ScrollWheel") * zoom_speed * transform.position.z/10f, Space.Self);
 
         if (Input.GetMouseButtonDown(0))
         {

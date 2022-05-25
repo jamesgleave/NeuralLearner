@@ -1,10 +1,11 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
 public class BaseAgent : Interactable
 {
+    # region Variables
     [Header("Agent Components")]
     public GameObject body;
     public GameObject head;
@@ -31,13 +32,13 @@ public class BaseAgent : Interactable
     /// <summary>
     ///   <para>The base speed of all agents</para>
     /// </summary>
-    [Range(0.0f, 100f)]
+    [Range(0.0f, 5000f)]
     public float base_speed = 10;
 
     /// <summary>
     ///   <para>The base speed of all agents</para>
     /// </summary>
-    [Range(0.0f, 100f)]
+    [Range(0.0f, 5000f)]
     public float base_rotation_speed = 3;
 
     /// <summary>
@@ -128,7 +129,7 @@ public class BaseAgent : Interactable
     private List<float> inf = new List<float>();
 
 
-    [Header("Aquired Agent Attributes")]
+    [Header("Acquired Agent Attributes")]
     /// <summary>
     ///   <para>The genus name</para>
     /// </summary>
@@ -204,11 +205,6 @@ public class BaseAgent : Interactable
     public float speed;
 
     /// <summary>
-    ///   <para>The kenetic energy of the agent</para>
-    /// </summary>
-    public float kenetic_energy;
-
-    /// <summary>
     ///   <para>The cost of the agent's movement</para>
     /// </summary>
     public float cost_of_movement;
@@ -219,6 +215,9 @@ public class BaseAgent : Interactable
     ///   <para>The health of the agent</para>
     /// </summary>
     public float health;
+    /// <summary>
+    /// Max health of the agent
+    /// </summary>
     public float max_health;
 
     [Space()]
@@ -227,6 +226,9 @@ public class BaseAgent : Interactable
     ///   <para>The total energy stored in the agent. If this dips too low, the agent looses health.</para>
     /// </summary>
     public float energy;
+    /// <summary>
+    /// Max amount of energy the agent can have
+    /// </summary>
     public float max_energy;
 
     [Space()]
@@ -245,16 +247,16 @@ public class BaseAgent : Interactable
     public float defense;
 
     [Space()]
-    [Header("Food:")]
-    /// <summary>
-    ///   <para>How hungry the agent is. This will slowly increace. If at 0, health will start depleating.</para>
-    /// </summary>
-    public float hunger;
-
+    [Header("Energy Consumption:")]
     /// <summary>
     ///   <para>The rate at which this agent can consume energy (eat) in terms of energy per second</para>
     /// </summary>
     public float consumption_rate;
+
+    /// <summary>
+    /// The amount of energy this agent can store
+    /// </summary>
+    public AgentStomach stomach;
 
     [Space()]
     [Header("Age:")]
@@ -381,7 +383,6 @@ public class BaseAgent : Interactable
     /// </summary>
     public int num_kills;
 
-
     /// <summary>
     ///   <para>A debug parameter which makes the agent very powerful</para>
     /// </summary>
@@ -390,10 +391,7 @@ public class BaseAgent : Interactable
     public bool god;
     public float grabbed_force;
     public float strength;
-
-    public List<float> obs;
-
-    public float torque_for_boids;
+    # endregion
 
     public virtual void Setup(int id, Genes genes)
     {
@@ -419,7 +417,7 @@ public class BaseAgent : Interactable
         max_energy = energy;
 
         // The cost of movement and stuff (starts small and increases as it grows
-        metabolism = (Mathf.Pow(genes.size, 2) * genes.speed + genes.perception + Mathf.Pow((genes.attack * genes.defense), 2)) * 0.25f;
+        metabolism = (Mathf.Pow(genes.size, 2) * genes.speed/50f + genes.perception + Mathf.Pow((genes.attack * genes.defense), 2)) * 0.25f;
 
         // How fast can the consume food?
         consumption_rate = (base_consumption_rate / Mathf.Exp(-genes.size)) * 0.5f;
@@ -432,7 +430,6 @@ public class BaseAgent : Interactable
         // Set up the speeds
         movement_speed = base_speed * genes.speed;
         rotation_speed = base_rotation_speed * genes.speed;
-
 
         // Setup the agents base stuff
         this.genes = genes;
@@ -454,7 +451,7 @@ public class BaseAgent : Interactable
 
         // Set the senses up
         senses = GetComponent<Senses>();
-        senses.Setup(genes.perception * base_perception, id, this.transform);
+        senses.Setup(genes.perception * base_perception, genes.field_of_view, id, this.transform);
 
         // Setup the age stuff
         lifespan = (genes.vitality + 1) * base_lifespan * genes.size;
@@ -484,6 +481,9 @@ public class BaseAgent : Interactable
 
         // Reset number of eggs layed and other things since we reuse these objects
         eggs_layed = 0;
+
+        // Set up the agent's stomach
+        stomach.Setup(this, manager);
     }
 
     public virtual void Setup(int id, Genes g, Manager m)
@@ -500,75 +500,72 @@ public class BaseAgent : Interactable
         // Reset the true metabolism cost
         true_metabolic_cost = 0;
 
-        if (control == Control.Heuristic)
-        {
+        // Return if we are not running
+        if (control == Control.Static){return;}
+
+        // The total energy cost the agent consumed during the frame
+        float total_frame_cost = 0;
+
+        // First, run the brain
+        total_frame_cost += LearningControl();
+
+        // Reduces energy over the agent's life
+        total_frame_cost += ExistentialCost();
+
+        // Heal the agent if they have enough energy
+        total_frame_cost += TryHealing();
+
+        // Update the age of the agent
+        total_frame_cost += UpdateAge();
+
+        // Handle the agent's grabbing behaviour
+        HandleGrabbing();
+
+        // Calculate the total metabolic cost
+        CalculateEnergyConsumption(total_frame_cost);
+
+        // Extract energy from the stomach now
+        energy += stomach.GetAvailableEnergy();
+        
+        // Any access energy in the stomach is recycled (TODO set up a better way to do this)
+        if(energy > max_energy){
+            manager.RecycleEnergy(energy - max_energy);
+            energy = max_energy;;
         }
-        else if (control == Control.Hard)
+
+        if(Input.GetKeyDown(KeyCode.K))
         {
-        }
-        else if (control == Control.Learning)
-        {
-            LearningControl();
-        }
-
-        if (control != Control.Static)
-        {
-            // Reduces energy over the agent's life
-            ExistentialCost();
-
-            // Heal the agent if they have enough energy
-            TryHealing();
-
-            // Update the age of the agent
-            UpdateAge();
-
-            // Update the speed of the agent
-            speed = rb.velocity.magnitude;
-
-            // Calculate the KE
-            kenetic_energy = 0.5f * Mathf.Pow(speed, 2f) * rb.mass;
-
-            if (Input.GetKey(KeyCode.K))
-            {
-                Die();
-            }
-
-            if (Input.GetKey(KeyCode.L))
-            {
-                LayEgg();
-            }
-
-            // If we do not want to grab, we should get rid of anything we are trying to grab
-            // If something is too far we drop it
-            if (wants_to_grab == true && grabbed != null)
-            {
-                Vector2 c1 = grabbed.GetCol().ClosestPoint(transform.position);
-                Vector2 c2 = head.GetComponent<Collider2D>().ClosestPoint(c1);
-                grabbed_force = Vector2.Distance(c1, c2);
-
-                // This value is like the agent's strength, it is how well they can hold onto things TODO Make the max force and torque equal to the strength!
-                strength = ((1 + genes.vitality) * transform.localScale.sqrMagnitude) / 50;
-
-                if (grabbed_force > strength)
-                {
-                    ReleaseGrab();
-                }
-            }
-
-            // Or if we want to just drop it
-            if (wants_to_grab == false)
-            {
-                ReleaseGrab();
-            }
-
-            metabolic_cost_percentage_of_movement = cost_of_movement / true_metabolic_cost;
-            metabolic_cost_percentage_of_brain = (cost_comparison.x - cost_comparison.y) / true_metabolic_cost;
-            metabolic_cost_percentage_of_bmr = cost_comparison.y / true_metabolic_cost;
-            time_to_die = Mathf.Min(lifespan - age, (energy / true_metabolic_cost) / (1.0f / Time.deltaTime));
+            Die();
         }
     }
 
-    protected void UpdateAge()
+    protected void CalculateEnergyConsumption(float total_frame_energy_cost){
+        // If the agent has more than 25% of its energy (reserves) it will be taking this frame cost from its energy
+        if (energy > (max_energy * 0.25f) / Mathf.Max(maturity_age - age, 1))
+        {
+            // Subtract the energy cost from the agent's energy
+            energy -= total_frame_energy_cost;
+            manager.RecycleEnergy(total_frame_energy_cost);
+        }
+        else{
+            // If the agent does not have enough energy, it starts taking its health down
+            health -= total_frame_energy_cost;
+        }
+
+        // If the health reaches zero, the agent dies
+        if(health <= 0){
+            Die();
+        }
+
+        true_metabolic_cost = total_frame_energy_cost;
+        metabolic_cost_percentage_of_movement = cost_of_movement / true_metabolic_cost;
+        metabolic_cost_percentage_of_brain = (cost_comparison.x - cost_comparison.y) / true_metabolic_cost;
+        metabolic_cost_percentage_of_bmr = cost_comparison.y / true_metabolic_cost;
+        time_to_die = Mathf.Min(lifespan - age, (energy / true_metabolic_cost) / (1.0f / Time.deltaTime));
+
+    }
+
+    protected float UpdateAge()
     {
         // Here we increment the time the agent has been alive! As well as update the maturity status
         if (age > maturity_age && is_mature == false)
@@ -579,7 +576,6 @@ public class BaseAgent : Interactable
         // Increment age
         age += Time.deltaTime;
         egg_formation_cooldown += Time.deltaTime;
-
 
         // The creatures only reach full size when they are mature
         if (!is_mature && maturity_age > 0)
@@ -609,50 +605,65 @@ public class BaseAgent : Interactable
         {
             Die();
         }
+
+        // For now, aging does not require any energy
+        return 0;
     }
 
-    protected virtual void ExistentialCost()
+    protected virtual float ExistentialCost()
     {
         // The cost of existing with the cost of moving and the cost of having a large brain
         brain_metabolic_cost = this.brain_cost ? (brain.GetModel().GetComplexity() / manager.brain_cost_reduction_factor) : 0;
         float cost = ((metabolism + brain_metabolic_cost) * Time.deltaTime) / manager.metabolism_scale_rate;
         cost_comparison.Set(cost, (metabolism * Time.deltaTime) / manager.metabolism_scale_rate);
-        energy -= cost;
-        manager.RecycleEnergy(cost);
-
-        // If the health of the agent is less than or equal to zero or the energy has
-        // dropped to 10% its max capacity the agent dies (account for the age difference)
-        if (health <= 0 || energy < (max_energy * 0.1f) / Mathf.Max(maturity_age - age, 1))
-        {
-            Die();
-        }
-
-        // Update the true cost
-        true_metabolic_cost += cost;
+        return cost;
     }
 
-    protected virtual void TryHealing()
+    protected virtual void HandleGrabbing(){
+        // If we do not want to grab, we should get rid of anything we are trying to grab
+        // If something is too far we drop it
+        if (wants_to_grab == true && grabbed != null)
+        {
+            Vector2 c1 = grabbed.GetCol().ClosestPoint(transform.position);
+            Vector2 c2 = head.GetComponent<Collider2D>().ClosestPoint(c1);
+            grabbed_force = Vector2.Distance(c1, c2);
+
+            // This value is like the agent's strength, it is how well they can hold onto things TODO Make the max force and torque equal to the strength!
+            strength = ((1 + genes.vitality) * transform.localScale.sqrMagnitude) / 50;
+
+            if (grabbed_force > strength){
+                ReleaseGrab();
+            }
+        }else if (wants_to_grab == false){
+            ReleaseGrab();
+        }
+    }
+
+    protected virtual float TryHealing()
+
     {
         // Heal the agent over time if they have more than enough energy (healing takes energy)
-        if (energy > max_energy && max_health >= health)
+        if (energy > max_energy * 0.5f && max_health >= health)
         {
             // Heal one point per second
-            float cost = Time.deltaTime;
+            float cost = Time.deltaTime * genes.vitality;
 
             // Use energy to heal
             health += cost;
-            energy -= cost;
-
-            // Recycle the energy
-            manager.RecycleEnergy(cost);
 
             // Clamp the health
             health = Mathf.Clamp(health, 0, max_health);
+
+            return cost;
         }
+
+        return 0;
     }
 
-    public void LearningControl()
+    public float LearningControl()
     {
+        // The total energy consumed from control
+        float total_energy_consumed_control = 0;
 
         // Only update if the update time has been triggered
         if (internal_clock < (base_update_rate / 1000) * genes.clockrate)
@@ -675,34 +686,21 @@ public class BaseAgent : Interactable
                 transform.position = Vector3.MoveTowards(transform.position, manager.transform.position, 3f);
             }
 
-            // Clear the list of inferences and pass in our observations
-            inf.Clear();
-            inf.AddRange(brain.GetAction(senses.GetObservations(this)));
-
-            // Set the decisions
-            wants_move_forward = inf[0];
-            wants_rotate_clockwise = inf[1];
-
-            wants_to_breed = is_mature && inf[2] >= 0; //is_mature && (inf[2] > 0 || energy > max_energy * 1.75f);
-            wants_to_eat = inf[3] >= 0;
-            wants_to_grab = inf[4] > 0;
-            wants_to_attack = inf[5] > 0;
-            wants_to_produce_red_pheromone = inf[6] > 0.5;
-            wants_to_produce_red_pheromone = inf[7] > 0.5;
-            wants_to_produce_red_pheromone = inf[8] > 0.5;
+            // Gather inference from senses
+            MakeDecision();
 
             // Pheromones
-            TryProducingPheromone();
+            total_energy_consumed_control += TryProducingPheromone();
 
             // If the agent wants to breed and has grabbed another agent, check if that agent is close enough genetically or if it has the same name (meaning it is the same species)
             if (wants_to_breed && grabbed != null && grabbed.TryGetComponent<BaseAgent>(out BaseAgent a) && (genes.CalculateGeneticDrift(a.genes) < 1 || a.GetRawName().Equals(GetRawName())))
             {
-                Breed(a);
+                total_energy_consumed_control += Breed(a);
             }
             // If it does not then asexually reproduce
-            else if (wants_to_breed)
+            else if (wants_to_breed && energy > (max_energy * 0.75f))
             {
-                LayEgg();
+                total_energy_consumed_control += LayEgg();
             }
 
             // If we have an agent grabbed and we want to attack then attack it!
@@ -714,16 +712,35 @@ public class BaseAgent : Interactable
 
         // After the agent has made a decision or not, we use its inferences (new or old) to make the agent act
         // If we have something grabbed and are hungry then eat it!
-        if (wants_to_eat && grabbed != null)
+        if (wants_to_eat && grabbed != null && grabbed.GetID() != (int)ID.Wobbit)
         {
-            Eat(grabbed);
+            Eat((Edible)grabbed);
         }
 
         // Move the agent with its inferences
-        Move(wants_move_forward * movement_speed, 0, wants_rotate_clockwise * rotation_speed, 0);
+        total_energy_consumed_control += Move(wants_move_forward * movement_speed, 0, wants_rotate_clockwise * rotation_speed, 0);
+
+        return total_energy_consumed_control;
     }
 
-    protected virtual void Move(float forward, float backward, float left, float right)
+    protected virtual void MakeDecision(){
+            // Clear the list of inferences and pass in our observations
+            inf.Clear();
+            inf.AddRange(brain.GetAction(senses.GetObservations(this)));
+
+            // Set the decisions
+            wants_move_forward = inf[0];
+            wants_rotate_clockwise = inf[1];
+            wants_to_breed = is_mature && inf[2] >= 0;
+            wants_to_eat = inf[3] >= 0;
+            wants_to_grab = inf[4] > 0;
+            wants_to_attack = inf[5] > 0;
+            wants_to_produce_red_pheromone = inf[6] > 0.5;
+            wants_to_produce_red_pheromone = inf[7] > 0.5;
+            wants_to_produce_red_pheromone = inf[8] > 0.5;
+    }
+
+    protected virtual float Move(float forward, float backward, float left, float right)
     {
         // TODO handle this is update age
         float scaler = Mathf.Clamp(age / maturity_age, 0.1f, 1);
@@ -733,15 +750,15 @@ public class BaseAgent : Interactable
         Vector3 backward_force = transform.up * -(backward);
 
         // Add the force
-        rb.AddForce(forward_force);
-        rb.AddForce(backward_force);
+        rb.AddForce(forward_force * Time.deltaTime);
+        rb.AddForce(backward_force * Time.deltaTime);
 
         // Calculate torque to add
         float torque_right = (right) * scaler;
         float torque_left = -(left) * scaler;
 
-        rb.AddTorque(torque_right);
-        rb.AddTorque(torque_left);
+        rb.AddTorque(torque_right * Time.deltaTime);
+        rb.AddTorque(torque_left * Time.deltaTime);
 
         // Clamp the velocity
         rb.velocity = Vector3.ClampMagnitude(rb.velocity, movement_speed * scaler);
@@ -755,20 +772,20 @@ public class BaseAgent : Interactable
 
         // Testing energy consumption by moving
         cost_of_movement = ((genes.size * (Mathf.Abs(torque_left) + forward_force.magnitude) * Time.deltaTime) / manager.movement_cost_scale_rate);
-        energy -= cost_of_movement;
-        manager.RecycleEnergy(cost_of_movement);
-        true_metabolic_cost += cost_of_movement;
+
+        // Update the speed of the agent
+        speed = rb.velocity.magnitude;
+
+        // Return the cost that movement required
+        return cost_of_movement;
     }
 
-    /// <summary>
-    ///   <para>Sexual reproduction</para>
-    /// </summary>
-    public void Breed(BaseAgent partner)
+    public float Breed(BaseAgent partner)
     {
         // If we have not had enough time to form an egg, we return without doing anything
         if (egg_formation_cooldown < egg_gestation_time)
         {
-            return;
+            return 0;
         }
 
         // If the partner wants to breed, then shoot your shot it
@@ -795,7 +812,7 @@ public class BaseAgent : Interactable
             // TODO Implement crossover
 
             // An egg requres 50% of the agents max energy or just the remaining amount of energy they have
-            energy -= energy_to_child;
+            // energy -= energy_to_child;
 
             // Add the egg to the manager to track
             manager.AddAgent(x);
@@ -805,13 +822,15 @@ public class BaseAgent : Interactable
 
             // Reset the egg formation cooldown
             egg_formation_cooldown = 0;
+
+            // Return the cost of laying the egg
+            return energy_to_child;
         }
+
+        return 0;
     }
 
-    /// <summary>
-    /// Tries to produce pheromones based on the agent's wants
-    /// </summary>
-    private void TryProducingPheromone()
+    private float TryProducingPheromone()
     {
         if (wants_to_produce_red_pheromone)
         {
@@ -827,21 +846,18 @@ public class BaseAgent : Interactable
         {
             GetComponent<PheromoneGland>().SpawnBlue();
         }
+
+        return 0;
     }
 
-    /// <summary>
-    ///   <para>Asexual reproduction</para>
-    /// </summary>
-    public virtual void LayEgg()
+    public virtual float LayEgg()
     {
 
         // If we have not had enough time to form an egg, we return without doing anything
         if (egg_formation_cooldown < egg_gestation_time || num_pellets_eaten == 0)
         {
-            return;
+            return 0;
         }
-
-        print("Ag: " + brain.GetModel().GetComplexity());
 
         // Spawn in the egg object
         Vector2 pos = egg_location.position;
@@ -861,7 +877,7 @@ public class BaseAgent : Interactable
         // x.brain = brain.GetModel().Copy();
 
         // An egg requres 50% of the agents max energy or just the remaining amount of energy they have
-        energy -= energy_to_child;
+        // energy -= energy_to_child;
 
         // Add the egg to the manager to track
         manager.AddAgent(x);
@@ -871,19 +887,16 @@ public class BaseAgent : Interactable
 
         // Reset the egg formation cooldown
         egg_formation_cooldown = 0;
+
+        // Return the cost of laying the egg
+        return energy_to_child;
     }
 
-    /// <summary>
-    /// Eats some or all of the other interactable
-    /// </summary>
-    /// <param name="other"></param>
-    public virtual void Eat(Interactable other)
+    public virtual void Eat(Edible other)
     {
         // The agent recieves less and less energy when they get too full
-        if (energy >= max_energy * 2f)
-        {
-            return;
-        }
+        // if (energy >= max_energy * 2f){ return; }
+        if(stomach.GetFullnessPercentage() >= 1f) { return; }
 
         // The energy obtained by the meal
         float obtained_energy;
@@ -891,9 +904,9 @@ public class BaseAgent : Interactable
         // 1000 is the id of a FoodPellet
         if (other.GetID() == (int)ID.FoodPellet)
         {
-
             // Get the energy from the food pellet
-            obtained_energy = other.GetComponent<FoodPellet>().Eat(consumption_rate * Time.deltaTime);
+            obtained_energy = other.Eat(consumption_rate * Time.deltaTime);
+            stomach.Consume(obtained_energy, manager.food_pellet_energy_density, other.GetID());
 
             // Release the grab
             if (other.GetComponent<FoodPellet>().eaten)
@@ -902,58 +915,59 @@ public class BaseAgent : Interactable
                 ReleaseGrab();
             }
 
-            // Determine how much of it is actually extracted
-            float extracted_percentage = 1f - genes.diet;
-            energy += extracted_percentage * obtained_energy;
+            // // Determine how much of it is actually extracted
+            // float extracted_percentage = 1f - genes.diet;
+            // energy += extracted_percentage * obtained_energy;
 
-            // The rest of the 'undigested' food gets recycled as waste
-            manager.RecycleEnergy(obtained_energy - extracted_percentage * obtained_energy);
+            // // The rest of the 'undigested' food gets recycled as waste
+            // manager.RecycleEnergy(obtained_energy - extracted_percentage * obtained_energy);
+
         }
         else if (other.GetID() == (int)ID.Meat)
         {
             // Get the energy from the food pellet
-            obtained_energy = other.GetComponent<Meat>().Eat();
+            obtained_energy = other.Eat();
+            stomach.Consume(obtained_energy, manager.meat_energy_density, other.GetID());
+            print("Eating meat " + obtained_energy);
+
 
             // Release the grab
-            if (other.GetComponent<Meat>().energy <= 0)
+            if (other.energy <= 0)
             {
                 num_meat_eaten++;
                 ReleaseGrab();
             }
 
-            // Determine how much of it is actually extracted
-            float extracted_percentage = genes.diet;
-            energy += extracted_percentage * obtained_energy;
+            // // Determine how much of it is actually extracted
+            // float extracted_percentage = genes.diet;
+            // energy += extracted_percentage * obtained_energy;
 
-            // The rest of the 'undigested' food gets recycled as waste
-            manager.RecycleEnergy(obtained_energy - extracted_percentage * obtained_energy);
+            // // The rest of the 'undigested' food gets recycled as waste
+            // manager.RecycleEnergy(obtained_energy - extracted_percentage * obtained_energy);
         }
         else if (other.GetID() == (int)ID.WobbitEgg)
         {
             // Get the energy from the food pellet
-            obtained_energy = other.GetComponent<Egg>().Eat();
+            obtained_energy = other.Eat();
+            stomach.Consume(obtained_energy, manager.egg_energy_density, other.GetID());
+            print("Eating Wobbit Egg " + obtained_energy);
 
             // Release the grab
-            if (other.GetComponent<Egg>().energy <= 0)
+            if (other.energy <= 0)
             {
                 num_eggs_eaten++;
                 ReleaseGrab();
             }
 
+            // // Determine how much of it is actually extracted
+            // float extracted_percentage = genes.diet;
+            // energy += extracted_percentage * obtained_energy;
 
-            // Determine how much of it is actually extracted
-            float extracted_percentage = genes.diet;
-            energy += extracted_percentage * obtained_energy;
-
-            // The rest of the 'undigested' food gets recycled as waste
-            manager.RecycleEnergy(obtained_energy - extracted_percentage * obtained_energy);
+            // // The rest of the 'undigested' food gets recycled as waste
+            // manager.RecycleEnergy(obtained_energy - extracted_percentage * obtained_energy);
         }
     }
 
-    /// <summary>
-    /// Grabs the other interactable i
-    /// </summary>
-    /// <param name="i"></param>
     public virtual void Grab(Interactable i)
     {
         // Grab something if we havnt got one already
@@ -967,9 +981,6 @@ public class BaseAgent : Interactable
         }
     }
 
-    /// <summary>
-    /// Releases a grab
-    /// </summary>
     public virtual void ReleaseGrab()
     {
         if (grabbed != null)
@@ -981,14 +992,10 @@ public class BaseAgent : Interactable
         }
     }
 
-    /// <summary>
-    /// Attacks the 'other' base agent
-    /// </summary>
-    /// <param name="other"></param>
     public virtual void Attack(BaseAgent other)
     {
         // Damage the other agent (relative to its size)
-        other.Damage(attack * transform.localScale.x);
+        other.Damage(attack * transform.localScale.x * manager.agent_base_damage_multiplier);
 
         // Release grab and add attack force to other agent
         ReleaseGrab();
@@ -1001,10 +1008,6 @@ public class BaseAgent : Interactable
         }
     }
 
-    /// <summary>
-    /// Damage this agent
-    /// </summary>
-    /// <param name="damage"></param>
     public virtual void Damage(float damage)
     {
         // The total damage delt to the agent (again, relative to its size)
@@ -1020,26 +1023,28 @@ public class BaseAgent : Interactable
         // Remove this agent from the manager's list
         manager.agents.Remove(this);
 
-        // Break the agent into meat pieces
-        int pieces = Random.Range(1, 2);
-        float energy_per = energy / pieces;
-        for (int i = 0; i < pieces; i++)
-        {
-            if (energy - energy_per <= 0)
-            {
-                Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
-                m.Setup((int)ID.Meat, energy, 0.5f, genes.size / pieces, this.genes, manager);
-                manager.agents.Add(m);
-                break;
-            }
-            else
-            {
-                Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
-                m.Setup((int)ID.Meat, energy_per, 0.5f, genes.size / pieces, this.genes, manager);
-                manager.agents.Add(m);
-                energy -= energy_per;
-            }
-        }
+        // If a piece of meat 
+        Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
+        energy += stomach.GetTotalPotentialEnergy();
+        m.Setup((int)ID.Meat, energy, manager.meat_rot_time, energy / manager.meat_energy_density, this.genes, manager);
+        manager.agents.Add(m);
+        // for (int i = 0; i < pieces; i++)
+        // {
+        //     if (energy - energy_per <= 0)
+        //     {
+        //         Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
+        //         m.Setup((int)ID.Meat, energy, 0.5f, meat_size, this.genes, manager);
+        //         manager.agents.Add(m);
+        //         break;
+        //     }
+        //     else
+        //     {
+        //         Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
+        //         m.Setup((int)ID.Meat, energy_per, 0.5f, meat_size, this.genes, manager);
+        //         manager.agents.Add(m);
+        //         energy -= energy_per;
+        //     }
+        // }
 
         num_pellets_eaten = num_meat_eaten = num_eggs_eaten = num_kills = 0;
         manager.GetComponent<EntityPoolManager>().Destroy(this);
@@ -1052,9 +1057,9 @@ public class BaseAgent : Interactable
         {
 
             // If we want to eat then eat yum!
-            if (wants_to_eat)
+            if (wants_to_eat && i.GetID() != (int)ID.Wobbit)
             {
-                Eat(i);
+                Eat((Edible)i);
             }
 
             // If we want to attack then attack!

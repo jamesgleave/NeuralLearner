@@ -268,6 +268,7 @@ GameObject:
   - component: {fileID: -6622568116249235387}
   - component: {fileID: 8284897868176631410}
   - component: {fileID: 7000150729006972410}
+  - component: {fileID: 3455144554565956516}
   - component: {fileID: 8284897868176631420}
   - component: {fileID: -2621519676991544827}
   - component: {fileID: 3353258988676551412}
@@ -311,8 +312,8 @@ MonoBehaviour:
   agent: {fileID: 8284897868176631410}
   input_size: 27
   output_size: 9
-  log: 'Added Connection: True, Updated weight, Updated weight, Updated weight, Updated
-    weight, '
+  log: 'Changed Neuron Type: , Added Connection: True, Updated weight, Updated weight,
+    Updated weight, Updated weight, Updated weight, Set weight, '
   initial_mutations: 1
   gcode: 
   use_threading_model_creation: 0
@@ -334,13 +335,13 @@ MonoBehaviour:
   base_health: 100
   base_attack: 3
   base_defense: 3
-  base_speed: 20
-  base_rotation_speed: 50
+  base_speed: 1000
+  base_rotation_speed: 2500
   base_perception: 20
   base_gestation_time: 20
   base_lifespan: 800
   base_mass: 2
-  base_consumption_rate: 20
+  base_consumption_rate: 10
   base_update_rate: 500
   wants_move_forward: 0
   wants_rotate_clockwise: 0
@@ -394,7 +395,6 @@ MonoBehaviour:
   movement_speed: 0
   rotation_speed: 0
   speed: 0
-  kenetic_energy: 0
   cost_of_movement: 0
   health: 0
   max_health: 0
@@ -403,8 +403,8 @@ MonoBehaviour:
   max_size: {x: 0, y: 0, z: 0}
   attack: 0
   defense: 0
-  hunger: 0
   consumption_rate: 0
+  stomach: {fileID: 3455144554565956516}
   age: 0
   maturity_age: 0
   lifespan: 0
@@ -416,7 +416,10 @@ MonoBehaviour:
   egg_gestation_time: 0
   metabolism: 0
   true_metabolic_cost: 0
-  metabolic_cost_of_brain: 0
+  brain_metabolic_cost: 0
+  metabolic_cost_percentage_of_movement: 0
+  metabolic_cost_percentage_of_brain: 0
+  metabolic_cost_percentage_of_bmr: 0
   brain_cost: 1
   cost_comparison: {x: 0, y: 0}
   time_to_die: 0
@@ -424,6 +427,7 @@ MonoBehaviour:
   node:
     genus: 
     species: 
+    full_name: 
     genetic_drift: 0
     original_genes:
       base_mutation_rate: 0
@@ -462,8 +466,6 @@ MonoBehaviour:
   god: 0
   grabbed_force: 0
   strength: 0
-  obs: []
-  torque_for_boids: 0
 --- !u!114 &7000150729006972410
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -501,6 +503,29 @@ MonoBehaviour:
   observation_names: []
   sense_memory: 0
   agent_context: []
+--- !u!114 &3455144554565956516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8284897868176631411}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30ef05e8a15c58245a6f37366dd27b8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  volume_capacity: 0
+  volume_current: 0
+  volume_by_meat: 0
+  volume_by_pellet: 0
+  volume_by_egg: 0
+  potential_energy_by_meat: 0
+  potential_energy_by_pellet: 0
+  potential_energy_by_egg: 0
+  digestion_rate: 1
+  available_energy: 0
+  net_energy_movement: 0
 --- !u!50 &8284897868176631420
 Rigidbody2D:
   serializedVersion: 4

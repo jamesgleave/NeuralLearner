@@ -52,10 +52,41 @@ public class StatisticManager
     public Dictionary<string, List<Genes>> history = new Dictionary<string, List<Genes>>();
     public Dictionary<string, int> species_count;
     public List<string> species_names;
+    
+    /// <summary>
+    /// Percent energy in ether over time. Appended to every manager.delta_history_update_time seconds.
+    /// </summary>
+    public List<float> energy_in_ether_history = new List<float>();
+     /// <summary>
+    /// Percent energy in agents over time. Appended to every manager.delta_history_update_time seconds.
+    /// </summary>
+    public List<float> energy_in_agents_history = new List<float>();    
+    /// <summary>
+    /// Percent energy in pellets over time. Appended to every manager.delta_history_update_time seconds.
+    /// </summary>
+    public List<float> energy_in_pellets_history = new List<float>();
+    /// <summary>
+    /// Number of agents over time.
+    /// </summary>
+    public List<int> num_pellets_history = new List<int>();
+        /// <summary>
+    /// Number of pellets over time.
+    /// </summary>
+    public List<int> num_agents_history = new List<int>();
+
+    /// <summary>
+    /// Our list of histories. The order goes: energy in ether, agents, and pellets, then number of agents alive, number of active pellets, 
+    /// </summary>
+    /// <returns></returns>
+    public Dictionary<string, List<int>> all_histories = new  Dictionary<string, List<int>>();
 
     public void Setup(float total)
     {
+        /// Set the total energy for a reference
         total_energy = total;
+
+        // On setup, start the coroutine which updates the history
+        manager.StartCoroutine(UpdateHistory());
     }
 
     public void SetAgentEnergy(float total, float a, float m, float e)
@@ -73,6 +104,7 @@ public class StatisticManager
     }
 
     public void CalculateAverageGenes(List<BaseAgent> agents)
+
     {
         foreach (BaseAgent agent in agents)
         {
@@ -81,7 +113,7 @@ public class StatisticManager
             average_attribute_mutation_rate += agent.genes.attribute_mutation_rate;
             average_neuro_mutation_prob += agent.genes.neuro_mutation_prob;
             average_weight_mutation_prob += agent.genes.weight_mutation_prob;
-            average_bias_mutation_prob += agent.genes.bias_mutation_prob;
+            average_bias_mutation_prob += agent.genes.field_of_view;
             average_dropout_prob += agent.genes.dropout_prob;
             average_speed += agent.genes.speed;
             average_diet += agent.genes.diet;
@@ -122,22 +154,54 @@ public class StatisticManager
         num_agents = agents.Count;
     }
 
-    public void LoopThrough()
-    {
-        foreach (BaseAgent agent in manager.agents)
-        {
-            Operate(agent);
+    /// <summary>
+    /// Appends current state of simulation to the history
+    /// </summary>
+    public void AppendToHistory(){
+        // Append to the histories
+        energy_in_ether_history.Add(percent_energy_in_ether);
+        energy_in_agents_history.Add(percent_energy_in_agents);
+        energy_in_pellets_history.Add(percent_energy_in_food_pellets);
+
+        num_pellets_history.Add(manager.num_active_food);
+        num_agents_history.Add(num_agents);
+
+        // Check if the the histories are too long (they are all the same length so just need to check the one)
+        if(energy_in_ether_history.Count >= manager.history_length_threshold){
+            // If its too long, we bin it to half its length
+            for(int i = 0; i < energy_in_ether_history.Count - 1; i+=2){
+                // Take the mean between the ith and i+1th element
+                energy_in_ether_history[i] = Mathf.Clamp01((energy_in_ether_history[i] + energy_in_ether_history[i + 1]) / 2f);
+                energy_in_agents_history[i] = Mathf.Clamp01((energy_in_agents_history[i] + energy_in_agents_history[i + 1]) / 2f);
+                energy_in_pellets_history[i] = Mathf.Clamp01((energy_in_pellets_history[i] + energy_in_pellets_history[i + 1]) / 2f);
+                num_pellets_history[i] = (num_pellets_history[i] + num_pellets_history[i + 1]) / 2;
+                num_pellets_history[i] = (num_pellets_history[i] + num_pellets_history[i + 1]) / 2;
+
+                // set i+1th element to NAN/inValue to remove after
+                energy_in_ether_history[i + 1] = float.NaN;
+                energy_in_agents_history[i + 1] = float.NaN;
+                energy_in_pellets_history[i + 1] = float.NaN;
+
+                num_pellets_history[i + 1] = int.MinValue;
+                num_agents_history[i + 1] = int.MinValue;
+
+                
+            }
+
+            // Strip the NaN/MinValues values
+            energy_in_ether_history.RemoveAll(x => float.IsNaN(x));
+            energy_in_agents_history.RemoveAll(x => float.IsNaN(x));
+            energy_in_pellets_history.RemoveAll(x => float.IsNaN(x));
+
+            num_agents_history.RemoveAll(x => x == int.MinValue);
+            num_pellets_history.RemoveAll(x => x == int.MinValue);
         }
     }
 
-    public void Operate(BaseAgent agent)
-    {
-
-    }
-
-
-    public void Update()
-    {
-        sum_sanity_check = percent_energy_in_agent_bi_product + percent_energy_in_food_pellets + percent_energy_in_ether;
+    public IEnumerator UpdateHistory(){
+        while(true){
+            yield return new WaitForSeconds(manager.delta_history_update_time);
+            AppendToHistory();
+        }
     }
 }

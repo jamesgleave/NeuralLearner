@@ -61,7 +61,7 @@ public class EvolutionaryNEATLearner : Brain
             genome.AddNode(new NodeGene(NodeGeneType.Output, i + input_size));
         }
 
-        for (int i = 0; i < 100 * Random.value; i++)
+        for (int i = 0; i < 1 * Random.value; i++)
         {
             Mutate();
         }
@@ -116,11 +116,11 @@ public class EvolutionaryNEATLearner : Brain
     {
         if (agent != null)
         {
-            log = Genome.Mutate(genome, agent.genes.base_mutation_rate, agent.genes.weight_mutation_prob, agent.genes.neuro_mutation_prob, agent.genes.bias_mutation_prob, agent.genes.dropout_prob);
+            Genome.Mutate(genome, agent.genes.base_mutation_rate, agent.genes.weight_mutation_prob, agent.genes.neuro_mutation_prob, agent.genes.dropout_prob);
         }
         else
         {
-            log = Genome.Mutate(genome, 1, 0.8f, 0.8f, 0.8f, 0.8f);
+            Genome.Mutate(genome, 1, 0.8f, 0.8f, 0.8f);
             model = new NEATNetwork(genome);
         }
     }

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657838, g: 0.49641234, b: 0.57481676, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -221,6 +221,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   drag_speed: 2
+  zoom_speed: 10
   selected: {fileID: 0}
   most_recently_selected_agent: {fileID: 0}
   gui: {fileID: 1430260685}
@@ -450,11 +451,11 @@ GameObject:
   m_Component:
   - component: {fileID: 2047405930}
   - component: {fileID: 2047405929}
-  - component: {fileID: 2047405934}
   - component: {fileID: 2047405931}
   - component: {fileID: 2047405932}
   - component: {fileID: 2047405933}
   - component: {fileID: 2047405935}
+  - component: {fileID: 2047405934}
   m_Layer: 0
   m_Name: Manager
   m_TagString: manager
@@ -475,27 +476,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   total_food: 6000
-  food_growth_rate: 3
-  pellet_distrobution: 25
-  pellet_clusters: 60
-  food_pellet_size: 4
-  food_pellet_energy: 40
+  food_growth_rate: 1
+  food_pellet_size: 2
+  food_pellet_energy_density: 5
+  meat_energy_density: 20
+  meat_rot_time: 3000
+  egg_energy_density: 40
+  food_pellet_digestion_toughness: 1.5
+  meat_pellet_digestion_toughness: 0.5
+  egg_digestion_toughness: 0.3
+  digestion_coefficient: 2
+  stomach_volume_multiplier: 3
   pellet: {fileID: 3829854075992685049, guid: 72416a997ceb74010b84d5ace9c7462e, type: 3}
   food_pellet_manager: {fileID: 2047405934}
   food_pellets: []
   update_rate: 0.1
   teleport: 1
-  gridsize: 300
-  adaptive_food: 1
-  agent_pellet_threshold: 200
+  gridsize: 200
   agent: {fileID: 8284897868176631410, guid: fbd032cd3431242748fe08f4ef324252, type: 3}
   egg: {fileID: 798380245572057900, guid: 147dc55d0b0304c8cbf8fc3ae99ab8ce, type: 3}
-  starting_agents: 100
-  min_agents: 10
-  metabolism_scale_rate: 3
-  movement_cost_scale_rate: 500
-  brain_cost_reduction_factor: 500
-  agents: []
+  random_initial_genes: 0
+  dynamic_mutation_rates: 0
+  starting_agents: 300
+  min_agents: 1
+  metabolism_scale_rate: 6
+  movement_cost_scale_rate: 1000
+  brain_cost_reduction_factor: 1000
+  agent_base_damage_multiplier: 2.5
   energy: 0
   initial_energy: 0
   energy_in_pellets: 0
@@ -505,8 +512,10 @@ MonoBehaviour:
   percent_energy_in_pellets: 0
   percent_energy_in_agents: 0
   percent_energy_in_ether: 0
+  delta_history_update_time: 1
+  history_length_threshold: 100
   stat_manager:
-    manager: {fileID: 0}
+    manager: {fileID: 2047405929}
     total_energy: 0
     percent_energy_in_agent_bi_product: 0
     percent_energy_in_agents: 0
@@ -540,13 +549,19 @@ MonoBehaviour:
     average_colour_g: 0
     average_colour_b: 0
     species_names: []
+    energy_in_ether_history: []
+    energy_in_agents_history: []
+    energy_in_pellets_history: []
+    num_pellets_history: 
+    num_agents_history: 
+  num_active_food: 0
   anc_manager:
     genus_names: []
     names: []
     counts: []
   spawn_manager: {fileID: 2047405935}
-  use_auto_manual_collection: 0
-  num_active_food: 0
+  mobile_start: 1
+  agents: []
 --- !u!4 &2047405930
 Transform:
   m_ObjectHideFlags: 0
@@ -649,14 +664,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tick_pointer: 0
-  feed_rate: 1
+  feed_rate: 3000
   retention: 0.79
   intensity: 142
   calculated_pellets: 0
   target_pellets: 0
   general_manager: {fileID: 2047405929}
   storage: 0
-  hardware_accelerated: 1
+  hardware_accelerated: 0
   cs: {fileID: 7200000, guid: b399f748a0e1144c38e2dd14028ccfba, type: 3}
   chunk_size: 1024
 --- !u!114 &2047405935
@@ -672,7 +687,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   manager: {fileID: 2047405929}
-  r: 12
+  r: 6
   k: 200
 --- !u!1001 &3638946739586988900
 PrefabInstance:
@@ -789,6 +804,10 @@ PrefabInstance:
       propertyPath: m_Options.m_Options.Array.data[0].m_Image
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 4860854264804392097, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5431635888533134249, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
       propertyPath: sprite_manager
       value: 
@@ -797,17 +816,21 @@ PrefabInstance:
       propertyPath: m_RootOrder
       value: 12
       objectReference: {fileID: 0}
-    - target: {fileID: 6072868673693044599, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
-      propertyPath: separation
-      value: 3.78
-      objectReference: {fileID: 0}
-    - target: {fileID: 6072868673693044599, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
-      propertyPath: value_padding
-      value: 10
+    - target: {fileID: 7026560328783020334, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
+      propertyPath: m_RootOrder
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7026560328783020335, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7455073087590892209, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
+      propertyPath: m_RootOrder
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7850362713538784898, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
+      propertyPath: m_RootOrder
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7850362713608298463, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
       propertyPath: m_RootOrder
@@ -976,6 +999,10 @@ PrefabInstance:
     - target: {fileID: 8173112268420727890, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
       propertyPath: m_RootOrder
       value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 8288180397175297157, guid: c62286a5e71d04fe1b361cc994592802, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c62286a5e71d04fe1b361cc994592802, type: 3}

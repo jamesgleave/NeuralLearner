@@ -66,7 +66,7 @@ public class EvolutionaryNeuralLearner : Brain
                 base_mutation_rate: a.genes.base_mutation_rate,
                 weight_mutation_rate: a.genes.weight_mutation_prob,
                 neuro_mutation_rate: a.genes.neuro_mutation_prob,
-                bias_mutation_rate: a.genes.bias_mutation_prob,
+                bias_mutation_rate: a.genes.field_of_view,
                 dropout_rate: a.genes.dropout_prob);
         }
         else

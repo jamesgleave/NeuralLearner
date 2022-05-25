@@ -45,12 +45,6 @@ public class Genes
     [Range(0.0f, 1.0f)]
     public float weight_mutation_prob;
 
-    /// <summary>
-    ///   <para>The probablity that a bias in the brain will mutate</para>
-    /// </summary>
-    [Range(0.0f, 1.0f)]
-    public float bias_mutation_prob;
-
     [Header("Attributes")]
     /// Attributes \\\
     /// <summary>
@@ -84,9 +78,15 @@ public class Genes
     public float size;
 
     /// <summary>
-    ///   <para>The size of the overlap sphere generated for perception</para>
+    ///   <para>The distance the agent can see</para>
     /// </summary>
     public float perception;
+
+    /// <summary>
+    ///   <para>The field of view of the agent</para>
+    /// </summary>
+    [Range(0.0f, 1.0f)]
+    public float field_of_view;
 
     /// <summary>
     ///   <para>The update frequency of the agent. This is how fast it can process new input</para>
@@ -161,7 +161,7 @@ public class Genes
         float attribute_mutation_rate,
         float neuro_mutation_prob,
         float weight_mutation_prob,
-        float bias_mutation_prob,
+        float field_of_view,
         float dropout_prob,
         float speed,
         float diet,
@@ -187,7 +187,6 @@ public class Genes
         this.attribute_mutation_rate = attribute_mutation_rate;
         this.neuro_mutation_prob = neuro_mutation_prob;
         this.weight_mutation_prob = weight_mutation_prob;
-        this.bias_mutation_prob = bias_mutation_prob;
         this.dropout_prob = dropout_prob;
         this.speed = speed;
         this.diet = diet;
@@ -196,6 +195,7 @@ public class Genes
         this.vitality = vitality;
         this.size = size;
         this.perception = perception;
+        this.field_of_view = field_of_view;
         this.clockrate = clockrate;
         this.gestation_time = gestation_time;
         this.maturity_time = maturity_time;
@@ -221,7 +221,7 @@ public class Genes
          attribute_mutation_rate,
          neuro_mutation_prob,
          weight_mutation_prob,
-         bias_mutation_prob,
+         field_of_view,
          dropout_prob,
          speed,
          diet,
@@ -250,7 +250,9 @@ public class Genes
         g.spritemap["head"] = spritemap["head"];
 
         // Clamp the rates
-        ClampMutationRates();
+        ClampMutationRates(
+
+        );
 
         return g;
     }
@@ -283,16 +285,16 @@ public class Genes
          base_mutation_rate: 0.5f + Random.value / 10,
          colour_mutation_prob: 0.1f + Random.value / 10,
          attribute_mutation_rate: 0.1f + Random.value / 10,
-         neuro_mutation_prob: 0.1f + Random.value / 100,
+         neuro_mutation_prob: 0.3f + Random.value / 10,
          weight_mutation_prob: 0.5f + Random.value / 10,
-         bias_mutation_prob: 0.5f + Random.value / 10,
+         field_of_view: 0.2f + Random.value / 10,
          dropout_prob: 0.15f + Random.value / 10,
-         speed: 0.5f + Random.value / 10,
-         diet: 0.4f + Random.value / 10,
+         speed: 0.3f + Random.value / 10,
+         diet: 0.25f + Random.value / 10,
          attack: 0.5f + Random.value / 10,
          defense: 0.5f + Random.value / 10,
          vitality: 0.5f + Random.value / 10,
-         size: 0.4f + Random.value / 10,
+         size: 0.3f + Random.value / 10,
          perception: 0.5f + Random.value / 10,
          clockrate: 0.5f + Random.value / 10,
          gestation_time: 0.5f + Random.value / 10,
@@ -307,11 +309,74 @@ public class Genes
         );
     }
 
+        public static Genes GetBaseGenesSetMutationRate()
+    {
+        return new Genes(
+         base_mutation_rate: 0.5f + Random.value / 10,
+         colour_mutation_prob: 0.1f + Random.value / 10,
+         attribute_mutation_rate: 0.25f + Random.value / 10,
+         neuro_mutation_prob: 0.35f + Random.value / 10,
+         weight_mutation_prob: 0.5f + Random.value / 10,
+         field_of_view: 0.2f + Random.value / 10,
+         dropout_prob: 0.25f + Random.value / 10,
+         speed:Random.value,
+         diet: Random.value,
+         attack:Random.value,
+         defense:Random.value,
+         vitality: 0.5f + Random.value / 10,
+         size:Random.value,
+         perception:Random.value,
+         clockrate: 0.5f + Random.value / 10,
+         gestation_time: 0.5f + Random.value / 10,
+         maturity_time: 0.5f + Random.value / 10,
+         colour_r: Mathf.Clamp(Random.value, 0.0f, 1f),
+         colour_g: Mathf.Clamp(Random.value, 0.0f, 1f),
+         colour_b: Mathf.Clamp(Random.value, 0.0f, 1f),
+         cohesion_factor: 0,
+         separation_factor: 0,
+         allignment_factor: 0,
+         matching_factor: 0
+        );
+    }
+
+    public static Genes GetRandomGenes()
+    {
+        return new Genes(
+         base_mutation_rate: Random.Range(0.1f, 0.3f),
+         colour_mutation_prob: Random.Range(0.1f, 0.3f),
+         attribute_mutation_rate: Random.Range(0.1f, 0.3f),
+         neuro_mutation_prob:Random.Range(0.1f, 0.3f),
+         weight_mutation_prob: Random.Range(0.1f, 0.3f),
+         field_of_view: Random.Range(0.1f, 0.5f),
+         dropout_prob: Random.Range(0.1f, 0.3f),
+         speed: Random.value,
+         diet: 0.5f + Random.value / 10f,
+         attack: Random.value,
+         defense: Random.value,
+         vitality: Random.value,
+         size: Random.value,
+         perception: Random.value,
+         clockrate: Random.value,
+         gestation_time: Random.value,
+         maturity_time: Random.value,
+         colour_r: Mathf.Clamp(Random.value, 0.0f, 1f),
+         colour_g: Mathf.Clamp(Random.value, 0.0f, 1f),
+         colour_b: Mathf.Clamp(Random.value, 0.0f, 1f),
+         cohesion_factor: 0,
+         separation_factor: 0,
+         allignment_factor: 0,
+         matching_factor: 0
+        );
+    }
+
     public void Mutate()
     {
         TryMutateColour();
         TryMutateAttributes();
+        if(Manager.instance.dynamic_mutation_rates)
+        {
         TryMutateMutationRates();
+        }
         TryMutateBehaviour();
         ClampMutationRates();
     }
@@ -397,12 +462,6 @@ public class Genes
 
         if (GetProb(Mathf.Pow(base_mutation_rate, 2)))
         {
-            bias_mutation_prob += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-        }
-
-
-        if (GetProb(Mathf.Pow(base_mutation_rate, 2)))
-        {
             dropout_prob += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
         }
     }
@@ -440,9 +499,9 @@ public class Genes
         }
 
         // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
-        if (bias_mutation_prob < 0.01f || bias_mutation_prob >= 1)
+        if (field_of_view < 0.01f || field_of_view >= 1)
         {
-            bias_mutation_prob = Random.Range(0, 1f);
+            field_of_view = Random.Range(0, 1f);
         }
 
         // If we have reached 0 or 1 on a mutation rate, we "radicallize it"
@@ -456,7 +515,7 @@ public class Genes
         attribute_mutation_rate = Mathf.Clamp01(attribute_mutation_rate);
         neuro_mutation_prob = Mathf.Clamp01(neuro_mutation_prob);
         weight_mutation_prob = Mathf.Clamp01(weight_mutation_prob);
-        bias_mutation_prob = Mathf.Clamp01(bias_mutation_prob);
+        field_of_view = Mathf.Clamp01(field_of_view);
         dropout_prob = Mathf.Clamp01(dropout_prob);
     }
 
@@ -466,7 +525,7 @@ public class Genes
         if (GetProb(base_mutation_rate))
         {
             speed += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-            speed = Mathf.Max(speed, 0.01f);
+            speed = Mathf.Clamp(speed, 0.01f, 1f);
         }
 
         if (GetProb(base_mutation_rate))
@@ -475,29 +534,34 @@ public class Genes
             diet = Mathf.Clamp(diet, 0.01f, 1);
         }
 
+        if (GetProb(Mathf.Pow(base_mutation_rate, 2)))
+        {
+            field_of_view += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
+        }
+
         if (GetProb(base_mutation_rate))
         {
             attack += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-            attack = Mathf.Max(attack, 0.01f);
+            attack = Mathf.Clamp(attack, 0.01f, 1f);
         }
 
         if (GetProb(base_mutation_rate))
         {
             defense += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-            defense = Mathf.Max(defense, 0.01f);
+            defense = Mathf.Clamp(defense, 0.01f, 1f);;
         }
 
         if (GetProb(base_mutation_rate))
         {
 
             vitality += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-            vitality = Mathf.Max(vitality, 0.01f);
+            vitality = Mathf.Clamp(vitality, 0.01f, 1f);;
         }
 
         if (GetProb(base_mutation_rate))
         {
             size += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-            size = Mathf.Max(size, 0.1f);
+            size = Mathf.Clamp(size, 0.01f, 1f);;
         }
 
         if (GetProb(base_mutation_rate))
@@ -515,7 +579,7 @@ public class Genes
         if (GetProb(base_mutation_rate))
         {
             gestation_time += Random.Range(-attribute_mutation_rate, attribute_mutation_rate);
-            gestation_time = Mathf.Max(gestation_time, 0.1f);
+            gestation_time = Mathf.Clamp(gestation_time, 0.01f, 1f);;
         }
 
         if (GetProb(base_mutation_rate))
@@ -561,7 +625,7 @@ public class Genes
         gl.Add(attribute_mutation_rate);
         gl.Add(neuro_mutation_prob);
         gl.Add(weight_mutation_prob);
-        gl.Add(bias_mutation_prob);
+        gl.Add(field_of_view);
         gl.Add(dropout_prob);
         gl.Add(speed);
         gl.Add(diet);
@@ -701,7 +765,7 @@ public class Genes
          attribute_mutation_rate = 0,
          neuro_mutation_prob = 0,
          weight_mutation_prob = 0,
-         bias_mutation_prob = 0,
+         field_of_view = 0,
          dropout_prob = 0,
          speed = 0,
          diet = 0,
@@ -744,7 +808,7 @@ public class Genes
                 attribute_mutation_rate = float.Parse(values[i++]);
                 neuro_mutation_prob = float.Parse(values[i++]);
                 weight_mutation_prob = float.Parse(values[i++]);
-                bias_mutation_prob = float.Parse(values[i++]);
+                field_of_view = float.Parse(values[i++]);
                 dropout_prob = float.Parse(values[i++]);
                 speed = float.Parse(values[i++]);
                 diet = float.Parse(values[i++]);
@@ -780,7 +844,7 @@ public class Genes
          attribute_mutation_rate,
          neuro_mutation_prob,
          weight_mutation_prob,
-         bias_mutation_prob,
+         field_of_view,
          dropout_prob,
          speed,
          diet,
@@ -826,7 +890,7 @@ public class Genes
         g1.attribute_mutation_rate += g2.attribute_mutation_rate;
         g1.neuro_mutation_prob += g2.neuro_mutation_prob;
         g1.weight_mutation_prob += g2.weight_mutation_prob;
-        g1.bias_mutation_prob += g2.bias_mutation_prob;
+        g1.field_of_view += g2.field_of_view;
         g1.dropout_prob += g2.dropout_prob;
         g1.speed += g2.speed;
         g1.diet += g2.diet;
@@ -867,7 +931,7 @@ public class Genes
         g1.attribute_mutation_rate -= g2.attribute_mutation_rate;
         g1.neuro_mutation_prob -= g2.neuro_mutation_prob;
         g1.weight_mutation_prob -= g2.weight_mutation_prob;
-        g1.bias_mutation_prob -= g2.bias_mutation_prob;
+        g1.field_of_view -= g2.field_of_view;
         g1.dropout_prob -= g2.dropout_prob;
         g1.speed -= g2.speed;
         g1.diet -= g2.diet;
@@ -917,8 +981,8 @@ public class Genes
         g1.weight_mutation_prob /= denom;
         g1.weight_mutation_prob = Mathf.Clamp01(g1.weight_mutation_prob);
 
-        g1.bias_mutation_prob /= denom;
-        g1.bias_mutation_prob = Mathf.Clamp01(g1.bias_mutation_prob);
+        g1.field_of_view /= denom;
+        g1.field_of_view = Mathf.Clamp01(g1.field_of_view);
 
         g1.dropout_prob /= denom;
         g1.dropout_prob = Mathf.Clamp01(g1.dropout_prob);

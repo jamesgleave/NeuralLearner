@@ -94,6 +94,9 @@ public class Egg : Edible
         // Lightly set the color of the egg to that of its parent
         this.sprite.color = new Color(genes.colour_r + 0.5f, genes.colour_g + 0.5f, genes.colour_b + 0.5f);
 
+        // Calculate the energy
+        energy_density = GetEnergyDensity();
+
     }
 
     public void Setup(int id, float e, Genes genes, Manager m, BaseAgent a, BaseAgent parent_1, BaseAgent parent_2)
@@ -271,7 +274,7 @@ public class Egg : Edible
 
             
         }
-energy_density = GetEnergyDensity();
+
         if(Input.GetKeyDown(KeyCode.H))
         {
             gestation_time = 0;

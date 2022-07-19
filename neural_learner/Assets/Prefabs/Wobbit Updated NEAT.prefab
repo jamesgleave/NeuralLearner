@@ -310,7 +310,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   agent: {fileID: 8284897868176631410}
-  input_size: 27
+  input_size: 34
   output_size: 9
   log: 'Changed Neuron Type: , Added Connection: True, Updated weight, Updated weight,
     Updated weight, Updated weight, Updated weight, Set weight, '
@@ -332,7 +332,7 @@ MonoBehaviour:
   col: {fileID: 0}
   body: {fileID: 4515336051089251106}
   head: {fileID: 1875585346857730294}
-  base_health: 100
+  base_health: 250
   base_attack: 3
   base_defense: 3
   base_speed: 1000
@@ -362,7 +362,6 @@ MonoBehaviour:
     neuro_mutation_prob: 0.25
     dropout_prob: 0.25
     weight_mutation_prob: 0.8
-    bias_mutation_prob: 0.5
     speed: 0.5
     diet: 0.25
     attack: 0.5
@@ -370,6 +369,7 @@ MonoBehaviour:
     vitality: 0.5
     size: 0.25
     perception: 0.5
+    field_of_view: 0
     clockrate: 0.5
     gestation_time: 0.5
     maturity_time: 0.5
@@ -436,7 +436,6 @@ MonoBehaviour:
       neuro_mutation_prob: 0
       dropout_prob: 0
       weight_mutation_prob: 0
-      bias_mutation_prob: 0
       speed: 0
       diet: 0
       attack: 0
@@ -444,6 +443,7 @@ MonoBehaviour:
       vitality: 0
       size: 0
       perception: 0
+      field_of_view: 0
       clockrate: 0
       gestation_time: 0
       maturity_time: 0
@@ -478,11 +478,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9298d84a161554f1497def4ba41731b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vision_width: 0
   vision_distance: 0
+  field_of_view: 0
   detected: []
   closest_pellet: {fileID: 0}
   closest_pellet_dist_magnitude: 0
+  is_facing_direction_with_most_pellets: 0
   num_pellets: 0
   closest_meat: {fileID: 0}
   closest_meat_dist_magnitude: 0
@@ -500,7 +501,43 @@ MonoBehaviour:
   blue_distance: 0
   green_distance: 0
   observations: []
-  observation_names: []
+  observation_names:
+  - Distance To Closest Pellet
+  - Number Of Pellets Seen
+  - Is Facing Closest Pellet
+  - Distance To Closest Meat
+  - Number Of Meat Seen
+  - Is Facing Closest Meat
+  - Distance To Closest Agent
+  - Number Of Agents Seen
+  - Is Facing Closest Agent
+  - Red Value Of Closest Agent Seen
+  - Green Value Of Closest Agent Seen
+  - Blue Value Of Closest Agent Seen
+  - Color Difference Between Self & Closest Agent
+  - Distance To Closest Egg
+  - Number Of Eggs Seen
+  - Is Facing Closest Egg
+  - Color Difference Between Self & Closest Egg
+  - Agent's Energy
+  - Agent's Health
+  - Agent's Lifespan
+  - Agent's Speed
+  - Agent's Rotation
+  - Agent Has Grabbed Object
+  - Is Facing Red Pheromone
+  - Red Pheromone Strength
+  - Is Facing Green Pheromone
+  - Green Pheromone Strength
+  - Is Facing Blue Pheromone
+  - Blue Pheromone Strength
+  - Constant Value
+  - Agent Facing Direction With Most Pellets
+  - Relative Heading Of Closest Agent
+  - Relative Size Of Closest Agent
+  - Agent's Fullness
+  buffer: []
+  buffer_size: 0
   sense_memory: 0
   agent_context: []
 --- !u!114 &3455144554565956516
@@ -562,8 +599,8 @@ MonoBehaviour:
   red: {fileID: 7186358726878302931, guid: c621f3938ab764306b1afb31f16039e3, type: 3}
   green: {fileID: 4069878607484842596, guid: c4a675951df3a446597ab0713bc731ff, type: 3}
   blue: {fileID: 499802979505385, guid: 204e75a673bc24bf4981aa47d8531a4f, type: 3}
-  cooldown_time: 120
-  cooldown: 0
+  cooldown_time: 10
+  cooldown: {x: 0, y: 0, z: 0}
 --- !u!254 &3353258988676551412
 RelativeJoint2D:
   m_ObjectHideFlags: 0

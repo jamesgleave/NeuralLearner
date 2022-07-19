@@ -9,36 +9,32 @@ public class PheromoneGland : MonoBehaviour
     /// </summary>
     public Pheromone red, green, blue;
     public float cooldown_time;
-
-    /// <summary>
-    /// The cooldown (time between pheromone deployment)
-    /// </summary>
-    public float cooldown;
+    public Vector3 cooldown;
 
     // Update is called once per frame
     void Update()
     {
-        cooldown -= Time.deltaTime;
+        cooldown -= Time.deltaTime * Vector3.one;
     }
 
     public void SpawnRed()
     {
-        if (cooldown > 0) return;
+        if (cooldown.x > 0) return;
         Instantiate(red, transform.position, transform.rotation);
-        cooldown = cooldown_time;
+        cooldown.x = cooldown_time;
     }
 
     public void SpawnGreen()
     {
-        if (cooldown > 0) return;
+        if (cooldown.y > 0) return;
         Instantiate(green, transform.position, transform.rotation);
-        cooldown = cooldown_time;
+        cooldown.y = cooldown_time;
     }
 
     public void SpawnBlue()
     {
-        if (cooldown > 0) return;
+        if (cooldown.z > 0) return;
         Instantiate(blue, transform.position, transform.rotation);
-        cooldown = cooldown_time;
+        cooldown.z = cooldown_time;
     }
 }

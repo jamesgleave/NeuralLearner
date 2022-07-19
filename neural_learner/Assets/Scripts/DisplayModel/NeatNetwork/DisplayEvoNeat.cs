@@ -1,9 +1,14 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq.Expressions;
 
 public class DisplayEvoNEAT : Display
 {
+    [Header("Display Settings")]
+    public BooleanTrigger show_all_input_neurons = new BooleanTrigger(false);
+    public BooleanTrigger show_all_output_neurons = new BooleanTrigger(false);
 
     // Store each input, hidden, and output neuron
     public List<NEATDisplayNeuron> input_neurons;
@@ -45,10 +50,23 @@ public class DisplayEvoNEAT : Display
     public float vert_offset;
     public float hori_offset;
 
+    public void Reset(){
+        // Set the activation flag to false
+        activated = false;
+
+        // Destroy all of the neurons
+        UtilityFunctions.DestroyGameObjects(combined);
+
+        // Clear all lists
+        depth_counter.Clear();
+        input_neurons.Clear();
+        hidden_neurons.Clear();
+        output_neurons.Clear();
+    }
+
     // Start is called before the first frame update
     public override void Activate()
     {
-
         // Increments or adds a value to the depth counter dictionary
         void Assist(NEATNeuron neuron)
         {
@@ -62,6 +80,11 @@ public class DisplayEvoNEAT : Display
             }
         }
 
+        // Set the functions for trigger booleans
+        Delegate d = new Action(Reset);
+        show_all_input_neurons.SetFunction(d);
+        show_all_output_neurons.SetFunction(d);
+
         // Grab the agent passed into the state manager
         if (StateManager.selected_agent != null)
         {
@@ -69,7 +92,8 @@ public class DisplayEvoNEAT : Display
             learner = (EvolutionaryNEATLearner)StateManager.selected_agent.brain;
 
             // Setup the input names
-            input_names = StateManager.selected_agent.senses.observation_names;
+            input_names.Clear();
+            input_names.AddRange(StateManager.selected_agent.senses.observation_names);
 
             // Setup the output names
             output_names = new List<string>
@@ -101,12 +125,11 @@ public class DisplayEvoNEAT : Display
             {
 
                 // Only add inputs if they have valid outputs
-                // TODO Fix naming issue
-                // if (n.Value.GetOutputIDs().Count ==  0)
-                // {
-                //    input_names.RemoveAt(0);
-                //    continue;
-                // }
+                if (!show_all_input_neurons && n.Value.GetOutputIDs().Count ==  0)
+                {
+                   input_names.RemoveAt(0);
+                   continue;
+                }
 
                 var x = Instantiate(neuron, transform).GetComponent<NEATDisplayNeuron>();
                 x.Setup(n.Value, this);
@@ -125,12 +148,11 @@ public class DisplayEvoNEAT : Display
             {
 
                 // Only add outputs if they have valid inputs
-                // TODO Fix naming issue
-                //if (n.Value.GetInputs().Count == 0)
-                //{
-                //    output_names.RemoveAt(0);
-                //    continue;
-                //}
+                if (!show_all_output_neurons && n.Value.GetInputs().Count == 0)
+                {
+                   output_names.RemoveAt(0);
+                   continue;
+                }
 
                 var x = Instantiate(neuron, transform).GetComponent<NEATDisplayNeuron>();
                 x.Setup(n.Value, this);
@@ -164,7 +186,6 @@ public class DisplayEvoNEAT : Display
         // Run the base activate method
         base.Activate();
 
-        print(model.GetComplexity());
     }
 
     private void SetupChildren()
@@ -191,15 +212,16 @@ public class DisplayEvoNEAT : Display
         }
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
     // Update is called once per frame
     void Update()
     {
+        //Reset the display on pressing R
+        if(Input.GetKeyDown(KeyCode.R)){Reset();}
+
+        // Hotkeys for updating whether or not to show all inputs or outputs
+        if(Input.GetKeyDown(KeyCode.I)){show_all_input_neurons.Set(!show_all_input_neurons);}
+        if(Input.GetKeyDown(KeyCode.O)){show_all_output_neurons.Set(!show_all_output_neurons);}
+
         // Activate on first update
         if (activated == false)
         {
@@ -227,7 +249,7 @@ public class DisplayEvoNEAT : Display
             List<float> inputs = new List<float>();
             for (int i = 0; i < 22; i++)
             {
-                inputs.Add(Random.Range(-1f, 1f));
+                inputs.Add(UnityEngine.Random.Range(-1f, 1f));
             }
         }
 

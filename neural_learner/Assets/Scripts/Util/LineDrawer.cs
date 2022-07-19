@@ -10,8 +10,8 @@ public class LineDrawer : MonoBehaviour
     public int num_verts;
 
     // The colours for high and low (we lerp between these values)
-    public Color32 chigh;
-    public Color32 clow;
+    public Color chigh;
+    public Color clow;
 
     // For fadeout
     public bool on = true;
@@ -26,7 +26,7 @@ public class LineDrawer : MonoBehaviour
         line = GetComponent<LineRenderer>();
 
         // Initialize the mesh collider as disabled (less overhead)
-        col.enabled = false;
+        // col.enabled = false;
     }
 
     public void Setup()
@@ -109,14 +109,14 @@ public class LineDrawer : MonoBehaviour
     public void SetColour(float v)
     {
         // Scale v between 0 and 1
-        v = (float)System.Math.Tanh(v) + 1;
+        // v = (float)System.Math.Tanh(v) + 1;
 
         // Store the alpha
         float alpha = line.material.color.a;
 
         // Set the colour
-        line.material.color = Color32.Lerp(clow, chigh, v);
-
+        // line.material.color = Color.Lerp(clow, chigh, v);
+        line.material.color = v > 0.0f ? chigh : clow;
         // Set the alpha
         Color c = line.material.color;
         c.a = alpha;
@@ -145,25 +145,29 @@ public class LineDrawer : MonoBehaviour
     IEnumerator FadeIn()
     {
         on = true;
-        for (float ft = line.material.color.a; ft <= 1f; ft += fade_time * Time.deltaTime)
-        {
-            Color c = line.material.color;
-            c.a = ft;
-            line.material.color = c;
-            yield return null;
-        }
+        // for (float ft = line.material.color.a; ft <= 1f; ft += fade_time * Time.deltaTime)
+        // {
+        //     Color c = line.material.color;
+        //     c.a = ft;
+        //     line.material.color = c;
+        //     yield return null;
+        // }
+        line.enabled = on;
+        return null;
     }
 
     IEnumerator FadeOut()
     {
         on = false;
-        for (float ft = line.material.color.a; ft >= 0.1f; ft -= fade_time * Time.deltaTime)
-        {
-            Color c = line.material.color;
-            c.a = ft;
-            line.material.color = c;
-            yield return null;
-        }
+        line.enabled = on;
+        return null;
+        // for (float ft = line.material.color.a; ft >= 0.1f; ft -= fade_time * Time.deltaTime)
+        // {
+        //     Color c = line.material.color;
+        //     c.a = ft;
+        //     line.material.color = c;
+        //     yield return null;
+        // }
     }
 
     public void Fade(bool fade_in)

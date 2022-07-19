@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 
+using static Senses.NEATNeuronIndices;
+
+
 public class Genome
 {
     /// <summary>
@@ -194,8 +197,8 @@ public class Genome
         {
 
             // Grab the two nodes that we will be connecting
-            node1 = nodes[Manager.static_mobile_start ? 26 : keys[Random.Range(0, keys.Count)]];
-            node2 = nodes[27]; // 27 is the index of the movement neuron
+            node1 = nodes[Manager.static_mobile_start ? (int)ConstantValue : keys[Random.Range(0, keys.Count)]];
+            node2 = nodes[(int)MoveForward]; // 27 is the index of the movement neuron
 
             // Set the connection's weight
             weight = Random.Range(0f, 0.5f);
@@ -204,11 +207,12 @@ public class Genome
             if(Random.value < 0.50f && Manager.static_mobile_start)
             {
                 // turn towards agents
-                new_connection = new ConnectionGene(8, 28, -1f, true, innovation.GetInnovation());
+                new_connection = new ConnectionGene((int)IsFacingClosestAgent, (int)Rotate, -weight, true, innovation.GetInnovation());
                 connections.Add(new_connection.GetInnovation(), new_connection);
 
                 // turn towards meat
-                new_connection = new ConnectionGene(5, 28, -1f, true, innovation.GetInnovation());
+                weight = Random.Range(0f, 0.5f);
+                new_connection = new ConnectionGene((int)IsFacingClosestMeat, (int)Rotate, -weight, true, innovation.GetInnovation());
                 connections.Add(new_connection.GetInnovation(), new_connection);
 
                 // Turn away from similar colored species
@@ -216,18 +220,19 @@ public class Genome
                 // connections.Add(new_connection.GetInnovation(), new_connection);
 
                 // Accelerate towards agents
-                new_connection = new ConnectionGene(8, 27, -weight, true, innovation.GetInnovation());
+                weight = Random.Range(0f, 0.5f);
+                new_connection = new ConnectionGene((int)IsFacingClosestAgent, (int)MoveForward, -weight, true, innovation.GetInnovation());
                 connections.Add(new_connection.GetInnovation(), new_connection);
 
                 // Wants to attack when close
-                new_connection = new ConnectionGene(7, 32, 1f, true, innovation.GetInnovation());
+                weight = Random.Range(0f, 0.5f);
+                new_connection = new ConnectionGene((int)DistanceToClosestAgent, (int)WantsToAttack, weight, true, innovation.GetInnovation());
                 connections.Add(new_connection.GetInnovation(), new_connection);
 
                 // Also turn towards pellets
-                new_connection = new ConnectionGene(2, 28, -0.8f, true, innovation.GetInnovation());
+                weight = Random.Range(0f, 0.5f);
+                new_connection = new ConnectionGene((int)IsFacingClosestPellet, (int)Rotate, -weight, true, innovation.GetInnovation());
                 connections.Add(new_connection.GetInnovation(), new_connection);
-
-                Debug.Log("Pred");
             }   
 
             
@@ -237,12 +242,11 @@ public class Genome
             // If we have a connection, then we have a 75% chance that the second connection will be to the rotate towards from food
             if(connections.Count == 1 && Manager.static_mobile_start){
                 // Connect the node for rotation to the closest pellet
-                node1 = nodes[2];
-                node2 = nodes[28];
+                node1 = nodes[(int)IsFacingClosestPellet];
+                node2 = nodes[(int)Rotate];
 
                 // Set the connection's weight
-                weight = -Random.Range(0f, 2f);
-                            Debug.Log("Mobile start: 2 - ");
+                weight = -Random.Range(0f, 1f);
 
             }else{
                 // Grab the two nodes that we will be connecting
@@ -403,6 +407,10 @@ public class Genome
 
         // Create a new node
         NodeGene new_node = new NodeGene(NodeGeneType.Hidden, nodes.Count);
+
+        // Mutate the node
+        new_node.MutateActivation();
+        new_node.MutateCalculationMethod();
 
         // Increment the node's ID until we have a new one
         while (nodes.ContainsKey(new_node.GetID()))
@@ -666,34 +674,18 @@ public class Genome
         {
             
             // Mutate add node
-            float prob_trigger = Random.Range(0f, 1f);
-            bool trigger = (neuro_mutation_prob > prob_trigger);
+            float prob_trigger = Random.value;
+            bool trigger = (neuro_mutation_prob / 3.5f > prob_trigger);
             if (trigger)
             {
                 model.AddNodeMutation();
-            }
-
-            // Mutate activations
-            prob_trigger = Random.Range(0f, 1f);
-            trigger = (neuro_mutation_prob > prob_trigger);
-            if (trigger)
-            {
-                model.ChangeActivationMutation();
-            }
-
-            // Mutate neuron types
-            prob_trigger = Random.Range(0f, 1f);
-            trigger = (neuro_mutation_prob > prob_trigger);
-            if (trigger)
-            {
-                model.ChangeCalculationMethodMutation();
             }
 
             // Mutate the connections by adding a few more
             float num_added_connections = Mathf.Max(5f * neuro_mutation_prob, 3f);
 
             // We can only add up to 3 new connections per mutation
-            prob_trigger = Random.Range(0f, 1f);
+            prob_trigger = Random.value;
             trigger = (neuro_mutation_prob > prob_trigger) || (Manager.static_mobile_start && model.GetNumConnections() < 2);
             while (trigger && num_added_connections > 0)
             {
@@ -728,13 +720,37 @@ public class Genome
                 }
             }
 
+            // For each node, there is a chance for it to mutate as well
+            foreach(NodeGene n in model.nodes.Values){
+                // Skip a mutation if the node is an input
+                if((n.IsInput() && !NEATMutationConfig.config.allow_input_node_mutation) || (n.IsOutput() && !NEATMutationConfig.config.allow_output_node_mutation)){ continue;}
+                
+                // There between a 1% to 10% chance of a node mutating its calculation method
+                if(Random.value < neuro_mutation_prob / 10f){
+                    n.MutateCalculationMethod();
+                }
+
+                // There between a 1% to 10% chance of a node mutating its activation function
+                if(Random.value < neuro_mutation_prob / 10f){
+                    n.MutateActivation();
+                }
+            }
+
             // Recalculate trigger but this time for dropping a connection
-            prob_trigger = Random.Range(0f, 1f);
+            prob_trigger = Random.value;
             trigger = (dropout_prob > prob_trigger);
             if (trigger)
             {
                 // Drop the connection
                 model.InvertConnectionMutation();
+            }
+
+            prob_trigger = Random.value;
+            trigger = (dropout_prob > prob_trigger);
+            if (trigger)
+            {
+                // Remove the neuron
+                model.RemoveNodeMutation();
             }
         }
     }

@@ -473,6 +473,8 @@ public class BaseAgent : Interactable
             metabolism = 0;
             movement_speed = base_speed;
             rotation_speed = base_rotation_speed;
+            energy = float.MaxValue;
+            health = float.MaxValue;
         }
 
         // Setup the joint for grabbing!
@@ -735,9 +737,9 @@ public class BaseAgent : Interactable
             wants_to_eat = inf[3] >= 0;
             wants_to_grab = inf[4] > 0;
             wants_to_attack = inf[5] > 0;
-            wants_to_produce_red_pheromone = inf[6] > 0.5;
-            wants_to_produce_red_pheromone = inf[7] > 0.5;
-            wants_to_produce_red_pheromone = inf[8] > 0.5;
+            wants_to_produce_red_pheromone = inf[6] > 0.5f;
+            wants_to_produce_green_pheromone = inf[7] > 0.5f;
+            wants_to_produce_blue_pheromone = inf[8] > 0.5f;
     }
 
     protected virtual float Move(float forward, float backward, float left, float right)
@@ -832,22 +834,27 @@ public class BaseAgent : Interactable
 
     private float TryProducingPheromone()
     {
+        float cost = 0;
         if (wants_to_produce_red_pheromone)
         {
             GetComponent<PheromoneGland>().SpawnRed();
+            cost += 0.5f * genes.size;
         }
 
         if (wants_to_produce_green_pheromone)
         {
             GetComponent<PheromoneGland>().SpawnGreen();
+            cost += 0.5f * genes.size;
         }
 
         if (wants_to_produce_blue_pheromone)
         {
             GetComponent<PheromoneGland>().SpawnBlue();
+            cost += 0.5f * genes.size;
+
         }
 
-        return 0;
+        return cost;
     }
 
     public virtual float LayEgg()
@@ -1028,23 +1035,6 @@ public class BaseAgent : Interactable
         energy += stomach.GetTotalPotentialEnergy();
         m.Setup((int)ID.Meat, energy, manager.meat_rot_time, energy / manager.meat_energy_density, this.genes, manager);
         manager.agents.Add(m);
-        // for (int i = 0; i < pieces; i++)
-        // {
-        //     if (energy - energy_per <= 0)
-        //     {
-        //         Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
-        //         m.Setup((int)ID.Meat, energy, 0.5f, meat_size, this.genes, manager);
-        //         manager.agents.Add(m);
-        //         break;
-        //     }
-        //     else
-        //     {
-        //         Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
-        //         m.Setup((int)ID.Meat, energy_per, 0.5f, meat_size, this.genes, manager);
-        //         manager.agents.Add(m);
-        //         energy -= energy_per;
-        //     }
-        // }
 
         num_pellets_eaten = num_meat_eaten = num_eggs_eaten = num_kills = 0;
         manager.GetComponent<EntityPoolManager>().Destroy(this);

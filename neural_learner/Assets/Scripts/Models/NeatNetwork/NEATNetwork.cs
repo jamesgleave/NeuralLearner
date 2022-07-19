@@ -681,22 +681,9 @@ public class NEATNeuron
     private Activation activation;
 
     /// <summary>
-    /// The method for calculation
+    /// The calculation method of the neuron
     /// </summary>
-    private NodeCalculationMethod method;
-
-    public NEATNeuron(Activation activation, int id)
-    {
-        this.id = id;
-        inputs = new Dictionary<int, NEATInputContainer>();
-        output_ids = new List<int>();
-        output_weights = new List<float>();
-        recurrent_inputs = new List<bool>();
-        hidden_states = new Dictionary<int, float>();
-
-        this.activation = activation;
-        this.method = NodeCalculationMethod.LinComb;
-    }
+    private CalculationMethod calculation_method;
 
     public NEATNeuron(Activation activation, int id, NodeCalculationMethod method)
     {
@@ -707,8 +694,11 @@ public class NEATNeuron
         recurrent_inputs = new List<bool>();
         hidden_states = new Dictionary<int, float>();
 
+        // Set the activation function
         this.activation = activation;
-        this.method = method;
+
+        // Create a calculation method based on the method enum
+        this.calculation_method = MethodHelp.GetMethod(method);
     }
 
     /// <summary>
@@ -836,33 +826,36 @@ public class NEATNeuron
             }
         }
 
-        switch (method)
-        {
-            // check to see if this is a LinComb neuron
-            case NodeCalculationMethod.LinComb:
-                // Activate the sum
-                output = activation.activate(sum);
-                break;
+        // Calculate the output
+        output = calculation_method.Calculate(sum, activation);
 
-            // check to see if this is a latch neuron
-            case NodeCalculationMethod.Latch:
-                // A latch neuron will always return 1 if sum squish is 0.80 or higher (latched) and input is greater than zero.
-                // If the output is less than or equal to zero, output zero
+        // switch (method)
+        // {
+        //     // check to see if this is a LinComb neuron
+        //     case NodeCalculationMethod.LinComb:
+        //         // Activate the sum
+        //         output = activation.activate(sum);
+        //         break;
 
-                // Activate the sum
-                float activ = activation.activate(sum);
-                //Debug.Log(activ + ", " + sum + ", " + activation.name);
+        //     // check to see if this is a latch neuron
+        //     case NodeCalculationMethod.Latch:
+        //         // A latch neuron will always return 1 if sum squish is 0.80 or higher (latched) and input is greater than zero.
+        //         // If the output is less than or equal to zero, output zero
 
-                if (output == 1 && activ > 0 || activ >= 0.80f)
-                {
-                    output = 1;
-                }
-                else
-                {
-                    output = 0;
-                }
-                break;
-        }
+        //         // Activate the sum
+        //         float activ = activation.activate(sum);
+        //         //Debug.Log(activ + ", " + sum + ", " + activation.name);
+
+        //         if (output == 1 && activ > 0 || activ >= 0.80f)
+        //         {
+        //             output = 1;
+        //         }
+        //         else
+        //         {
+        //             output = 0;
+        //         }
+        //         break;
+        // }
 
 
         // return the final value
@@ -875,7 +868,7 @@ public class NEATNeuron
     /// <returns></returns>
     public NodeCalculationMethod GetMethod()
     {
-        return method;
+        return calculation_method.method;
     }
 
     /// <summary>
@@ -884,7 +877,7 @@ public class NEATNeuron
     /// <param name="new_method"></param>
     public void SetMethod(NodeCalculationMethod new_method)
     {
-        this.method = new_method;
+        this.calculation_method = MethodHelp.GetMethod(new_method);
     }
 
     /// <summary>
@@ -1013,18 +1006,7 @@ public class NEATNeuron
             pair.Value.ResetValue();
         }
 
-        // Here we look at the different calculation methods to see what to do during a reset.
-        switch (method)
-        {
-            // If we have a lincomb, then we want to reset the output value at each reset
-            case NodeCalculationMethod.LinComb:
-                output = 0;
-                break;
-
-            // If we have a latch neuron, dont do anything.
-            // The point of a latch neuron is to stay 1 when the input is nonzero and it has been activated.
-            case NodeCalculationMethod.Latch:
-                break;
-        }
+        // Reset the calculation
+        output = calculation_method.Reset();
     }
 }

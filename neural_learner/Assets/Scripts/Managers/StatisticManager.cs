@@ -33,7 +33,7 @@ public class StatisticManager
          average_attribute_mutation_rate,
          average_neuro_mutation_prob,
          average_weight_mutation_prob,
-         average_bias_mutation_prob,
+         field_of_view,
          average_dropout_prob,
          average_speed,
          average_diet,
@@ -113,7 +113,7 @@ public class StatisticManager
             average_attribute_mutation_rate += agent.genes.attribute_mutation_rate;
             average_neuro_mutation_prob += agent.genes.neuro_mutation_prob;
             average_weight_mutation_prob += agent.genes.weight_mutation_prob;
-            average_bias_mutation_prob += agent.genes.field_of_view;
+            field_of_view += agent.genes.field_of_view;
             average_dropout_prob += agent.genes.dropout_prob;
             average_speed += agent.genes.speed;
             average_diet += agent.genes.diet;
@@ -135,7 +135,7 @@ public class StatisticManager
         average_attribute_mutation_rate /= agents.Count;
         average_neuro_mutation_prob /= agents.Count;
         average_weight_mutation_prob /= agents.Count;
-        average_bias_mutation_prob /= agents.Count;
+        field_of_view /= agents.Count;
         average_dropout_prob /= agents.Count;
         average_speed /= agents.Count;
         average_diet /= agents.Count;

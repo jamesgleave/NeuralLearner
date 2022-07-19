@@ -5,10 +5,10 @@ using UnityEngine;
 public class UserControllerEvoNEAT : MonoBehaviour
 {
     // Used as a baseline
-    public float lookSpeedH = 2f;
-    public float lookSpeedV = 2f;
-    public float zoomSpeed = 2f;
-    public float dragSpeed = 6f;
+     float lookSpeedH = 50f;
+     float lookSpeedV = 50f;
+     float zoomSpeed = 20f;
+     float dragSpeed = 100f;
 
     // The controller used to control the HUD
     public TextController text;

@@ -112,6 +112,14 @@ public class NodeGene
         return activation;
     }
 
+    public void MutateActivation(){
+        activation = Activations.ActivationHelper.GetRandomActivation();
+    }
+
+    public void MutateCalculationMethod(){
+        method = MethodHelp.GetRandomMethod();
+    }
+
     public void SetActivationString(string activ)
     {
         activation = activ;

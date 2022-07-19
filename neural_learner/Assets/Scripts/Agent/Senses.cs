@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.IO.Compression;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,6 +13,9 @@ public class Senses : MonoBehaviour
     [Space]
     public FoodPellet closest_pellet;
     public float closest_pellet_dist_magnitude;
+    private float facing_direction_with_most_pellets;
+    private Vector3 average_pellet_position_in_observation;
+    public float is_facing_direction_with_most_pellets;
     public int num_pellets;
 
     [Space]
@@ -39,8 +43,9 @@ public class Senses : MonoBehaviour
     public List<float> observations = new List<float>();
     public List<string> observation_names = new List<string>();
 
-    // The buffer for the circlecast
+    // The buffer for the circle cast
     public Collider2D[] buffer;
+    public int buffer_size;
     [Tooltip("The amount of time until the agent forgets something")]
     public float sense_memory;
 
@@ -53,14 +58,61 @@ public class Senses : MonoBehaviour
     public List<GameObject> agent_context;
 
     /// <summary>
-    /// A static variable to hold which observation maps to which index of the observation list.
-    /// </summary>
-    public static Dictionary<string, int> observation_indices;
-
-    /// <summary>
     /// Weights assosiated with sensory connections for mutations (defaulted to 1/length)
     /// </summary>
     public static Dictionary<string, float> observation_weights;
+
+    // Static values used by other classes
+    public enum NEATNeuronIndices{
+        DistanceToClosestPellet = 0,
+        NumberOfPelletsSeen = 1,
+        IsFacingClosestPellet = 2,
+        DistanceToClosestMeat = 3,
+        NumberOfMeatSeen = 4,
+        IsFacingClosestMeat = 5,
+        DistanceToClosestAgent = 6,
+        NumberOfAgentsSeen = 7,
+        IsFacingClosestAgent = 8,
+        RedValueOfClosestAgentSeen = 9,
+        GreenValueOfClosestAgentSeen = 10,
+        BlueValueOfClosestAgentSeen = 11,
+        ColorDifferenceBetweenSelfAndClosestAgent = 12,
+        DistanceToClosestEgg = 13,
+        NumberOfEggsSeen = 14,
+        IsFacingClosestEgg = 15,
+        ColorDifferenceBetweenSelfAndClosestEgg = 16,
+        AgentsEnergy = 17,
+        AgentsHealth = 18,
+        AgentsLifespan = 19,
+        AgentsSpeed = 20,
+        AgentsRotation = 21,
+        AgentHasGrabbedObject = 22,
+
+        IsFacingRedPheromone = 23,
+        RedPheromoneStrength = 24,
+        IsFacingGreenPheromone = 25,
+        GreenPheromoneStrength = 26,
+        IsFacingBluePheromone = 27,
+        BluePheromoneStrength = 28,
+
+        ConstantValue = 29,
+
+        AgentFacingDirectionWithMostPellets = 30,
+        RelativeHeadingOfClosestAgent = 31,
+        RelativeSizeOfClosestAgent = 32,
+        AgentsFullness = 33,
+
+        // Add the indices for the outputs as well
+        MoveForward = 34,
+        Rotate = 35,
+        WantsToReproduce = 36,
+        WantsToEat = 37,
+        WantsToGrab = 38,
+        WantsToAttack = 39,
+        ProduceRedPheromone = 40,
+        ProduceGreenPheromone = 41,
+        ProduceBluePheromone = 42,
+    }
 
     public void Setup(float dist, float fov, int id, Transform t)
     {
@@ -68,64 +120,12 @@ public class Senses : MonoBehaviour
         vision_distance = dist;
 
         // Set up the FOV
-        field_of_view = fov;
-
-        // Setup the names of all observations in the right order (the ith observation lines up with the ith observation_name)
-        SetupNames();
+        // 1.6log(2.4x+1)
+        field_of_view = 1.6f * Mathf.Log10(1 + 2.4f * fov);
 
         // Create the buffer
-        buffer = new Collider2D[20];
-        //sense_memory = Mathf.Log(GetComponent<BaseAgent>());
-    }
-
-    public void SetupNames()
-    {
-        // Clear the names
-        observation_names.Clear();
-
-        // Add observation names for the pellets
-        observation_names.Add("Distance To Closest Pellet");
-        observation_names.Add("Number Of Pellets Seen");
-        observation_names.Add("Is Facing Closest Pellet");
-
-        // Add observation names for the meat
-        observation_names.Add("Distance To Closest Meat");
-        observation_names.Add("Number Of Meat Seen");
-        observation_names.Add("Is Facing Closest Meat");
-
-        // Add observation names for the Agent
-        observation_names.Add("Distance To Closest Agent");
-        observation_names.Add("Number Of Agents Seen");
-        observation_names.Add("Is Facing Closest Agent");
-
-        // The next 4 are all about the closest agent seen
-        observation_names.Add("Red Value Of Closest Agent Seen");
-        observation_names.Add("Green Value Of Closest Agent Seen");
-        observation_names.Add("Blue Value Of Closest Agent Seen");
-        observation_names.Add("Color Difference Between Self & Closest Agent");
-
-        // Add observation names for the egg
-        observation_names.Add("Distance To Closest Egg");
-        observation_names.Add("Number Of Eggs Seen");
-        observation_names.Add("Is Facing Closest Egg");
-        observation_names.Add("Color Difference Between Self & Closest Egg");
-
-
-        // Next are all about the agent's state
-        observation_names.Add("Agent's Energy");
-        observation_names.Add("Agent's Health");
-        observation_names.Add("Agent's Lifespan");
-        observation_names.Add("Agent's Speed");
-        observation_names.Add("Agent's Rotation");
-        observation_names.Add("Agent Has Grabbed Object");
-
-        // Pheromones
-        observation_names.Add("Is Facing Red Pheromone");
-        observation_names.Add("Is Facing Green Pheromone");
-        observation_names.Add("Is Facing Blue Pheromone");
-
-        // The constant value
-        observation_names.Add("Constant Value");
+        buffer_size = (int)(vision_distance * 10);
+        buffer = new Collider2D[buffer_size];
     }
 
     public List<float> GetObservations(BaseAgent agent)
@@ -137,7 +137,8 @@ public class Senses : MonoBehaviour
         void AddTo(Interactable i, float dist, float scaled_magnitude)
         {
             // Add the distance
-            observations.Add(dist);
+            // TODO testing the inverse (increase signal as the agent gets closer)
+            observations.Add(1f - Mathf.Clamp01(dist));
 
             // Add the number of interactables found (scaled)
             observations.Add(scaled_magnitude);
@@ -146,7 +147,8 @@ public class Senses : MonoBehaviour
             if (i != null)
             {
                 // Add the normalized angle (between -1 and 1)
-                observations.Add(Vector3.SignedAngle(transform.up, i.transform.position - transform.position, transform.forward) / 180f);
+                // Multiply by the field of view to get a range between 0 and 1 (where in the field of view the object is)
+                observations.Add((Vector3.SignedAngle(transform.up, i.transform.position - transform.position, transform.forward) / 180f) / field_of_view);
             }
             else
             {
@@ -168,6 +170,7 @@ public class Senses : MonoBehaviour
         AddTo(closest_meat, closest_meat_dist_magnitude, scaled_num_meats);
         // 7-9
         AddTo(closest_agent, closest_agent_dist_magnitude, scaled_num_agents);
+
         // The next 3 are all about the closest agent seen
         if (closest_agent != null)
         {
@@ -195,7 +198,8 @@ public class Senses : MonoBehaviour
         // 17
         if (closest_egg != null)
         {
-            observations.Add(closest_egg.genes.ComputeColorDifference(agent.genes));
+            // 1 if they are the same, 0 if they are opposites
+            observations.Add(1f - closest_egg.genes.ComputeColorDifference(agent.genes));
         }
         else
         {
@@ -216,7 +220,7 @@ public class Senses : MonoBehaviour
         observations.Add(1 - 1 / (1 + agent.speed));
 
         // Rotation % (22)
-        observations.Add(Mathf.Abs(agent.transform.rotation.z));
+        observations.Add((agent.transform.rotation.z + 1f) / 2f);
 
         // Whether or not the agent has something grabbed (23)
         if (agent.grabbed != null)
@@ -226,7 +230,7 @@ public class Senses : MonoBehaviour
         }
         else
         {
-            observations.Add(0);
+            observations.Add(-1);
         }
 
         // 24
@@ -239,6 +243,7 @@ public class Senses : MonoBehaviour
         {
             observations.Add(0);
         }
+        observations.Add(red_distance);
 
         // 25
         // Add green pheromone
@@ -250,6 +255,7 @@ public class Senses : MonoBehaviour
         {
             observations.Add(0);
         }
+        observations.Add(green_distance);
 
         // 26
         // Add blue pheromone
@@ -261,14 +267,42 @@ public class Senses : MonoBehaviour
         {
             observations.Add(0);
         }
+        observations.Add(blue_distance);
 
         // Constant 27
         observations.Add(1);
+
+        // Extra observations
+
+        // Is the agent facing the direction with the most detected pellets? (28)
+        is_facing_direction_with_most_pellets = Vector3.SignedAngle(transform.up, average_pellet_position_in_observation - transform.position, transform.forward) / 180f;
+        observations.Add(is_facing_direction_with_most_pellets);
+
+        // Add the relative heading of the closest agent (the angle between the closest agent and this agent) (29)
+        // Add closest agent's size ratio (this agent's size / closest agent's size) (30)
+        if (closest_agent != null)
+        {
+            observations.Add(1f - ((Vector3.Dot(transform.up, closest_agent.transform.up) + 1) / 2));
+
+            // If this agent is larger, the value will approach zero, else it will approach one
+            observations.Add(1f / (Mathf.Exp(-(closest_agent.transform.localScale.x / agent.transform.localScale.x)) + 1));
+        }
+        else
+        {
+            observations.Add(0);
+            observations.Add(0);
+        }
+
+        // Add agent's stomach fullness ratio (31)
+        observations.Add(agent.stomach.GetFullnessPercentage());
+
         return observations;
     }
 
     public List<Interactable> Sense()
     {
+        // Initialize dist (temp variable we use to store distances)
+        float dist;
 
         // Clear the list of detected game objects
         detected.Clear();
@@ -289,13 +323,20 @@ public class Senses : MonoBehaviour
         blue = null;
 
         // Reset all distances
-        closest_pellet_dist_magnitude = closest_meat_dist_magnitude = closest_egg_dist_magnitude = closest_agent_dist_magnitude = red_distance = green_distance = blue_distance = 1;
+        closest_pellet_dist_magnitude = closest_meat_dist_magnitude = closest_egg_dist_magnitude = closest_agent_dist_magnitude = 1;
+
+        // Pheromones start at zero because they are "get stronger as you get closer"
+        red_distance = green_distance = blue_distance = 0;
 
         // Reset counts
         num_pellets = num_meats = num_eggs = num_agents = 0;
 
+        // Reset the average position of all pellets seen and if it is looking at the most pellets
+        average_pellet_position_in_observation = Vector3.zero;
+        facing_direction_with_most_pellets = 0;
+
         // Look at stuff!
-        Physics2D.OverlapCircleNonAlloc(point: transform.position + transform.up, radius: vision_distance, results: buffer);
+        Physics2D.OverlapCircleNonAlloc(point: transform.position, radius: vision_distance, results: buffer);
         for (int i = 0; i < buffer.Length; i++)
         {
             // Grab the object from the buffer
@@ -305,7 +346,47 @@ public class Senses : MonoBehaviour
             if(c == null){continue;}
 
             // Check if the object is within the agent's field of view
-            if((Vector2.Dot((c.transform.position - transform.position).normalized, transform.up) + 1 ) / 2f < 1 - field_of_view) {continue;}
+            if(Vector3.SignedAngle(transform.up, c.transform.position - transform.position, transform.up) / 180f > field_of_view) 
+            {
+                // If the object is outside of the fov, still check if it is a pheromone
+                if(c.TryGetComponent<Pheromone>(out Pheromone pheromone)){
+                    
+                    // Find the scaled distance of the pheromone
+                    dist = Vector3.Distance(transform.position, pheromone.transform.position) / vision_distance;
+
+                    // Add the pheromone to the list of detected
+                    detected.Add(pheromone);
+
+                    // If it is a pheromone, check if it is red
+                    if(pheromone.type == PheromoneType.red && (red == null || dist < red_distance)){
+                        // If it is red, set the red pheromone to the pheromone
+                        red = pheromone;
+
+                        // Set the red distance to the distance between the agent and the pheromone
+                        // The 1 - dist is because the strength of the pheromone is inverse to the distance
+                        red_distance = 1f - dist;
+                    }
+                    // If it is a pheromone, check if it is green
+                    else if(pheromone.type == PheromoneType.green && (green == null || dist < green_distance)){
+                        // If it is green, set the green pheromone to the pheromone
+                        green = pheromone;
+
+                        // Set the green distance to the distance between the agent and the pheromone
+                            // The 1 - dist is because the strength of the pheromone is inverse to the distance
+                        green_distance = 1f - dist;
+                    }
+                    // If it is a pheromone, check if it is blue
+                    else if(pheromone.type == PheromoneType.blue && (blue == null || dist < blue_distance)){
+                        // If it is blue, set the blue pheromone to the pheromone
+                        blue = pheromone;
+
+                        // Set the blue distance to the distance between the agent and the pheromone
+                        // The 1 - dist is because the strength of the pheromone is inverse to the distance
+                        blue_distance = 1f - dist;
+                    }
+                }
+                continue;
+            }
 
             // Define the game object we are looking at
             // We only detect the agent's body... This is to avoid adding it twice to the detected list (avoid checking as well)
@@ -326,7 +407,7 @@ public class Senses : MonoBehaviour
                 // Now update the closest values
                 // Use a switch case cuz it be faster
                 float raw_dist = Vector2.Distance(obj.transform.position, transform.position);
-                float dist = raw_dist / vision_distance;
+                dist = raw_dist / vision_distance;
                 detected.Add(obj);
 
                 switch ((ID)obj.GetID())
@@ -340,6 +421,7 @@ public class Senses : MonoBehaviour
                             closest_pellet_dist_magnitude = dist;
                         }
                         num_pellets++;
+                        average_pellet_position_in_observation += obj.transform.position;
                         break;
                     case ID.Meat:
                         // If the closest food pellet is null then take the first option
@@ -399,6 +481,9 @@ public class Senses : MonoBehaviour
             }
         }
 
+        // Create an average position for the pellets
+        if(num_pellets > 0) average_pellet_position_in_observation /= num_pellets;
+
         return detected;
     }
 
@@ -410,6 +495,7 @@ public class Senses : MonoBehaviour
 
     public void OnDrawGizmos()
     {
+        Gizmos.color = Color.green;
         for (int i = 0; i < detected.Count; i++)
         {
             if (detected[i] != null)
@@ -420,7 +506,7 @@ public class Senses : MonoBehaviour
 
 
         float angle = 360 * (1 - field_of_view);
-        float rayRange = 5;
+        float rayRange = vision_distance;
         float halfFOV = angle / 2.0f;
         float coneDirection = 180;
 
@@ -430,8 +516,15 @@ public class Senses : MonoBehaviour
         Vector3 upRayDirection = upRayRotation * transform.up * rayRange;
         Vector3 downRayDirection = downRayRotation * transform.up * rayRange;
 
+        Gizmos.color = Color.blue;
         Gizmos.DrawRay(transform.position, upRayDirection);
         Gizmos.DrawRay(transform.position, downRayDirection);
 
+        // Add a ball to show the direction facing the most pellets
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireCube(average_pellet_position_in_observation, Vector3.one * 0.3f);
+        
+        Gizmos.color = Color.gray;
+        Gizmos.DrawWireSphere(transform.position, vision_distance);
     }
 }

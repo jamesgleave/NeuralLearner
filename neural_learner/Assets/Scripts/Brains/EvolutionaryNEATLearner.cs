@@ -61,7 +61,7 @@ public class EvolutionaryNEATLearner : Brain
             genome.AddNode(new NodeGene(NodeGeneType.Output, i + input_size));
         }
 
-        for (int i = 0; i < 1 * Random.value; i++)
+        for (int i = 0; i < initial_mutations; i++)
         {
             Mutate();
         }

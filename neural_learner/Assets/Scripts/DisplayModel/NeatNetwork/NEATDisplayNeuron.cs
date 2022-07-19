@@ -210,7 +210,13 @@ public class NEATDisplayNeuron : Interactable
         if (neuron.GetMethod() == NodeCalculationMethod.Latch)
         {
             sprite.color = Color.blue;
-            //neuron.SetMethod(NodeCalculationMethod.Latch);
+        }
+        else if(neuron.GetMethod() == NodeCalculationMethod.Differential)
+        {
+            sprite.color = Color.green;
+        }else
+        {
+            sprite.color = Color.white;
         }
     }
 

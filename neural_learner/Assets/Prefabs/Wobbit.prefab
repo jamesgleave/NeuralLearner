@@ -106,12 +106,16 @@ MonoBehaviour:
   base_lifespan: 60
   base_mass: 1
   base_consumption_rate: 10
-  base_update_rate: 1
+  base_update_rate: 1000
+  wants_move_forward: 0
+  wants_rotate_clockwise: 0
   wants_to_breed: 0
   wants_to_eat: 0
   wants_to_grab: 0
   wants_to_attack: 0
-  inf: []
+  wants_to_produce_red_pheromone: 0
+  wants_to_produce_green_pheromone: 0
+  wants_to_produce_blue_pheromone: 0
   genus: 
   species: 
   original_name: 
@@ -122,7 +126,6 @@ MonoBehaviour:
     neuro_mutation_prob: 0
     dropout_prob: 0
     weight_mutation_prob: 0
-    bias_mutation_prob: 0
     speed: 1
     diet: 0.5
     attack: 1
@@ -130,6 +133,7 @@ MonoBehaviour:
     vitality: 1
     size: 1
     perception: 1
+    field_of_view: 0
     clockrate: 1
     gestation_time: 1
     maturity_time: 1
@@ -155,7 +159,6 @@ MonoBehaviour:
   movement_speed: 0
   rotation_speed: 0
   speed: 0
-  kenetic_energy: 0
   cost_of_movement: 0
   health: 0
   max_health: 0
@@ -164,8 +167,8 @@ MonoBehaviour:
   max_size: {x: 0, y: 0, z: 0}
   attack: 0
   defense: 0
-  hunger: 0
   consumption_rate: 0
+  stomach: {fileID: 0}
   age: 0
   maturity_age: 0
   lifespan: 0
@@ -177,6 +180,10 @@ MonoBehaviour:
   egg_gestation_time: 0
   metabolism: 0
   true_metabolic_cost: 0
+  brain_metabolic_cost: 0
+  metabolic_cost_percentage_of_movement: 0
+  metabolic_cost_percentage_of_brain: 0
+  metabolic_cost_percentage_of_bmr: 0
   brain_cost: 0
   cost_comparison: {x: 0, y: 0}
   time_to_die: 0
@@ -184,6 +191,7 @@ MonoBehaviour:
   node:
     genus: 
     species: 
+    full_name: 
     genetic_drift: 0
     original_genes:
       base_mutation_rate: 0
@@ -192,7 +200,6 @@ MonoBehaviour:
       neuro_mutation_prob: 0
       dropout_prob: 0
       weight_mutation_prob: 0
-      bias_mutation_prob: 0
       speed: 0
       diet: 0
       attack: 0
@@ -200,6 +207,7 @@ MonoBehaviour:
       vitality: 0
       size: 0
       perception: 0
+      field_of_view: 0
       clockrate: 0
       gestation_time: 0
       maturity_time: 0
@@ -222,8 +230,6 @@ MonoBehaviour:
   god: 0
   grabbed_force: 0
   strength: 0
-  obs: []
-  torque_for_boids: 0
 --- !u!212 &8284897868176631423
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -308,11 +314,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9298d84a161554f1497def4ba41731b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vision_width: 0
   vision_distance: 0
+  field_of_view: 0
   detected: []
   closest_pellet: {fileID: 0}
   closest_pellet_dist_magnitude: 0
+  is_facing_direction_with_most_pellets: 0
   num_pellets: 0
   closest_meat: {fileID: 0}
   closest_meat_dist_magnitude: 0
@@ -331,6 +338,8 @@ MonoBehaviour:
   green_distance: 0
   observations: []
   observation_names: []
+  buffer: []
+  sense_memory: 0
   agent_context: []
 --- !u!60 &8284897868176631421
 PolygonCollider2D:

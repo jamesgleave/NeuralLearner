@@ -4,7 +4,7 @@ using UnityEngine;
 
 public enum NodeCalculationMethod
 {
-    LinComb, Latch,
+    LinComb, Latch, Differential
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -13,13 +13,15 @@ public static class MethodHelp
 {
     public static NodeCalculationMethod GetRandomMethod()
     {
-        int choise = Random.Range(0, 2);
+        int choise = Random.Range(0, 3);
         switch (choise)
         {
             case 0:
                 return NodeCalculationMethod.LinComb;
             case 1:
                 return NodeCalculationMethod.Latch;
+            case 2:
+                return NodeCalculationMethod.Differential;
         }
 
         return NodeCalculationMethod.LinComb;
@@ -33,8 +35,24 @@ public static class MethodHelp
                 return NodeCalculationMethod.LinComb;
             case "Latch":
                 return NodeCalculationMethod.Latch;
+            case "Differential":
+                return NodeCalculationMethod.Differential;
         }
         return NodeCalculationMethod.LinComb;
+    }
+
+    public static CalculationMethod GetMethod(NodeCalculationMethod name)
+    {
+        switch (name)
+        {
+            case NodeCalculationMethod.LinComb:
+                return new LinComb();
+            case NodeCalculationMethod.Latch:
+                return new Latch();
+            case NodeCalculationMethod.Differential:
+                return new Differential();
+        }
+        return null;
     }
 }
 
@@ -59,6 +77,12 @@ public abstract class CalculationMethod
     /// </summary>
     /// <returns></returns>
     public abstract NodeCalculationMethod GetMethodName();
+
+    /// <summary>
+    /// Reset values to default
+    /// </summary>
+    /// <returns></returns>
+    public abstract float Reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,6 +105,34 @@ public class LinComb : CalculationMethod
     public override NodeCalculationMethod GetMethodName()
     {
         return this.method;
+    }
+
+    public override float Reset()
+    {
+        return 0;
+    }
+}
+
+public class Differential : CalculationMethod
+{
+    public Differential()
+    {
+        method = NodeCalculationMethod.Differential;
+    }
+
+    public override float Calculate(float input, Activations.Activation activation)
+    {
+        return activation.Derivative(input);
+    }
+
+    public override NodeCalculationMethod GetMethodName()
+    {
+        return this.method;
+    }
+
+    public override float Reset()
+    {
+        return 0;
     }
 }
 
@@ -118,5 +170,10 @@ public class Latch : CalculationMethod
     public override NodeCalculationMethod GetMethodName()
     {
         return this.method;
+    }
+
+    public override float Reset()
+    {
+        return previous_output;
     }
 }

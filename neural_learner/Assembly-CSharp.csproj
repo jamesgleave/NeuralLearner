@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>Temp\bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;UNITY_2020_3_34;UNITY_2020_3;UNITY_2020;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_4_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2018_2_OR_NEWER;UNITY_2018_3_OR_NEWER;UNITY_2018_4_OR_NEWER;UNITY_2019_1_OR_NEWER;UNITY_2019_2_OR_NEWER;UNITY_2019_3_OR_NEWER;UNITY_2019_4_OR_NEWER;UNITY_2020_1_OR_NEWER;UNITY_2020_2_OR_NEWER;UNITY_2020_3_OR_NEWER;PLATFORM_ARCH_64;UNITY_64;UNITY_INCLUDE_TESTS;USE_SEARCH_ENGINE_API;SCENE_TEMPLATE_MODULE;ENABLE_AR;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_TEXTURE_STREAMING;ENABLE_VIRTUALTEXTURING;ENABLE_UNET;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_UNITYWEBREQUEST;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_COLLAB_SOFTLOCKS;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_NATIVE_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_DIRECTOR_AUDIO;ENABLE_DIRECTOR_TEXTURE;ENABLE_MANAGED_JOBS;ENABLE_MANAGED_TRANSFORM_JOBS;ENABLE_MANAGED_ANIMATION_JOBS;ENABLE_MANAGED_AUDIO_JOBS;ENABLE_MANAGED_UNITYTLS;INCLUDE_DYNAMIC_GI;ENABLE_MONO_BDWGC;ENABLE_SCRIPTING_GC_WBARRIERS;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;ENABLE_VIDEO;PLATFORM_STANDALONE;PLATFORM_STANDALONE_OSX;UNITY_STANDALONE_OSX;UNITY_STANDALONE;ENABLE_GAMECENTER;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_CLUSTER_SYNC;ENABLE_CLUSTERINPUT;ENABLE_SPATIALTRACKING;PLATFORM_UPDATES_TIME_OUTSIDE_OF_PLAYER_LOOP;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;NET_4_6;ENABLE_PROFILER;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_UNITY_COLLECTIONS_CHECKS;ENABLE_BURST_AOT;UNITY_TEAM_LICENSE;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_DIRECTOR;ENABLE_LOCALIZATION;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_TILEMAP;ENABLE_TIMELINE;ENABLE_LEGACY_INPUT_MANAGER;CSHARP_7_OR_LATER;CSHARP_7_3_OR_NEWER;DEVELOPMENT_BUILD</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;UNITY_2020_3_34;UNITY_2020_3;UNITY_2020;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_4_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2018_2_OR_NEWER;UNITY_2018_3_OR_NEWER;UNITY_2018_4_OR_NEWER;UNITY_2019_1_OR_NEWER;UNITY_2019_2_OR_NEWER;UNITY_2019_3_OR_NEWER;UNITY_2019_4_OR_NEWER;UNITY_2020_1_OR_NEWER;UNITY_2020_2_OR_NEWER;UNITY_2020_3_OR_NEWER;PLATFORM_ARCH_64;UNITY_64;UNITY_INCLUDE_TESTS;USE_SEARCH_ENGINE_API;SCENE_TEMPLATE_MODULE;ENABLE_AR;ENABLE_AUDIO;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_TEXTURE_STREAMING;ENABLE_VIRTUALTEXTURING;ENABLE_UNET;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_UNITYWEBREQUEST;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_COLLAB;ENABLE_CLOUD_SERVICES_COLLAB_SOFTLOCKS;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_NATIVE_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_UNET;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_DIRECTOR_AUDIO;ENABLE_DIRECTOR_TEXTURE;ENABLE_MANAGED_JOBS;ENABLE_MANAGED_TRANSFORM_JOBS;ENABLE_MANAGED_ANIMATION_JOBS;ENABLE_MANAGED_AUDIO_JOBS;ENABLE_MANAGED_UNITYTLS;INCLUDE_DYNAMIC_GI;ENABLE_MONO_BDWGC;ENABLE_SCRIPTING_GC_WBARRIERS;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;ENABLE_VIDEO;PLATFORM_STANDALONE;PLATFORM_STANDALONE_OSX;UNITY_STANDALONE_OSX;UNITY_STANDALONE;ENABLE_GAMECENTER;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_CLUSTER_SYNC;ENABLE_CLUSTERINPUT;ENABLE_SPATIALTRACKING;PLATFORM_UPDATES_TIME_OUTSIDE_OF_PLAYER_LOOP;ENABLE_WEBSOCKET_HOST;ENABLE_MONO;NET_4_6;ENABLE_PROFILER;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_UNITY_COLLECTIONS_CHECKS;ENABLE_BURST_AOT;UNITY_TEAM_LICENSE;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_DIRECTOR;ENABLE_LOCALIZATION;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_TILEMAP;ENABLE_TIMELINE;ENABLE_LEGACY_INPUT_MANAGER;UNITY_POST_PROCESSING_STACK_V2;CSHARP_7_OR_LATER;CSHARP_7_3_OR_NEWER;DEVELOPMENT_BUILD</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>0169</NoWarn>
@@ -38,95 +38,99 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\Models\NeatNetwork\ConnectionGene.cs" />
      <Compile Include="Assets\Scripts\UserControl\UserControllerEvoAncestory.cs" />
-     <Compile Include="Assets\Scripts\UI\TextController.cs" />
      <Compile Include="Assets\Scripts\UserControl\UserControllerEvoNEAT.cs" />
-     <Compile Include="Assets\Scripts\Util\testing.cs" />
-     <Compile Include="Assets\Scripts\Agent\Pheromone.cs" />
      <Compile Include="Assets\Scripts\Managers\Manager.cs" />
-     <Compile Include="Assets\Scripts\Models\NeatNetwork\NodeGeneType.cs" />
-     <Compile Include="Assets\Scripts\DisplayModel\NeuralNetwork\DisplayEvoNN.cs" />
      <Compile Include="Assets\Scripts\Managers\AncestorManager.cs" />
      <Compile Include="Assets\Scripts\Managers\SimulationInitializer.cs" />
-     <Compile Include="Assets\Scripts\UI\NEATNetworkUIController.cs" />
-     <Compile Include="Assets\Scripts\UI\UILineRenderer.cs" />
      <Compile Include="Assets\Scripts\Inanimates\Egg.cs" />
      <Compile Include="Assets\Scripts\Managers\EntityPoolManager.cs" />
      <Compile Include="Assets\Scripts\Agent\BaseAgent.cs" />
      <Compile Include="Assets\Scripts\Agent\Abilities\AgentSpecialAbilities.cs" />
-     <Compile Include="Assets\Scripts\UI\MainMenu.cs" />
-     <Compile Include="Assets\Scripts\Managers\TestFood.cs" />
-     <Compile Include="Assets\Scripts\DisplayModel\NeatNetwork\NEATDisplayNeuronForceDirected.cs" />
      <Compile Include="Assets\Scripts\Testing\BoidController.cs" />
      <Compile Include="Assets\Scripts\Brains\EvolutionaryNEATLearner.cs" />
      <Compile Include="Assets\Scripts\Models\NeatNetwork\TestNEAT.cs" />
-     <Compile Include="Assets\Scripts\DisplayModel\ForceDirectedGraph\ComputeShaderFGD.cs" />
      <Compile Include="Assets\Scripts\Models\NeatNetwork\NEATInputContainer.cs" />
      <Compile Include="Assets\Scripts\UI\AgentUIController.cs" />
-     <Compile Include="Assets\Scripts\UserControl\UserControllerEvoSim.cs" />
-     <Compile Include="Assets\AncestoryDisplayNodeFDG.cs" />
-     <Compile Include="Assets\Scripts\UI\Plot.cs" />
      <Compile Include="Assets\Scripts\Agent\BasicAgentController.cs" />
-     <Compile Include="Assets\Scripts\Managers\StatisticManager.cs" />
      <Compile Include="Assets\Scripts\Agent\Senses.cs" />
      <Compile Include="Assets\Scripts\Testing\Boids.cs" />
-     <Compile Include="Assets\Scripts\Agent\AgentStomach.cs" />
      <Compile Include="Assets\Scripts\Inanimates\FoodPellet.cs" />
      <Compile Include="Assets\Scripts\UserControl\UserControllerEvoNN.cs" />
-     <Compile Include="Assets\Scripts\Agent\Abilities\ActiveAbilities.cs" />
      <Compile Include="Assets\Scripts\Models\NeatNetwork\NEATNetwork.cs" />
-     <Compile Include="Assets\Scripts\Agent\AdaptiveSprites\AdaptiveSprite.cs" />
-     <Compile Include="Assets\Scripts\Models\NeatNetwork\NodeGeneAction.cs" />
      <Compile Include="Assets\Scripts\Managers\Saving.cs" />
-     <Compile Include="Assets\Scripts\DisplayModel\NeuralNetwork\Neuron.cs" />
-     <Compile Include="Assets\Scripts\Inanimates\Edible.cs" />
      <Compile Include="Assets\Scripts\Brains\Brain.cs" />
-     <Compile Include="Assets\Scripts\Models\NeuralNetwork\Layer.cs" />
      <Compile Include="Assets\Scripts\Models\NeatNetwork\NodeGene.cs" />
-     <Compile Include="Assets\Scripts\DisplayModel\ForceDirectedGraph\ForceDirectedManager.cs" />
      <Compile Include="Assets\Scripts\Agent\NameGenerator.cs" />
      <Compile Include="Assets\Scripts\UI\LoadAgentController.cs" />
-     <Compile Include="Assets\Scripts\Models\BaseModel.cs" />
      <Compile Include="Assets\Scripts\UI\NeuralNetworkUIController.cs" />
-     <Compile Include="Assets\Scripts\UI\UIGrid.cs" />
-     <Compile Include="Assets\Scripts\UI\UIPointRenderer.cs" />
      <Compile Include="Assets\Scripts\Brains\EvolutionaryNeuralLearner.cs" />
-     <Compile Include="Assets\Scripts\Models\Callback.cs" />
      <Compile Include="Assets\Scripts\UserControl\UserController3D.cs" />
      <Compile Include="Assets\Scripts\DisplayModel\NeatNetwork\NEATDisplayNeuron.cs" />
-     <Compile Include="Assets\Scripts\Agent\Genes.cs" />
-     <Compile Include="Assets\Scripts\DisplayModel\Display.cs" />
      <Compile Include="Assets\Scripts\Managers\FoodPelletManager.cs" />
-     <Compile Include="Assets\Scripts\UI\SaveAgentGUI.cs" />
      <Compile Include="Assets\Scripts\Agent\Abilities\PassiveAbilities.cs" />
      <Compile Include="Assets\Scripts\DisplayModel\ForceDirectedGraph\ForceDirectedNode.cs" />
-     <Compile Include="Assets\Scripts\Managers\StateManager.cs" />
-     <Compile Include="Assets\Scripts\AncestorDisplay\AncestorDisplayNode.cs" />
      <Compile Include="Assets\Scripts\AncestorDisplay\AncestorDisplay.cs" />
-     <Compile Include="Assets\Scripts\Models\NeuralNetwork\Activations.cs" />
      <Compile Include="Assets\Scripts\Models\NeatNetwork\Genome.cs" />
-     <Compile Include="Assets\Scripts\Managers\SimulationSceneManager.cs" />
      <Compile Include="Assets\Scripts\Agent\DisplayWobbit.cs" />
-     <Compile Include="Assets\Scripts\Managers\TimeManager.cs" />
-     <Compile Include="Assets\Scripts\UI\GeneBarChart.cs" />
      <Compile Include="Assets\Scripts\Agent\PheromoneGland.cs" />
      <Compile Include="Assets\Scripts\Agent\BehaviouralNeuron.cs" />
      <Compile Include="Assets\Scripts\Models\NeatNetwork\InnovationGenerator.cs" />
      <Compile Include="Assets\AncestorDisplayFDG.cs" />
-     <Compile Include="Assets\Scripts\Util\LineDrawer.cs" />
-     <Compile Include="Assets\Scripts\Models\NeuralNetwork\NeuralNet.cs" />
      <Compile Include="Assets\Scripts\DisplayModel\ForceDirectedGraph\GraphGenerator.cs" />
-     <Compile Include="Assets\Scripts\Managers\SpawnManager.cs" />
      <Compile Include="Assets\Scripts\Inanimates\Meat.cs" />
      <Compile Include="Assets\Scripts\Inanimates\Interactable.cs" />
-     <Compile Include="Assets\Scripts\Agent\AdaptiveSprites\AdaptiveSpriteManager.cs" />
      <Compile Include="Assets\Scripts\UI\Bar.cs" />
+     <Compile Include="Assets\Scripts\DisplayModel\NeatNetwork\DisplayEvoNEAT.cs" />
+     <Compile Include="Assets\Scripts\UI\TextController.cs" />
+     <Compile Include="Assets\Scripts\Util\testing.cs" />
+     <Compile Include="Assets\Scripts\Agent\Pheromone.cs" />
+     <Compile Include="Assets\Scripts\Models\NeatNetwork\NodeGeneType.cs" />
+     <Compile Include="Assets\Scripts\DisplayModel\NeuralNetwork\DisplayEvoNN.cs" />
+     <Compile Include="Assets\Scripts\UI\NEATNetworkUIController.cs" />
+     <Compile Include="Assets\Scripts\UI\UILineRenderer.cs" />
+     <Compile Include="Assets\Scripts\UI\MainMenu.cs" />
+     <Compile Include="Assets\Scripts\Managers\TestFood.cs" />
+     <Compile Include="Assets\Scripts\DisplayModel\NeatNetwork\NEATDisplayNeuronForceDirected.cs" />
+     <Compile Include="Assets\Scripts\DisplayModel\ForceDirectedGraph\ComputeShaderFGD.cs" />
+     <Compile Include="Assets\Scripts\UserControl\UserControllerEvoSim.cs" />
+     <Compile Include="Assets\AncestoryDisplayNodeFDG.cs" />
+     <Compile Include="Assets\Scripts\UI\Plot.cs" />
+     <Compile Include="Assets\Scripts\Managers\StatisticManager.cs" />
+     <Compile Include="Assets\Scripts\Agent\AgentStomach.cs" />
+     <Compile Include="Assets\Scripts\Agent\Abilities\ActiveAbilities.cs" />
+     <Compile Include="Assets\Scripts\Agent\AdaptiveSprites\AdaptiveSprite.cs" />
+     <Compile Include="Assets\Scripts\Models\NeatNetwork\NodeGeneAction.cs" />
+     <Compile Include="Assets\Scripts\DisplayModel\NeuralNetwork\Neuron.cs" />
+     <Compile Include="Assets\Scripts\Inanimates\Edible.cs" />
+     <Compile Include="Assets\Scripts\Models\NeuralNetwork\Layer.cs" />
+     <Compile Include="Assets\Scripts\DisplayModel\ForceDirectedGraph\ForceDirectedManager.cs" />
+     <Compile Include="Assets\Scripts\Models\BaseModel.cs" />
+     <Compile Include="Assets\Scripts\UI\UIGrid.cs" />
+     <Compile Include="Assets\Scripts\UI\UIPointRenderer.cs" />
+     <Compile Include="Assets\Scripts\Models\Callback.cs" />
+     <Compile Include="Assets\Scripts\Agent\Genes.cs" />
+     <Compile Include="Assets\Scripts\DisplayModel\Display.cs" />
+     <Compile Include="Assets\Scripts\UI\SaveAgentGUI.cs" />
+     <Compile Include="Assets\Scripts\Managers\StateManager.cs" />
+     <Compile Include="Assets\Scripts\AncestorDisplay\AncestorDisplayNode.cs" />
+     <Compile Include="Assets\Scripts\Models\NeuralNetwork\Activations.cs" />
+     <Compile Include="Assets\Scripts\Managers\SimulationSceneManager.cs" />
+     <Compile Include="Assets\Scripts\Managers\TimeManager.cs" />
+     <Compile Include="Assets\Scripts\UI\GeneBarChart.cs" />
+     <Compile Include="Assets\Scripts\Util\LineDrawer.cs" />
+     <Compile Include="Assets\Scripts\Models\NeuralNetwork\NeuralNet.cs" />
+     <Compile Include="Assets\Scripts\Managers\SpawnManager.cs" />
+     <Compile Include="Assets\Scripts\Agent\AdaptiveSprites\AdaptiveSpriteManager.cs" />
      <Compile Include="Assets\Scripts\Util\Parser.cs" />
      <Compile Include="Assets\Scripts\Managers\SpriteManager.cs" />
      <Compile Include="Assets\Scripts\Agent\AdaptiveSprites\AdaptiveSpriteComponent.cs" />
-     <Compile Include="Assets\Scripts\DisplayModel\NeatNetwork\DisplayEvoNEAT.cs" />
      <Compile Include="Assets\Scripts\DisplayModel\NeatNetwork\NEATDisplayNeuron2D.cs" />
+     <Compile Include="Assets\Scripts\Util\UtilityFunctions.cs" />
+     <Compile Include="Assets\Scripts\Util\BooleanTrigger.cs" />
+     <Compile Include="Assets\Scripts\Models\NeatNetwork\NEATMutationConfig.cs" />
      <None Include="Assets\SaveData\CleanStart\genome.txt" />
      <None Include="Assets\SaveData\MrSlowDown\genome.txt" />
+     <None Include="Assets\SaveData\12Hour\genes.txt" />
      <None Include="Assets\Scripts\ComputeShaders\FoodPellet.compute" />
      <None Include="Assets\Notes\notes.txt" />
      <None Include="Assets\SaveData\MrSlowDown\genes.txt" />
@@ -138,10 +142,15 @@
      <None Include="Assets\SaveData\Pro\genes.txt" />
      <None Include="Assets\Scripts\Agent\names.txt" />
      <None Include="Assets\SaveData\CleanStart\genes.txt" />
+     <None Include="Assets\SaveData\12Hour\genome.txt" />
+     <None Include="Assets\SaveData\mybeautifulbabies\genome.txt" />
      <None Include="Assets\Scripts\DisplayModel\ForceDirectedGraph\FDG.compute" />
      <None Include="Assets\Scripts\Shaders\ElectricConnection.compute" />
+     <None Include="Assets\SaveData\OverNight\genome.txt" />
      <None Include="Assets\SaveData\testtt\genome.txt" />
      <None Include="Assets\SaveData\BigBrain\genes.txt" />
+     <None Include="Assets\SaveData\OverNight\genes.txt" />
+     <None Include="Assets\SaveData\mybeautifulbabies\genes.txt" />
     <Reference Include="UnityEngine">
         <HintPath>C:\Program Files\Unity\Hub\Editor\2020.3.34f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
     </Reference>
@@ -715,20 +724,35 @@
     <Reference Include="Unity.VSCode.Editor">
         <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.VSCode.Editor.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Shaders">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Shaders.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Runtime">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.TextMeshPro.Editor">
         <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.VisualStudio.Editor">
         <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.VisualStudio.Editor.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.Timeline.Editor">
-        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.Timeline.Editor.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.Timeline">
         <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.Timeline.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
         <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Searcher.Editor">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.2D.Sprite.Editor">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.2D.Sprite.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Runtime">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Postprocessing.Editor">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.Postprocessing.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.UI">
         <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\UnityEditor.UI.dll</HintPath>
@@ -739,8 +763,38 @@
     <Reference Include="Unity.Rider.Editor">
         <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.Rider.Editor.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.ShaderLibrary">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.RenderPipelines.Core.ShaderLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UI">
         <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\UnityEngine.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Mathematics">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.Mathematics.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.ShaderGraph.Editor">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.ShaderGraph.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Postprocessing.Runtime">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.Postprocessing.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Editor">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipeline.Universal.ShaderLibrary">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.RenderPipeline.Universal.ShaderLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Timeline.Editor">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.Timeline.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Mathematics.Editor">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.Mathematics.Editor.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.RenderPipelines.Core.Editor">
+        <HintPath>C:\Users\jglea\OneDrive\Desktop\Projects\Unity\NeuralLearner\neural_learner\Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

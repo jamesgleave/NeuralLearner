@@ -127,8 +127,8 @@ public class DisplayEvoNEAT : Display
                 // Only add inputs if they have valid outputs
                 if (!show_all_input_neurons && n.Value.GetOutputIDs().Count ==  0)
                 {
-                   input_names.RemoveAt(0);
-                   continue;
+                    input_names.RemoveAt(0);
+                    continue;
                 }
 
                 var x = Instantiate(neuron, transform).GetComponent<NEATDisplayNeuron>();

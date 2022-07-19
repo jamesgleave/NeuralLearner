@@ -1,20 +1,19 @@
 ﻿<Properties StartupConfiguration="{B3AF31EC-A24B-61DB-F2F2-AC2579EB55ED}|">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/Agent/DisplayWobbit.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Scripts/DisplayModel/NeatNetwork/DisplayEvoNEAT.cs">
     <Files>
       <File FileName="Assets/Scripts/AncestorDisplay/AncestorDisplay.cs" Line="42" Column="6" />
-      <File FileName="Assets/Scripts/DisplayModel/ForceDirectedGraph/ComputeShaderFGD.cs" Line="45" Column="59" />
-      <File FileName="Assets/AncestorDisplayFGD.cs" Line="12" Column="1" />
-      <File FileName="Assets/Scripts/AncestorDisplay/AncestorDisplayNode.cs" Line="105" Column="42" />
-      <File FileName="Assets/Scripts/DisplayModel/ForceDirectedGraph/ForceDirectedNode.cs" Line="84" Column="87" />
-      <File FileName="Assets/AncestoryDisplayNodeFGD.cs" Line="98" Column="27" />
-      <File FileName="Assets/Scripts/Managers/AncestorManager.cs" Line="136" Column="1" />
-      <File FileName="Assets/Scripts/Inanimates/Egg.cs" Line="234" Column="55" />
+      <File FileName="Assets/Scripts/DisplayModel/ForceDirectedGraph/ComputeShaderFGD.cs" />
+      <File FileName="Assets/Scripts/AncestorDisplay/AncestorDisplayNode.cs" />
+      <File FileName="Assets/Scripts/DisplayModel/ForceDirectedGraph/ForceDirectedNode.cs" />
+      <File FileName="Assets/Scripts/Managers/AncestorManager.cs" />
+      <File FileName="Assets/Scripts/Inanimates/Egg.cs" />
       <File FileName="Assets/Scripts/Agent/DisplayWobbit.cs" Line="53" Column="2" />
+      <File FileName="Assets/Scripts/DisplayModel/NeatNetwork/DisplayEvoNEAT.cs" Line="16" Column="33" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="1afec3e0-7597-4105-9b87-713788804e97" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="c2cd7ea4-167b-441f-99eb-36cecb6dea06" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

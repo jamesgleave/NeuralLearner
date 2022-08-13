@@ -2050,16 +2050,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3db84e74267f46d1b58ab0d3379e92c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  alpha: 2
-  lambda: 4
-  beta: 5
-  theta: 1
-  sigma: 0.3
+  alpha: 1.6
+  lambda: 3
+  beta: 2
+  theta: 0.94
+  sigma: 0.31
   sigma_prime: 0.1
-  phi: 20
-  gamma: 30
+  phi: 5.3
+  gamma: 54
   activated: 0
-  update_rate: 0.01
+  update_rate: 0
   input_neurons: []
   hidden_neurons: []
   output_neurons: []
@@ -2075,8 +2075,8 @@ MonoBehaviour:
   x: []
   cooldown: 0
   selected_id: 0
-  display_x_seperation_scaler: 2
-  display_y_seperation_scaler: 2
+  display_x_seperation_scaler: 1.68
+  display_y_seperation_scaler: 1.49
   vert_offset: 0
   hori_offset: 0
 --- !u!4 &1122315088

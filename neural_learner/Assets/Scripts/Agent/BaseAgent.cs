@@ -413,11 +413,11 @@ public class BaseAgent : Interactable
         max_health = health;
 
         // The energy contained in the agent
-        energy = Mathf.Pow(genes.size, 2) * base_health;
+        energy = Mathf.Pow(genes.size, 2) * base_health * Manager.instance.agent_energy_coefficient;
         max_energy = energy;
 
         // The cost of movement and stuff (starts small and increases as it grows
-        metabolism = (Mathf.Pow(genes.size, 2) * genes.speed/50f + genes.perception + Mathf.Pow((genes.attack * genes.defense), 2)) * 0.25f;
+        metabolism = (Mathf.Pow(genes.size, 2) * genes.speed/10f + genes.perception + Mathf.Pow((genes.attack * genes.defense), 2)) * 0.25f;
 
         // How fast can the consume food?
         consumption_rate = (base_consumption_rate / Mathf.Exp(-genes.size)) * 0.5f;
@@ -756,8 +756,8 @@ public class BaseAgent : Interactable
         rb.AddForce(backward_force * Time.deltaTime);
 
         // Calculate torque to add
-        float torque_right = (right) * scaler;
-        float torque_left = -(left) * scaler;
+        float torque_right = (right) * scaler * scaler;
+        float torque_left = -(left) * scaler * scaler;
 
         rb.AddTorque(torque_right * Time.deltaTime);
         rb.AddTorque(torque_left * Time.deltaTime);
@@ -773,7 +773,9 @@ public class BaseAgent : Interactable
         }
 
         // Testing energy consumption by moving
-        cost_of_movement = ((genes.size * (Mathf.Abs(torque_left) + forward_force.magnitude) * Time.deltaTime) / manager.movement_cost_scale_rate);
+        // TODO testing new movement cost
+        // cost_of_movement = ((genes.size * (Mathf.Abs(torque_left) + forward_force.magnitude) * Time.deltaTime) / manager.movement_cost_scale_rate);
+        cost_of_movement = ((1 + (Mathf.Pow(genes.size, 2)) * (forward_force.magnitude) * Time.deltaTime) / manager.movement_cost_scale_rate);
 
         // Update the speed of the agent
         speed = rb.velocity.magnitude;
@@ -1031,10 +1033,15 @@ public class BaseAgent : Interactable
         manager.agents.Remove(this);
 
         // If a piece of meat 
-        Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
         energy += stomach.GetTotalPotentialEnergy();
-        m.Setup((int)ID.Meat, energy, manager.meat_rot_time, energy / manager.meat_energy_density, this.genes, manager);
-        manager.agents.Add(m);
+        float n = Mathf.Max(1, 2 * genes.size, 6 * genes.size * Mathf.Min((age/maturity_age), 1f));
+        float energy_per = energy / n;
+        for (int i = 0; i < n; i++)
+        {
+            Meat m = Instantiate(meat, transform.position, transform.rotation, manager.transform);
+            m.Setup((int)ID.Meat, energy_per, manager.meat_rot_time, energy_per / manager.meat_energy_density, this.genes, manager);
+            manager.agents.Add(m);
+        }
 
         num_pellets_eaten = num_meat_eaten = num_eggs_eaten = num_kills = 0;
         manager.GetComponent<EntityPoolManager>().Destroy(this);

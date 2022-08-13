@@ -342,7 +342,7 @@ MonoBehaviour:
   base_lifespan: 800
   base_mass: 2
   base_consumption_rate: 10
-  base_update_rate: 500
+  base_update_rate: 400
   wants_move_forward: 0
   wants_rotate_clockwise: 0
   wants_to_breed: 0

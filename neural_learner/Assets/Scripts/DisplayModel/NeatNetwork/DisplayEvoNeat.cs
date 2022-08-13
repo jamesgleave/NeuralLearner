@@ -290,6 +290,8 @@ public class DisplayEvoNEAT : Display
                 output_neurons[output_index].UpdateInternalState();
                 output_index++;
             }
+
+
         }
     }
 

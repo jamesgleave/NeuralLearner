@@ -75,6 +75,7 @@ public class Manager : MonoBehaviour
     public float brain_cost_reduction_factor = 250;
 
     public float agent_base_damage_multiplier = 5;
+    public float agent_energy_coefficient = 2f;
 
     [Space]
     [Header("Simulation info (readonly)")]

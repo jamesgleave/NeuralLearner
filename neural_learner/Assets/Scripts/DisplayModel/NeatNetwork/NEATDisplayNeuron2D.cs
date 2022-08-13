@@ -13,8 +13,15 @@ public class NEATDisplayNeuron2D : NEATDisplayNeuron
         // Calculate the desired force
         Vector3 force = dir.normalized * acc * dist;
 
+        if(float.IsNaN(force.x) || float.IsNaN(force.y) || float.IsNaN(force.z))
+        {
+            // Debug.LogWarning(desired_position);
+        }else{
+        
         // Add force to neuron rb
         rb.AddForce(force, ForceMode2D.Impulse);
+        }
+
 
         if (!grabbed)
         {
@@ -60,7 +67,6 @@ public class NEATDisplayNeuron2D : NEATDisplayNeuron
                 average_y += c.transform.localPosition.y + weights[i] / Mathf.Max(weights.ToArray());
                 average_x += c.transform.localPosition.x + weights[i] / Mathf.Max(weights.ToArray());
                 i++;
-
             }
 
             average_y /= parents.Count + children.Count;
@@ -87,6 +93,11 @@ public class NEATDisplayNeuron2D : NEATDisplayNeuron
             //    x -= shift_dir.x * Vector2.Distance(transform.position.normalized, desired_position.normalized);
             //}
 
+            if(float.IsNaN(x) || float.IsInfinity(x))
+            {
+                Debug.Log("x: " + x + " y: " + y + " depth_count: " + neuron.GetDepth().ToString() + " display.display_x_seperation_scaler: " + display.display_x_seperation_scaler);
+                Debug.LogWarning("Make sure display_x(and y)_seperation_scaler is not 0");
+            }
         }
         else
         {
@@ -95,7 +106,6 @@ public class NEATDisplayNeuron2D : NEATDisplayNeuron
             y = (position - depth_count / 2) * display.alpha + even_odd_offset;
             z = 0;
         }
-
         // set the desired position
         desired_position.Set(x, y, z);
     }
